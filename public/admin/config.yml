@@ -30,11 +30,17 @@ collections:
     i18n: true
     extension: md
     format: frontmatter
-    slug: '{{year}}-{{month}}-{{day}}-{{slug}}'
+    slug: '{{year}}-{{month}}-{{day}}-{{fields.fileSlug}}'
     summary: '{{title}} ({{status}})'
     sortable_fields: [date, title]
     fields:
       - { name: title, label: Title, widget: string, i18n: true }
+      - name: fileSlug
+        label: File name (latin letters, digits and hyphens, e.g. open-day-2026)
+        hint: Used in the page address. Cannot be changed later.
+        widget: string
+        pattern: ['^[a-z0-9]+(-[a-z0-9]+)*$', 'Use lowercase latin letters, digits and single hyphens only']
+        i18n: duplicate
       - { name: summary, label: Summary, widget: text, required: false, i18n: true }
       - { name: date, label: Date, widget: datetime, format: YYYY-MM-DD, date_format: YYYY-MM-DD, time_format: false, i18n: duplicate }
       - name: status
@@ -73,10 +79,16 @@ collections:
     i18n: true
     extension: md
     format: frontmatter
-    slug: '{{year}}-{{month}}-{{day}}-{{slug}}'
+    slug: '{{year}}-{{month}}-{{day}}-{{fields.fileSlug}}'
     summary: '{{title}} ({{status}})'
     fields:
       - { name: title, label: Title, widget: string, i18n: true }
+      - name: fileSlug
+        label: File name (latin letters, digits and hyphens, e.g. open-day-2026)
+        hint: Used in the page address. Cannot be changed later.
+        widget: string
+        pattern: ['^[a-z0-9]+(-[a-z0-9]+)*$', 'Use lowercase latin letters, digits and single hyphens only']
+        i18n: duplicate
       - { name: summary, label: Summary, widget: text, required: false, i18n: true }
       - { name: date, label: Start date, widget: datetime, format: YYYY-MM-DD, date_format: YYYY-MM-DD, time_format: false, i18n: duplicate }
       - { name: endDate, label: End date, widget: datetime, format: YYYY-MM-DD, date_format: YYYY-MM-DD, time_format: false, required: false, i18n: duplicate }
@@ -101,10 +113,16 @@ collections:
     i18n: true
     extension: md
     format: frontmatter
-    slug: '{{slug}}'
+    slug: '{{fields.fileSlug}}'
     summary: '{{title}} ({{status}})'
     fields:
       - { name: title, label: Title, widget: string, i18n: true }
+      - name: fileSlug
+        label: File name (latin letters, digits and hyphens, e.g. open-day-2026)
+        hint: Used in the page address. Cannot be changed later.
+        widget: string
+        pattern: ['^[a-z0-9]+(-[a-z0-9]+)*$', 'Use lowercase latin letters, digits and single hyphens only']
+        i18n: duplicate
       - { name: summary, label: Summary, widget: text, required: false, i18n: true }
       - { name: order, label: Display order, widget: number, value_type: int, default: 100, i18n: duplicate }
       - { name: duration, label: Duration (as confirmed by the administration), widget: string, required: false, i18n: true }

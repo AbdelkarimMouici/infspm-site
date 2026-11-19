@@ -11,6 +11,16 @@ You need **write access to the repository** and **2FA enabled on GitHub**.
 3. **Set status.** `status: published` is required for the entry to appear on the site. `draft` entries never render.
 4. **Review.** Move the entry to *In review*. A maintainer checks the text, the photos (consent!) and the translations.
 5. **Publish.** When the maintainer merges the pull request, the site rebuilds automatically.
+   GitHub branch protection (required approval + CI) must be enabled, otherwise any editor could publish directly
+   (see docs/DEPLOYMENT.md §1).
+
+**File name.** Every new item needs a *File name* in Latin letters, digits and hyphens (for example `open-day-2026`).
+Arabic titles cannot be used for file names. It becomes part of the page address and cannot be changed later.
+
+**Images.** Upload photos with the image fields, never inside the text: images in the text are removed.
+Strip location (GPS) data before uploading. The test suite rejects images that still contain EXIF metadata.
+
+**Formatting.** Raw HTML, embedded frames and unsafe links are removed from the text automatically.
 
 ## Rules (from CLAUDE.md)
 

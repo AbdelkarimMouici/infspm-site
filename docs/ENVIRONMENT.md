@@ -8,7 +8,7 @@ This page is the reference instead. **Never commit real values.** Secrets live o
 |---|---|---|---|---|
 | `GITHUB_OAUTH_CLIENT_ID` | Cloudflare Pages | no | `functions/api/decap/*` | GitHub OAuth app for Decap CMS sign-in |
 | `GITHUB_OAUTH_CLIENT_SECRET` | Cloudflare Pages | **yes** | `functions/api/decap/*` | Never logged or sent to the browser |
-| `GITHUB_OAUTH_SCOPE` | Cloudflare Pages | no | `functions/api/decap/*` | `repo` (private repo, default) or `public_repo` |
+| `GITHUB_OAUTH_SCOPE` | Cloudflare Pages | no | `functions/api/decap/*` | `public_repo` if the repository is public (narrower, recommended). `repo` (default) is needed for a private repository but grants access to all of the editor's private repos |
 | `SHOW_EXAMPLE_CONTENT` | build (staging only) | no | `src/lib/content.ts` | `true` shows `example: true` entries. Leave unset in production |
 
 Later steps add their variables below.

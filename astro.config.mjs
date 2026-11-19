@@ -1,6 +1,8 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
+import { satteri } from '@astrojs/markdown-satteri';
+import { safeMarkdownPlugin } from './src/lib/remark-safe-markdown.ts';
 
 // TODO(content): replace with the real domain once the administration decides it (see docs/CONTENT.md).
 const SITE_URL = 'https://example.invalid';
@@ -18,6 +20,11 @@ export default defineConfig({
       // "/" is handled by src/pages/index.astro (static meta refresh to "/ar/", no script).
       redirectToDefaultLocale: false,
     },
+  },
+
+  markdown: {
+    // Strip raw HTML, unsafe links and body images from all Markdown content (see the plugin).
+    processor: satteri({ mdastPlugins: [safeMarkdownPlugin] }),
   },
 
   build: {

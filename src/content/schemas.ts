@@ -25,6 +25,12 @@ export const imageWithAlt = (image: ImageSchema) =>
   });
 
 const base = {
+  /** ASCII file/URL name chosen in the CMS (Arabic titles cannot produce file names). Not used as the entry id. */
+  fileSlug: z
+    .string()
+    .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'Use lowercase latin letters, digits and single hyphens only')
+    .max(80)
+    .optional(),
   title: z.string().trim().min(1).max(200),
   summary: z.string().trim().max(400).optional(),
   status,
