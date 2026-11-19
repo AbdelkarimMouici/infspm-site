@@ -24,7 +24,9 @@ export function encodeHeaderText(text: string): string {
   const words: string[] = [];
   let current = '';
   for (const char of clean) {
-    if (encoder.encode(current + char).length > 45) {
+    // The first word shares its line with the header name ("Subject: "), so it is shorter.
+    const limit = words.length === 0 ? 36 : 45;
+    if (encoder.encode(current + char).length > limit) {
       words.push(current);
       current = '';
     }

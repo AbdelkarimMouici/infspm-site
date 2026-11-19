@@ -212,3 +212,33 @@ describe('review round 1 fixes', () => {
     expect((limiter as unknown as { hits: Map<string, number[]> }).hits.size).toBeLessThanOrEqual(5000);
   });
 });
+
+describe('review round 2 fixes', () => {
+  const cp = (...codes: number[]) => String.fromCodePoint(...codes);
+
+  it.each([
+    ['RLM before a name', { name: `${cp(0x200f)}محمد علي` }],
+    ['ALM inside a name', { name: `محمد${cp(0x061c)} علي` }],
+    ['ZWNJ inside a name', { name: `می${cp(0x200c)}خواهم` }],
+    ['RLM at the start of the message', { message: `${cp(0x200f)}السلام عليكم، أود الاستفسار عن التسجيل.` }],
+    ['bidi isolate inside the message (removed)', { message: `نص ${cp(0x2067)}مع${cp(0x2069)} علامات اتجاه كافية للطول` }],
+  ])('accepts legitimate text: %s', async (_label, change) => {
+    const d = deps();
+    const res = await handleContact(post({ ...valid, ...change }), env, d);
+    expect(location(res)).toBe('/fr/contact/sent/');
+    const sent = (d.send as unknown as { mock: { calls: [{ name: string; message: string }][] } }).mock.calls[0]?.[0];
+    expect(sent?.name).not.toMatch(new RegExp(`[${cp(0x200f, 0x061c)}]`));
+    expect(sent?.message).not.toMatch(new RegExp(`[${cp(0x200f, 0x2067, 0x2069)}]`));
+  });
+
+  it('still refuses bidi overrides in a name', async () => {
+    const d = deps();
+    const res = await handleContact(post({ ...valid, name: `Ali ${cp(0x202e)}moc.liame` }), env, d);
+    expect(location(res)).toBe('/fr/contact/not-sent/invalid/');
+  });
+
+  it('keeps the first folded Subject line under 78 characters', () => {
+    const first = `Subject: ${encodeHeaderText('سؤال '.repeat(30)).split('\r\n')[0]}`;
+    expect(first.length).toBeLessThanOrEqual(78);
+  });
+});
