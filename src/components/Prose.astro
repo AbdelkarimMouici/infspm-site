@@ -1,0 +1,13 @@
+---
+// Wrapper for Markdown content: readable line length and typographic rhythm (styles in global.css, .prose).
+interface Props {
+  lang?: string | undefined;
+  dir?: 'rtl' | 'ltr' | undefined;
+}
+
+const { lang, dir } = Astro.props;
+---
+
+<div class="prose" lang={lang} dir={dir}>
+  <slot />
+</div>

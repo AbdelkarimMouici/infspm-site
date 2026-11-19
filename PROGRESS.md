@@ -9,7 +9,8 @@ with one PR per step whose base is the previous step's branch. Nothing is pushed
 |---|---|---|---|
 | 1 | `feat/step-1-scaffold` | `main` | PR #1 open (**not merged yet**, see notes) |
 | 2 | `feat/step-2-design-system` | `feat/step-1-scaffold` | PR #2 open |
-| 3 | `feat/step-3-content-cms` | `feat/step-2-design-system` | in progress |
+| 3 | `feat/step-3-content-cms` | `feat/step-2-design-system` | PR #3 open |
+| 4 | `feat/step-4-pages` | `feat/step-3-content-cms` | in progress |
 
 ## Notes for the maintainer (please review)
 

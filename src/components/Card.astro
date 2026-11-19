@@ -10,7 +10,7 @@ interface Props {
   /** Heading level inside the page outline. */
   level?: 2 | 3;
   /** Small line above the title (date, category), always in the page language. */
-  meta?: string;
+  meta?: string | undefined;
   /** Language of the title/body when it differs from the page (e.g. an Arabic-only news item on the French site). */
   contentLang?: Locale | undefined;
 }

@@ -51,11 +51,14 @@ Admissions and registration, Activities, News (list + article pages), Gallery, C
 - `npm audit` – dependency audit (CI fails on moderate or higher)
 - Node: version in `.nvmrc` (24). `eslint-plugin-astro` expects Node ≥ 24.16.
 
-## Project layout (step 1)
+## Project layout
 - `src/i18n/` – locales config, UI dictionaries (`ui/ar.ts` is the reference key set), helpers (`t`, `getDir`, `localizedPath`).
 - `src/layouts/BaseLayout.astro` – `lang`/`dir`, title/description, canonical, hreflang, skip link, header/footer.
 - `src/styles/global.css` – Tailwind v4 `@theme` design tokens (placeholder colours until step 2).
-- `src/pages/[locale]/` – localized pages; `src/pages/index.astro` – static meta-refresh to `/ar/`.
+- `src/pages/[locale]/` – localized pages (home, about, programs, admissions, activities, news, gallery, contact, privacy); `src/pages/index.astro` – static meta-refresh to `/ar/`.
+- `src/content/` – collections (`news`, `activities`, `programs`, `pages`) in `{ar,fr,en}/` folders; schemas in `src/content/schemas.ts`.
+- `src/lib/` – the only place allowed to query content (`localized.ts`: Arabic fallback, drafts and examples filtered).
+- `/admin/` – Decap CMS (see docs/CMS.md); `functions/` – Cloudflare Pages Functions.
 - Dependencies are pinned exactly; prefer releases at least ~7 days old (Dependabot uses a 7-day cooldown).
 - Output must stay free of inline scripts/styles (`inlineStylesheets: 'never'`, `assetsInlineLimit: 0`) for the strict CSP in step 7.
 

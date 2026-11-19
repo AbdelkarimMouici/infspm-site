@@ -1,0 +1,54 @@
+---
+// Grid of news/activity/program cards with Arabic-fallback handling.
+import type { Locale } from '~/i18n/config';
+import { t } from '~/i18n/utils';
+import { formatDate } from '~/lib/format';
+import type { LocalizedEntry } from '~/lib/localized';
+import Card from './Card.astro';
+import EmptyState from './EmptyState.astro';
+import ExampleBadge from './ExampleBadge.astro';
+
+type Item = LocalizedEntry<'news'> | LocalizedEntry<'activities'> | LocalizedEntry<'programs'>;
+
+interface Props {
+  locale: Locale;
+  items: Item[];
+  /** URL section: news, activities, programs. */
+  section: string;
+  emptyMessage: string;
+  level?: 2 | 3;
+}
+
+const { locale, items, section, emptyMessage, level = 2 } = Astro.props;
+
+function metaFor(item: Item): string | undefined {
+  const parts: string[] = [];
+  const data = item.entry.data as { date?: Date };
+  if (data.date) parts.push(formatDate(data.date, locale));
+  if (item.isFallback) parts.push(t(locale, 'content.onlyInArabicShort'));
+  return parts.length ? parts.join(' · ') : undefined;
+}
+---
+
+{
+  items.length === 0 ? (
+    <EmptyState message={emptyMessage} />
+  ) : (
+    <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list">
+      {items.map((item) => (
+        <li>
+          <Card
+            title={item.entry.data.title}
+            href={`/${locale}/${section}/${item.slug}/`}
+            level={level}
+            meta={metaFor(item)}
+            contentLang={item.isFallback ? item.contentLocale : undefined}
+          >
+            <ExampleBadge locale={locale} show={item.entry.data.example} />
+            {item.entry.data.summary && <p>{item.entry.data.summary}</p>}
+          </Card>
+        </li>
+      ))}
+    </ul>
+  )
+}

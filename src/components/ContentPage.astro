@@ -1,0 +1,69 @@
+---
+// Institutional page rendered from the `pages` collection (src/content/pages/<locale>/<slug>.md).
+// Falls back to the Arabic text (with a notice) when no translation exists; shows a neutral
+// "in preparation" message when the page has no published text at all.
+import { render } from 'astro:content';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PageHeader from '~/components/PageHeader.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import Prose from '~/components/Prose.astro';
+import EmptyState from '~/components/EmptyState.astro';
+import FallbackNotice from '~/components/FallbackNotice.astro';
+import NeedsReviewNotice from '~/components/NeedsReviewNotice.astro';
+import { defaultLocale, locales, type Locale } from '~/i18n/config';
+import { getDir, t } from '~/i18n/utils';
+import type { UIKey } from '~/i18n/ui';
+import { getPublishedPage } from '~/lib/localized';
+
+interface Props {
+  slug: string;
+  /** Dictionary key used for the title when the page has no published text yet. */
+  titleKey: UIKey;
+}
+
+const { slug, titleKey } = Astro.props;
+const locale = Astro.params.locale as Locale;
+
+const published = (code: Locale) => getPublishedPage(slug, code);
+
+const own = await published(locale);
+const fallback = own ? undefined : await published(defaultLocale);
+const entry = own ?? fallback;
+const isFallback = !own && Boolean(fallback);
+const rendered = entry ? await render(entry) : undefined;
+const Content = rendered?.Content;
+
+// Language switcher / hreflang: only languages with their own published text.
+const alternates: Partial<Record<Locale, string>> = {};
+for (const code of locales) {
+  if (await published(code)) alternates[code] = `/${code}/${slug}/`;
+}
+
+const title = entry?.data.title ?? t(locale, titleKey);
+const description = entry?.data.description ?? t(locale, 'content.inPreparation');
+const contentAttrs = isFallback ? { lang: defaultLocale, dir: getDir(defaultLocale) } : {};
+---
+
+<BaseLayout locale={locale} title={title} description={description} alternates={alternates} noindex={!own}>
+  <PageHeader title={title} titleLang={isFallback ? defaultLocale : undefined}>
+    <Breadcrumbs
+      slot="before"
+      locale={locale}
+      items={[{ label: t(locale, 'nav.home'), href: `/${locale}/` }, { label: title }]}
+    />
+  </PageHeader>
+  <div class="container-page py-8">
+    <FallbackNotice locale={locale} show={isFallback} />
+    <NeedsReviewNotice locale={locale} show={Boolean(own?.data['needs-review'])} />
+    {
+      Content ? (
+        <Prose {...contentAttrs}>
+          <Content />
+        </Prose>
+      ) : (
+        <EmptyState message={t(locale, 'content.inPreparation')} />
+      )
+    }
+    <slot />
+  </div>
+</BaseLayout>

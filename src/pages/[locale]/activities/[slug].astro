@@ -1,0 +1,80 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PageHeader from '~/components/PageHeader.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import Prose from '~/components/Prose.astro';
+import ImageGallery from '~/components/ImageGallery.astro';
+import FallbackNotice from '~/components/FallbackNotice.astro';
+import NeedsReviewNotice from '~/components/NeedsReviewNotice.astro';
+import ExampleBadge from '~/components/ExampleBadge.astro';
+import type { Locale } from '~/i18n/config';
+import { getDir, t } from '~/i18n/utils';
+import { formatDate, isoDate } from '~/lib/format';
+import { localizedPaths, translationAlternates, type LocalizedEntry } from '~/lib/localized';
+
+export async function getStaticPaths() {
+  return localizedPaths('activities');
+}
+
+interface Props {
+  item: LocalizedEntry<'activities'>;
+}
+
+const locale = Astro.params.locale as Locale;
+const { item } = Astro.props;
+const { entry, isFallback, contentLocale } = item;
+const data = entry.data;
+const { Content } = await render(entry);
+const alternates = await translationAlternates('activities', item.slug, 'activities');
+const contentAttrs = isFallback ? { lang: contentLocale, dir: getDir(contentLocale) } : {};
+const description = data.summary ?? t(locale, 'activities.description');
+---
+
+<BaseLayout
+  locale={locale}
+  title={data.title}
+  description={description}
+  alternates={alternates}
+  noindex={isFallback}
+>
+  <PageHeader title={data.title} titleLang={isFallback ? contentLocale : undefined}>
+    <Breadcrumbs
+      slot="before"
+      locale={locale}
+      items={[
+        { label: t(locale, 'nav.home'), href: `/${locale}/` },
+        { label: t(locale, 'activities.title'), href: `/${locale}/activities/` },
+        { label: data.title, lang: isFallback ? contentLocale : undefined },
+      ]}
+    />
+  </PageHeader>
+  <article class="container-page py-8">
+    <FallbackNotice locale={locale} show={isFallback} />
+    <NeedsReviewNotice locale={locale} show={!isFallback && data['needs-review']} />
+    <p class="mb-6 flex flex-wrap items-center gap-3 text-sm text-muted">
+      <time datetime={isoDate(data.date)}>{formatDate(data.date, locale)}</time>
+      {
+        data.endDate && (
+          <>
+            <span aria-hidden="true">–</span>
+            <time datetime={isoDate(data.endDate)}>{formatDate(data.endDate, locale)}</time>
+          </>
+        )
+      }
+      {
+        data.location && (
+          <span>
+            {`${t(locale, 'activities.location')}: `}
+            <span {...contentAttrs}>{data.location}</span>
+          </span>
+        )
+      }
+      <ExampleBadge locale={locale} show={data.example} />
+    </p>
+    <Prose {...contentAttrs}>
+      <Content />
+    </Prose>
+    <ImageGallery images={data.images} lang={isFallback ? contentLocale : undefined} />
+  </article>
+</BaseLayout>
