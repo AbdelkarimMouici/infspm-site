@@ -59,29 +59,54 @@ function contrast(a: string, b: string): number {
 }
 
 describe('design tokens contrast (WCAG 2.2 AA)', () => {
-  const css = readFileSync('src/styles/global.css', 'utf8');
+  const css = readFileSync('src/styles/tokens.css', 'utf8');
   const token = (name: string): string => {
     const value = css.match(new RegExp(`--color-${name}:\\s*(#[0-9a-fA-F]{6})`))?.[1];
     if (!value) throw new Error(`token --color-${name} not found`);
     return value;
   };
 
+  // Every text/background pair used by components.
   const textPairs: [string, string][] = [
     ['text', 'surface'],
     ['text', 'surface-alt'],
+    ['text', 'primary-soft'],
     ['muted', 'surface'],
     ['muted', 'surface-alt'],
+    ['muted', 'primary-soft'],
     ['primary', 'surface'],
     ['primary', 'surface-alt'],
+    ['primary', 'primary-soft'],
     ['primary-hover', 'surface'],
+    ['primary-hover', 'primary-soft'],
     ['on-primary', 'primary'],
+    ['on-primary', 'primary-hover'],
+    ['accent', 'surface'],
+    ['accent', 'accent-soft'],
+    ['on-inverse', 'inverse'],
+    ['on-inverse-muted', 'inverse'],
+    ['link-inverse', 'inverse'],
+    ['danger', 'surface'],
+    ['success', 'surface'],
+    ['on-notice', 'notice-soft'],
   ];
 
   it.each(textPairs)('%s on %s is at least 4.5:1', (fg, bg) => {
     expect(contrast(token(fg), token(bg))).toBeGreaterThanOrEqual(4.5);
   });
 
-  it.each([['focus', 'surface'], ['focus', 'surface-alt']])('%s ring on %s is at least 3:1', (fg, bg) => {
+  // Non-text contrast (WCAG 1.4.11): focus rings and input borders.
+  it.each([
+    ['focus', 'surface'],
+    ['focus', 'surface-alt'],
+    ['focus', 'primary-soft'],
+    ['focus-inverse', 'inverse'],
+  ])('%s ring on %s is at least 3:1', (fg, bg) => {
     expect(contrast(token(fg), token(bg))).toBeGreaterThanOrEqual(3);
+  });
+
+  it('defines all tokens in one file only', () => {
+    const others = readFileSync('src/styles/global.css', 'utf8');
+    expect(others).not.toMatch(/--color-[\w-]+\s*:/);
   });
 });

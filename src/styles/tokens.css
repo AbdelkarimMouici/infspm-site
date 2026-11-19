@@ -1,0 +1,52 @@
+/*
+ * Design tokens — the single source of truth for colours, type, radii and shadows.
+ *
+ * Palette: neutral medical blue/teal. Every text/background pair used by components is checked for
+ * WCAG 2.2 AA contrast in tests/rtl-and-tokens.test.ts.
+ * TODO(content): replace with colours taken from the official logo once the administration provides it
+ * (see docs/CONTENT.md). Only the values below need to change.
+ */
+@theme {
+  /* Typography: one self-hosted family covering Arabic and Latin (French, English). */
+  --font-sans: 'IBM Plex Sans Arabic', system-ui, 'Segoe UI', Tahoma, sans-serif;
+
+  /* Brand */
+  --color-primary: #0a5a78; /* deep medical blue-teal */
+  --color-primary-hover: #08465e;
+  --color-primary-soft: #e6f2f6; /* tinted backgrounds */
+  --color-on-primary: #ffffff;
+  --color-accent: #0f7466; /* teal accent (also valid as text on white) */
+  --color-accent-soft: #e3f4f1;
+
+  /* Neutrals */
+  --color-surface: #ffffff;
+  --color-surface-alt: #f3f6f8;
+  --color-text: #15222b;
+  --color-muted: #4a5865;
+  --color-border: #cfd9df;
+
+  /* Inverse (dark footer) */
+  --color-inverse: #0c2f3e;
+  --color-on-inverse: #ffffff;
+  --color-on-inverse-muted: #c5d6de;
+  --color-link-inverse: #9fd8ea;
+
+  /* Feedback */
+  --color-danger: #b42318;
+  --color-success: #067647;
+  --color-notice-soft: #fff6e0;
+  --color-on-notice: #6b4100;
+
+  /* Focus rings (>= 3:1 against the surfaces they sit on) */
+  --color-focus: #b34700;
+  --color-focus-inverse: #fdba74;
+
+  /* Radii and shadows */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+  --shadow-card: 0 1px 2px rgb(12 47 62 / 0.08), 0 2px 8px rgb(12 47 62 / 0.06);
+
+  /* Layout */
+  --container-page: 72rem;
+}

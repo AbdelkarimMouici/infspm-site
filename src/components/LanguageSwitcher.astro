@@ -4,23 +4,35 @@ import { localizedPath, t } from '~/i18n/utils';
 
 interface Props {
   locale: Locale;
+  /** Override target paths (e.g. an article that only exists in some languages). */
+  alternates?: Partial<Record<Locale, string>> | undefined;
 }
 
-const { locale } = Astro.props;
+const { locale, alternates = {} } = Astro.props;
 const pathname = Astro.url.pathname;
 ---
 
 <nav aria-label={t(locale, 'lang.switchLabel')}>
-  <ul class="flex gap-3" role="list">
+  <ul class="flex items-center gap-1 whitespace-nowrap text-sm" role="list">
     {
       locales.map((code) => (
         <li>
           {code === locale ? (
-            <span aria-current="true" class="font-semibold" lang={code}>
+            <span
+              aria-current="true"
+              class="inline-block rounded-md bg-primary-soft px-2.5 py-1 font-semibold text-primary"
+              lang={code}
+            >
               {localeMeta[code].label}
+              <span class="sr-only" lang={locale}>{` ${t(locale, 'lang.current')}`}</span>
             </span>
           ) : (
-            <a href={localizedPath(pathname, code)} hreflang={localeMeta[code].hreflang} lang={code}>
+            <a
+              href={alternates[code] ?? localizedPath(pathname, code)}
+              hreflang={localeMeta[code].hreflang}
+              lang={code}
+              class="inline-block rounded-md px-2.5 py-1 text-text no-underline hover:bg-surface-alt hover:text-primary"
+            >
               {localeMeta[code].label}
             </a>
           )}

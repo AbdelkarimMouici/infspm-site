@@ -1,33 +1,5 @@
 @import 'tailwindcss';
-
-/*
- * Design tokens.
- * TODO(content): colours below are neutral placeholders (all text pairs meet WCAG AA).
- * Step 2 replaces them with the palette taken from the official logo.
- */
-@theme {
-  /* Typography: one self-hosted family covering Arabic and Latin (French). */
-  --font-sans: 'IBM Plex Sans Arabic', system-ui, 'Segoe UI', Tahoma, sans-serif;
-
-  /* Colour roles */
-  --color-primary: #0b5266; /* 8.7:1 on white */
-  --color-primary-hover: #083d4c;
-  --color-on-primary: #ffffff;
-  --color-surface: #ffffff;
-  --color-surface-alt: #f2f4f6;
-  --color-text: #1b2126; /* 16.2:1 on white */
-  --color-muted: #48535d; /* 7.8:1 on white, 7.1:1 on surface-alt */
-  --color-border: #c7cfd6;
-  --color-focus: #b34700; /* focus ring: 5.5:1 on white, 5.0:1 on surface-alt (needs >= 3:1) */
-
-  /* Radii */
-  --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 1rem;
-
-  /* Layout */
-  --container-page: 72rem;
-}
+@import './tokens.css';
 
 @layer base {
   html {
@@ -45,8 +17,15 @@
     line-height: 1.7; /* Arabic script needs generous line height */
   }
 
-  :lang(fr) body {
+  :lang(fr) body,
+  :lang(en) body {
     line-height: 1.6;
+  }
+
+  h1,
+  h2,
+  h3 {
+    line-height: 1.35;
   }
 
   a {
@@ -64,6 +43,16 @@
     outline: 3px solid var(--color-focus);
     outline-offset: 2px;
     border-radius: var(--radius-sm);
+  }
+
+  .on-inverse :focus-visible {
+    outline-color: var(--color-focus-inverse);
+  }
+
+  /* Keep emails, URLs and numbers left-to-right inside Arabic text. */
+  .ltr-inline {
+    direction: ltr;
+    unicode-bidi: isolate;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -108,5 +97,14 @@
   .skip-link:focus {
     inset-block-start: 1rem;
     color: var(--color-on-primary);
+  }
+
+  /* Hide the native disclosure triangle of the mobile menu. */
+  .menu-toggle {
+    list-style: none;
+  }
+
+  .menu-toggle::-webkit-details-marker {
+    display: none;
   }
 }

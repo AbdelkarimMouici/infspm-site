@@ -1,0 +1,43 @@
+---
+// Button or link styled as a button. Renders <a> when `href` is given, otherwise <button>.
+import type { HTMLAttributes } from 'astro/types';
+
+type Variant = 'primary' | 'secondary' | 'ghost';
+
+/** Extra attributes. Inline styles, event handlers, class and type are excluded (strict CSP, stable styling). */
+type SafeAttrs = Omit<
+  HTMLAttributes<'a'> & HTMLAttributes<'button'>,
+  'style' | 'class' | 'class:list' | 'type' | `on${string}`
+>;
+
+interface Props {
+  href?: string;
+  variant?: Variant;
+  type?: 'button' | 'submit' | 'reset';
+  /** Extra attributes (e.g. aria-describedby, name, disabled). */
+  attrs?: SafeAttrs;
+}
+
+const { href, variant = 'primary', type = 'button', attrs = {} } = Astro.props;
+
+const base =
+  'inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-5 py-2 font-semibold no-underline transition-colors disabled:cursor-not-allowed disabled:opacity-60';
+const variants: Record<Variant, string> = {
+  primary: 'bg-primary text-on-primary hover:bg-primary-hover hover:text-on-primary',
+  secondary: 'border border-primary bg-surface text-primary hover:bg-primary-soft hover:text-primary',
+  ghost: 'text-primary hover:bg-primary-soft hover:text-primary',
+};
+const className = `${base} ${variants[variant]}`;
+---
+
+{
+  href ? (
+    <a {...attrs} href={href} class={className}>
+      <slot />
+    </a>
+  ) : (
+    <button {...attrs} type={type} class={className}>
+      <slot />
+    </button>
+  )
+}

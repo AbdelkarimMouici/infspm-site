@@ -11,7 +11,7 @@ export default defineConfig({
   trailingSlash: 'always',
 
   i18n: {
-    locales: ['ar', 'fr'],
+    locales: ['ar', 'fr', 'en'],
     defaultLocale: 'ar',
     routing: {
       prefixDefaultLocale: true,

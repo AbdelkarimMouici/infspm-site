@@ -1,0 +1,21 @@
+---
+// Visible notice on translated text that has not been reviewed by the administration.
+import type { Locale } from '~/i18n/config';
+import { t } from '~/i18n/utils';
+
+interface Props {
+  locale: Locale;
+  /** Show the notice. Defaults to true for non-Arabic locales (all translations need review for now). */
+  show?: boolean;
+}
+
+const { locale, show = locale !== 'ar' } = Astro.props;
+---
+
+{
+  show && (
+    <p class="rounded-md border border-border bg-notice-soft px-4 py-2 text-sm text-on-notice" role="note">
+      {t(locale, 'translation.needsReview')}
+    </p>
+  )
+}
