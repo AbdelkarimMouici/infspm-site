@@ -1,0 +1,79 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PageHeader from '~/components/PageHeader.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import Prose from '~/components/Prose.astro';
+import ImageGallery from '~/components/ImageGallery.astro';
+import FallbackNotice from '~/components/FallbackNotice.astro';
+import NeedsReviewNotice from '~/components/NeedsReviewNotice.astro';
+import ExampleBadge from '~/components/ExampleBadge.astro';
+import type { Locale } from '~/i18n/config';
+import { getDir, t } from '~/i18n/utils';
+import { formatDate, isoDate } from '~/lib/format';
+import { localizedPaths, switcherTargets, translationAlternates, type LocalizedEntry } from '~/lib/localized';
+
+export async function getStaticPaths() {
+  return localizedPaths('news');
+}
+
+interface Props {
+  item: LocalizedEntry<'news'>;
+}
+
+const locale = Astro.params.locale as Locale;
+const { item } = Astro.props;
+const { entry, isFallback, contentLocale } = item;
+const data = entry.data;
+const { Content } = await render(entry);
+const alternates = await translationAlternates('news', item.slug, 'news');
+const switchTargets = await switcherTargets('news', item.slug, 'news');
+const contentAttrs = isFallback ? { lang: contentLocale, dir: getDir(contentLocale) } : {};
+// Fallback pages keep a description in the page language (the content itself is Arabic).
+const description = isFallback
+  ? `${data.title} (${t(locale, 'content.onlyInArabicShort')}) – ${t(locale, 'news.description')}`
+  : (data.summary ?? t(locale, 'news.description'));
+---
+
+<BaseLayout
+  locale={locale}
+  title={data.title}
+  description={description}
+  alternates={alternates}
+  switchTargets={switchTargets}
+  noindex={isFallback}
+>
+  <PageHeader title={data.title} titleLang={isFallback ? contentLocale : undefined}>
+    <Breadcrumbs
+      slot="before"
+      locale={locale}
+      items={[
+        { label: t(locale, 'nav.home'), href: `/${locale}/` },
+        { label: t(locale, 'news.title'), href: `/${locale}/news/` },
+        { label: data.title, lang: isFallback ? contentLocale : undefined },
+      ]}
+    />
+  </PageHeader>
+  <article class="container-page py-8">
+    <FallbackNotice locale={locale} show={isFallback} />
+    <NeedsReviewNotice locale={locale} show={!isFallback && data['needs-review']} />
+    <p class="mb-6 flex flex-wrap items-center gap-3 text-sm text-muted">
+      <time datetime={isoDate(data.date)}>{formatDate(data.date, locale)}</time>
+      <ExampleBadge locale={locale} show={data.example} />
+    </p>
+    <Prose {...contentAttrs}>
+      <Content />
+    </Prose>
+    <ImageGallery images={data.images} lang={isFallback ? contentLocale : undefined} />
+    {
+      data.fbPermalink && (
+        <p class="mt-8 text-sm">
+          <a href={data.fbPermalink} rel="noopener noreferrer external">
+            {t(locale, 'news.viewOnFacebook')}
+            <span class="sr-only">{` ${t(locale, 'a11y.external')}`}</span>
+          </a>
+        </p>
+      )
+    }
+  </article>
+</BaseLayout>

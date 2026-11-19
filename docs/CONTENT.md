@@ -30,4 +30,15 @@
 - `src/styles/tokens.css`: colours are a neutral medical blue/teal placeholder palette; replace with the official logo palette.
 - `src/components/SiteHeader.astro`: no logo yet (text wordmark only).
 - `src/config/site.ts` / `src/components/SiteFooter.astro`: address, phone, hours and the Facebook page URL are missing; only the confirmed email is shown.
-- Home pages show only a neutral "under construction" message; no institutional content yet.
+- Home page: a generic welcome text and quick links (no institutional facts).
+
+## TODO(content) placeholders (step 4 – pages)
+- `src/content/pages/*/about.md`: mission, history, director's word and organization are placeholders ("published after validation").
+  The one-line description ("public institution for training in the paramedical field") must be confirmed.
+- `src/content/pages/*/admissions.md`: admission requirements, application file and calendar are placeholders.
+- `src/content/pages/*/privacy.md`: a **draft that only states what the site does today** (static pages, no analytics, no cookies, no third-party scripts).
+  TODO(content): sections on data subject rights and the applicable Algerian law need the administration (and ideally a legal check).
+  Hosting and the contact form are added when they exist (steps 6 and 9).
+- Contact page: address, phone, opening hours and map link show "to be confirmed" until set in `src/config/site.ts`.
+- Programs: no real programs yet (only an example entry hidden from production builds).
+- Every page in all three languages is marked `needs-review: true`, including the Arabic drafts, which were not written by the administration.

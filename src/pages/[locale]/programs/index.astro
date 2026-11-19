@@ -1,0 +1,35 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PageHeader from '~/components/PageHeader.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import EntryList from '~/components/EntryList.astro';
+import NeedsReviewNotice from '~/components/NeedsReviewNotice.astro';
+import { locales, type Locale } from '~/i18n/config';
+import { t } from '~/i18n/utils';
+import { getLocalizedEntries } from '~/lib/localized';
+
+export function getStaticPaths() {
+  return locales.map((locale) => ({ params: { locale } }));
+}
+
+const locale = Astro.params.locale as Locale;
+const items = (await getLocalizedEntries('programs', locale)).sort(
+  (a, b) => a.entry.data.order - b.entry.data.order || a.entry.data.title.localeCompare(b.entry.data.title),
+);
+---
+
+<BaseLayout locale={locale} title={t(locale, 'programs.title')} description={t(locale, 'programs.description')}>
+  <PageHeader title={t(locale, 'programs.title')} lead={t(locale, 'programs.lead')}>
+    <Breadcrumbs
+      slot="before"
+      locale={locale}
+      items={[{ label: t(locale, 'nav.home'), href: `/${locale}/` }, { label: t(locale, 'programs.title') }]}
+    />
+  </PageHeader>
+  <div class="container-page py-8">
+    <NeedsReviewNotice locale={locale} />
+    <div class="mt-6">
+      <EntryList locale={locale} items={items} section="programs" emptyMessage={t(locale, 'programs.empty')} />
+    </div>
+  </div>
+</BaseLayout>

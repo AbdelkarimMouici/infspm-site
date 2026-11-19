@@ -1,15 +1,15 @@
 ---
-// Visible notice on translated text that has not been reviewed by the administration.
+// Visible notice on text (translations and drafts) not yet validated by the administration.
 import type { Locale } from '~/i18n/config';
 import { t } from '~/i18n/utils';
 
 interface Props {
   locale: Locale;
-  /** Show the notice. Defaults to true for non-Arabic locales (all translations need review for now). */
+  /** Show the notice. Defaults to true: no interface text has been validated by the administration yet (TODO(content)). */
   show?: boolean;
 }
 
-const { locale, show = locale !== 'ar' } = Astro.props;
+const { locale, show = true } = Astro.props;
 ---
 
 {

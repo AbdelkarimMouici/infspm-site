@@ -10,7 +10,7 @@ interface Props {
   /** Heading level inside the page outline. */
   level?: 2 | 3;
   /** Small line above the title (date, category), always in the page language. */
-  meta?: string;
+  meta?: string | undefined;
   /** Language of the title/body when it differs from the page (e.g. an Arabic-only news item on the French site). */
   contentLang?: Locale | undefined;
 }
@@ -33,6 +33,7 @@ const langAttrs = contentLang ? { lang: contentLang, dir: getDir(contentLang) } 
   }
   <div class="flex flex-1 flex-col gap-2 p-5">
     {meta && <p class="text-sm text-muted">{meta}</p>}
+    <slot name="badge" />
     <div class="flex flex-col gap-2" {...langAttrs}>
       <Heading class="text-lg font-bold">
         {

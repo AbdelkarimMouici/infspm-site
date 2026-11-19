@@ -13,12 +13,13 @@ import { z } from 'astro/zod';
 
 /** Accepts Astro's `image()` helper in the site build, or a plain string schema in scripts/tests. */
 type ImageSchema = z.ZodType;
+// Factories are generic so the image type (ImageMetadata in the site build) flows into the entry types.
 
 const status = z.enum(['draft', 'published']).default('draft');
 
 const altText = z.string().trim().min(1, 'Alt text is required for every image').max(250);
 
-export const imageWithAlt = (image: ImageSchema) =>
+export const imageWithAlt = <T extends ImageSchema>(image: T) =>
   z.object({
     src: image,
     alt: altText,
@@ -41,7 +42,7 @@ const base = {
 /** Reasons a Facebook post needs a human decision before it can be published (CLAUDE.md, step 5). */
 export const careFlags = z.enum(['memorial', 'identifiable-people', 'personal', 'other']);
 
-export const newsSchema = (image: ImageSchema) =>
+export const newsSchema = <T extends ImageSchema>(image: T) =>
   z
     .object({
       ...base,
@@ -66,7 +67,7 @@ export const newsSchema = (image: ImageSchema) =>
       path: ['careFlags'],
     });
 
-export const activitySchema = (image: ImageSchema) =>
+export const activitySchema = <T extends ImageSchema>(image: T) =>
   z
     .object({
       ...base,
@@ -80,7 +81,7 @@ export const activitySchema = (image: ImageSchema) =>
       path: ['endDate'],
     });
 
-export const programSchema = (image: ImageSchema) =>
+export const programSchema = <T extends ImageSchema>(image: T) =>
   z.object({
     ...base,
     /** Display order in the programs list (ascending). */

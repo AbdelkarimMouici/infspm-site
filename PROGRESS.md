@@ -9,7 +9,8 @@ with one PR per step whose base is the previous step's branch. Nothing is pushed
 |---|---|---|---|
 | 1 | `feat/step-1-scaffold` | `main` | PR #1 open (**not merged yet**, see notes) |
 | 2 | `feat/step-2-design-system` | `feat/step-1-scaffold` | PR #2 open |
-| 3 | `feat/step-3-content-cms` | `feat/step-2-design-system` | in progress |
+| 3 | `feat/step-3-content-cms` | `feat/step-2-design-system` | PR #3 open |
+| 4 | `feat/step-4-pages` | `feat/step-3-content-cms` | PR #4 open |
 
 ## Notes for the maintainer (please review)
 
@@ -71,3 +72,34 @@ with one PR per step whose base is the previous step's branch. Nothing is pushed
 **For you to review**
 - `.env.example` is still blocked by the permission rule, so `docs/ENVIRONMENT.md` lists the variables instead.
 - `/admin/` needs a relaxed CSP (`unsafe-eval`, inline styles). Step 7 scopes it to `/admin/*` only.
+
+## Step 4 – Pages (ar/fr/en)
+
+**Done**
+- **Pages:** Home, About, Programs (list and detail), Admissions, Activities (list and detail), News (list and article), Gallery, Contact and Privacy, in all three languages.
+- **Arabic fallback:** an item that has no translation yet shows the Arabic original, with a notice and `lang`/`dir` set.
+  - It is `noindex` and left out of hreflang.
+  - The language switcher keeps the reader's place.
+- **Institutional pages** (About, Admissions, Privacy) come from the `pages` collection.
+  - All of them are marked `needs-review`.
+  - Placeholders are listed in `docs/CONTENT.md`.
+- **Privacy draft** states only what the site does today. Rights and law are `TODO(content)`; hosting and the contact form are added later.
+
+**Checks:**
+- Build, check, 79 tests and audit (0 vulnerabilities) pass.
+- **Normal build:** 30 pages, no example content.
+- **`SHOW_EXAMPLE_CONTENT=true` build:** 39 pages.
+- **Reviewer crawl of both builds:** no broken internal links, every hreflang target exists, one `<h1>` per page, no inline scripts or styles.
+- **Browser at 375px:** checked in ar/fr/en.
+
+**Review**
+- **Round 1:** 2 high, 2 medium, 4 low, all fixed:
+  - the privacy draft overclaimed and made legal claims;
+  - the language switcher lost the reader's place;
+  - the gallery markup was invalid;
+  - the badge, breadcrumb and description were in the wrong language on fallback pages;
+  - the review notice was missing in Arabic.
+- **Round 2:** 2 low, both fixed (TODO marker in the privacy files, unique fallback descriptions).
+
+**For you to review**
+- The About, Admissions and Privacy texts are drafts. Real content is needed from the administration.
