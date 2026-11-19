@@ -19,13 +19,15 @@ interface Props {
   title: string;
   /** Meta description. Must be unique per page and language. */
   description: string;
-  /** Override language-switcher targets for pages that do not exist in every language. */
+  /** Translations of this page that exist (hreflang). Default: the same path in every language. */
   alternates?: Partial<Record<Locale, string>>;
+  /** Language-switcher targets that differ from the hreflang translations (e.g. Arabic-fallback pages). */
+  switchTargets?: Partial<Record<Locale, string>> | undefined;
   /** Exclude from search engines (404, utility pages). Also drops canonical and hreflang. */
   noindex?: boolean;
 }
 
-const { locale, title, description, alternates, noindex = false } = Astro.props;
+const { locale, title, description, alternates, switchTargets: switchOverrides, noindex = false } = Astro.props;
 const dir = getDir(locale);
 const siteName = t(locale, 'site.name');
 const fullTitle = `${title} | ${siteName}`;
@@ -41,11 +43,11 @@ const existing: Partial<Record<Locale, string>> = alternates
   ? { ...alternates, [locale]: pathname }
   : Object.fromEntries(locales.map((code) => [code, localizedPath(pathname, code)]));
 const switchTargets = Object.fromEntries(
-  locales.map((code) => [code, existing[code] ?? `/${code}/`]),
+  locales.map((code) => [code, switchOverrides?.[code] ?? existing[code] ?? `/${code}/`]),
 ) as Record<Locale, string>;
 const hreflangLinks = locales
   .filter((code) => existing[code] !== undefined)
-  .map((code) => ({ hreflang: localeMeta[code].hreflang, href: new URL(switchTargets[code], site).href }));
+  .map((code) => ({ hreflang: localeMeta[code].hreflang, href: new URL(existing[code] ?? `/${code}/`, site).href }));
 const xDefaultPath = existing[defaultLocale];
 const xDefault = xDefaultPath ? new URL(xDefaultPath, site).href : undefined;
 ---

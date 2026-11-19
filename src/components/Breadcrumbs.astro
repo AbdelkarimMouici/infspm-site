@@ -29,7 +29,7 @@ const { locale, items } = Astro.props;
               {item.label}
             </a>
           ) : (
-            <span aria-current="page" lang={item.lang}>
+            <span aria-current="page" lang={item.lang} dir={item.lang ? "auto" : undefined}>
               {item.label}
             </span>
           )}

@@ -39,17 +39,30 @@ for (const code of locales) {
   if (await published(code)) alternates[code] = `/${code}/${slug}/`;
 }
 
+// Every language has this page (own text, Arabic fallback or "in preparation"): switch to the same page.
+const switchTargets = Object.fromEntries(locales.map((code) => [code, `/${code}/${slug}/`])) as Record<Locale, string>;
+
 const title = entry?.data.title ?? t(locale, titleKey);
-const description = entry?.data.description ?? t(locale, 'content.inPreparation');
+const description = own?.data.description ?? t(locale, 'content.inPreparation');
 const contentAttrs = isFallback ? { lang: defaultLocale, dir: getDir(defaultLocale) } : {};
 ---
 
-<BaseLayout locale={locale} title={title} description={description} alternates={alternates} noindex={!own}>
+<BaseLayout
+  locale={locale}
+  title={title}
+  description={description}
+  alternates={alternates}
+  switchTargets={switchTargets}
+  noindex={!own}
+>
   <PageHeader title={title} titleLang={isFallback ? defaultLocale : undefined}>
     <Breadcrumbs
       slot="before"
       locale={locale}
-      items={[{ label: t(locale, 'nav.home'), href: `/${locale}/` }, { label: title }]}
+      items={[
+        { label: t(locale, 'nav.home'), href: `/${locale}/` },
+        { label: title, lang: isFallback ? defaultLocale : undefined },
+      ]}
     />
   </PageHeader>
   <div class="container-page py-8">

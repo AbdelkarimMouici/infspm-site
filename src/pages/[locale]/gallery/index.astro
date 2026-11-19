@@ -48,8 +48,8 @@ const photos = sources.flatMap(({ item, section }) =>
           <ul class="grid grid-cols-2 gap-4 md:grid-cols-3" role="list">
             {photos.map((photo) => (
               <li>
-                <figure>
-                  <a href={photo.href} class="block no-underline">
+                <a href={photo.href} class="block no-underline">
+                  <figure>
                     <Image
                       src={photo.src}
                       alt={photo.alt}
@@ -64,8 +64,8 @@ const photos = sources.flatMap(({ item, section }) =>
                     <figcaption class="mt-2 text-sm text-text" lang={photo.lang}>
                       {photo.caption}
                     </figcaption>
-                  </a>
-                </figure>
+                  </figure>
+                </a>
               </li>
             ))}
           </ul>

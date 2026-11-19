@@ -44,7 +44,7 @@ function metaFor(item: Item): string | undefined {
             meta={metaFor(item)}
             contentLang={item.isFallback ? item.contentLocale : undefined}
           >
-            <ExampleBadge locale={locale} show={item.entry.data.example} />
+            <ExampleBadge slot="badge" locale={locale} show={item.entry.data.example} />
             {item.entry.data.summary && <p>{item.entry.data.summary}</p>}
           </Card>
         </li>

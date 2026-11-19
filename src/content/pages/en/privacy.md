@@ -13,20 +13,10 @@ This website respects its visitors' privacy and collects as little data as possi
 - It loads no scripts or fonts from third-party sites and embeds no Facebook posts.
 - It does not ask you to create an account.
 
-## Contact form
-
-When you send a message with the contact form, the information you enter (name, email address, message) is sent only to the institute's official email address and is not stored on the website.
-To protect against automated messages, the form uses Cloudflare Turnstile, which processes technical data (such as IP address and browser type).
-
-## Hosting
-
-The website is hosted by Cloudflare, which processes the technical data needed to run and protect the site (such as IP address).
-
 ## External links
 
 When you follow a link to another site (such as the institute's Facebook page), that site's privacy policy applies.
 
-## Your rights
+## Contact
 
-You can ask to access, correct or delete your data by writing to the institute's official address: infspmtebessa@inpfp.dz.
-Personal data is processed in accordance with the Algerian legislation in force on the protection of natural persons in the processing of personal data.
+For any question about this page, write to the institute's official address: infspmtebessa@inpfp.dz.

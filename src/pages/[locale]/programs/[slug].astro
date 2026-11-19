@@ -10,7 +10,7 @@ import ExampleBadge from '~/components/ExampleBadge.astro';
 import Button from '~/components/Button.astro';
 import type { Locale } from '~/i18n/config';
 import { getDir, t } from '~/i18n/utils';
-import { localizedPaths, translationAlternates, type LocalizedEntry } from '~/lib/localized';
+import { localizedPaths, switcherTargets, translationAlternates, type LocalizedEntry } from '~/lib/localized';
 
 export async function getStaticPaths() {
   return localizedPaths('programs');
@@ -26,6 +26,7 @@ const { entry, isFallback, contentLocale } = item;
 const data = entry.data;
 const { Content } = await render(entry);
 const alternates = await translationAlternates('programs', item.slug, 'programs');
+const switchTargets = await switcherTargets('programs', item.slug, 'programs');
 const contentAttrs = isFallback ? { lang: contentLocale, dir: getDir(contentLocale) } : {};
 
 // Key facts. Unknown values are shown as "to be confirmed", never guessed (TODO(content)).
@@ -39,8 +40,9 @@ const facts = [
 <BaseLayout
   locale={locale}
   title={data.title}
-  description={data.summary ?? t(locale, 'programs.description')}
+  description={isFallback ? t(locale, 'programs.description') : (data.summary ?? t(locale, 'programs.description'))}
   alternates={alternates}
+  switchTargets={switchTargets}
   noindex={isFallback}
 >
   <PageHeader title={data.title} titleLang={isFallback ? contentLocale : undefined}>

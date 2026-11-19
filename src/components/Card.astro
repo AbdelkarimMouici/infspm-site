@@ -33,6 +33,7 @@ const langAttrs = contentLang ? { lang: contentLang, dir: getDir(contentLang) } 
   }
   <div class="flex flex-1 flex-col gap-2 p-5">
     {meta && <p class="text-sm text-muted">{meta}</p>}
+    <slot name="badge" />
     <div class="flex flex-col gap-2" {...langAttrs}>
       <Heading class="text-lg font-bold">
         {

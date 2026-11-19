@@ -83,3 +83,22 @@ export async function getPublishedPage(slug: string, locale: Locale) {
   if (!entry || !isVisible(entry.data)) return undefined;
   return entry;
 }
+
+/**
+ * Language-switcher targets for a detail page: the translation if it exists, else the Arabic-fallback page
+ * (it exists in every language when an Arabic original exists), else the section index.
+ */
+export async function switcherTargets<C extends Listable>(
+  collection: C,
+  slug: string,
+  section: string,
+): Promise<Record<Locale, string>> {
+  const own = await translationAlternates(collection, slug, section);
+  const hasArabic = own[defaultLocale] !== undefined;
+  return Object.fromEntries(
+    locales.map((code) => [
+      code,
+      own[code] ?? (hasArabic ? `/${code}/${section}/${slug}/` : `/${code}/${section}/`),
+    ]),
+  ) as Record<Locale, string>;
+}
