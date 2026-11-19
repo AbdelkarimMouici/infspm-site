@@ -271,3 +271,9 @@ describe('review round 1 fixes', () => {
     rmSync(root, { recursive: true, force: true });
   });
 });
+
+describe('review round 2 fixes', () => {
+  it('does not match a hashtag followed by an Arabic diacritic', () => {
+    expect(hasHashtag('#موقع_المعهدِ', '#موقع_المعهد')).toBe(false);
+  });
+});

@@ -83,7 +83,8 @@ export function markdownText(message: string): string {
 /** True when the exact hashtag appears (not as the start of a longer hashtag). */
 export function hasHashtag(message: string, hashtag: string): boolean {
   const escaped = hashtag.replace(/[.*+?^${}()|[\]\\]/g, (char) => `\\${char}`);
-  return new RegExp(`${escaped}(?![\\p{L}\\p{N}_])`, 'u').test(message);
+  // \p{M}: combining marks such as Arabic diacritics belong to the word.
+  return new RegExp(`${escaped}(?![\\p{L}\\p{M}\\p{N}_])`, 'u').test(message);
 }
 
 export interface DraftNews {

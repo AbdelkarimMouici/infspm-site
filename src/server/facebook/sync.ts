@@ -5,7 +5,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative, dirname, posix } from 'node:path';
 import { z } from 'astro/zod';
-import { newsSchema } from '../../content/schemas.ts';
+import { imageWithAlt, newsSchema } from '../../content/schemas.ts';
 import { fetchPublishedPosts, type GraphConfig, type GraphPost } from './graph.ts';
 import { GENERIC_ALT, toDraftNews, type DraftNews } from './transform.ts';
 import { downloadImage } from './images.ts';
@@ -104,6 +104,9 @@ export function serialize(draft: DraftNews): string {
 function validate(draft: DraftNews): void {
   const result = newsSchema(z.string()).safeParse(draft.frontmatter);
   if (!result.success) throw new Error(`Generated draft is invalid: ${result.error.issues.map((i) => i.message).join('; ')}`);
+  // The schema ignores images of drafts (they are not built), so check them explicitly here.
+  const images = z.array(imageWithAlt(z.string().regex(/^\.\.\/\.\.\/\.\.\/assets\/uploads\/facebook\/fb-[\d-]+\.webp$/))).max(20);
+  if (!images.safeParse(draft.frontmatter.images).success) throw new Error('Generated draft has invalid images');
 }
 
 export async function runSync(options: SyncOptions): Promise<SyncResult> {

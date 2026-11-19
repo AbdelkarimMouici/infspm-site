@@ -92,6 +92,11 @@ jobs:
           FLAGGED: ${{ steps.sync.outputs.flagged }}
         run: |
           # src/assets/uploads always exists (.gitkeep); a run without images must not fail here.
+          # The PR may have been merged or closed while this job ran: never push to a stale branch.
+          if [ "${RESET_BRANCH:-0}" != "1" ] && [ -z "$(gh pr list --head "$BRANCH" --state open --json number -q '.[0].number')" ]; then
+            echo "::notice::The review PR closed during this run. Nothing pushed; the next run starts from main."
+            exit 0
+          fi
           git add -- src/content/news src/assets/uploads
           git commit -m "Facebook sync: ${CREATED} new draft(s)"
           # Credentials only for this push (not persisted in .git/config).

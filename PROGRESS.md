@@ -11,6 +11,7 @@ with one PR per step whose base is the previous step's branch. Nothing is pushed
 | 2 | `feat/step-2-design-system` | `feat/step-1-scaffold` | PR #2 open |
 | 3 | `feat/step-3-content-cms` | `feat/step-2-design-system` | PR #3 open |
 | 4 | `feat/step-4-pages` | `feat/step-3-content-cms` | PR #4 open |
+| 5 | `feat/step-5-facebook-sync` | `feat/step-4-pages` | PR #5 open |
 
 ## Notes for the maintainer (please review)
 
@@ -103,3 +104,29 @@ with one PR per step whose base is the previous step's branch. Nothing is pushed
 
 **For you to review**
 - The About, Admissions and Privacy texts are drafts. Real content is needed from the administration.
+
+## Step 5 – Facebook sync
+
+**Done**
+- **Meta docs read first** and cited in `docs/FACEBOOK-SYNC.md`: Graph API v27.0, `/{page-id}/published_posts`, Page access token, `limit` ≤ 100, long-lived tokens, `appsecret_proof`.
+- **Sync:** client, transform, images and sync modules, plus a command-line script and a 30-minute workflow with one rolling PR.
+- **Drafts:** each post becomes `status: draft`, `source: facebook`, with `fbPostId`, date and `needs-review`, stored under `ar/`. Care flags (memorial, photos, personal) block publishing.
+- **Images:** downloaded from the Facebook CDN only, converted to WebP, metadata stripped, never hotlinked. Images of unpublished entries are not built or deployed.
+- **Dedupe:** by `fbPostId` plus an ignore list. Existing files are never overwritten.
+- **Failures:** an expired token (code 190) fails the job loudly with redacted errors. The site is unaffected.
+
+**Checks:**
+- Build, check, 101 tests and audit pass.
+- **End-to-end with fixtures (no network):** the drafts pass the real build, and the draft photo is absent from `dist/`.
+
+**Review**
+- **Round 1:** 0 high, 3 medium, 5 low, all fixed.
+- **Round 2:** 3 low, all fixed. They covered a PR that closes mid-run, draft image validation, and the hashtag check before Arabic diacritics.
+
+**Not verified (stop condition):** no real Facebook API call, and no token was created. The image sub-fields `media.image.src` are not confirmed by the docs I could reach, so watch the first real run.
+
+**For you to do:**
+- Create the Meta app and a long-lived Page token (a Page admin must do this).
+- Add the GitHub secrets and variables.
+- Allow Actions to create pull requests, and turn on "Automatically delete head branches".
+- Exclude `facebook-sync/*` from Cloudflare previews.
