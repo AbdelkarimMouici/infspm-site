@@ -14,8 +14,8 @@ This is a REAL production site for a public institution, not a mockup. Security,
 - Hosting: Cloudflare Pages (preferred) with Cloudflare in front. CI on GitHub Actions.
 
 ## Languages
-- Arabic is the default and primary language, fully RTL. French is the second language. English optional later.
-- Routes: `/ar/...` and `/fr/...`. Use logical CSS properties (margin-inline, padding-inline) so RTL works everywhere.
+- Arabic is the default and primary language, fully RTL. French is the second language. English is the third (added 2026-11-19 at the maintainer's request).
+- Routes: `/ar/...`, `/fr/...` and `/en/...`. Use logical CSS properties (margin-inline, padding-inline) so RTL works everywhere.
 - Never machine-translate institutional text silently: mark any translated text `needs-review: true` in frontmatter.
 - Arabic fonts self-hosted (e.g. Noto Naskh Arabic / Cairo, IBM Plex Sans Arabic). No Google Fonts CDN at runtime.
 

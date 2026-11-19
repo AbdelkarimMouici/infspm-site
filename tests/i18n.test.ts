@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { locales } from '~/i18n/config';
 import { ui } from '~/i18n/ui';
 import { getDir, getLocaleFromUrl, localizedPath, t } from '~/i18n/utils';
+import { isCurrent, navHref } from '~/config/navigation';
 
 describe('localizedPath', () => {
   it('swaps the locale prefix and keeps the rest of the path', () => {
@@ -20,15 +21,28 @@ describe('getLocaleFromUrl', () => {
   it('reads the first segment and falls back to Arabic', () => {
     expect(getLocaleFromUrl(new URL('https://x.test/fr/news/'))).toBe('fr');
     expect(getLocaleFromUrl(new URL('https://x.test/ar/'))).toBe('ar');
-    expect(getLocaleFromUrl(new URL('https://x.test/en/'))).toBe('ar');
+    expect(getLocaleFromUrl(new URL('https://x.test/en/'))).toBe('en');
+    expect(getLocaleFromUrl(new URL('https://x.test/de/'))).toBe('ar');
     expect(getLocaleFromUrl(new URL('https://x.test/'))).toBe('ar');
   });
 });
 
 describe('direction', () => {
-  it('is RTL for Arabic and LTR for French', () => {
+  it('is RTL for Arabic and LTR for French and English', () => {
     expect(getDir('ar')).toBe('rtl');
     expect(getDir('fr')).toBe('ltr');
+    expect(getDir('en')).toBe('ltr');
+  });
+});
+
+describe('navigation', () => {
+  it('builds localized links and marks the current section', () => {
+    expect(navHref('en', 'news')).toBe('/en/news/');
+    expect(navHref('ar', '')).toBe('/ar/');
+    expect(isCurrent('/fr/news/some-article/', 'fr', 'news')).toBe(true);
+    expect(isCurrent('/fr/news/', 'fr', '')).toBe(false);
+    expect(isCurrent('/fr/', 'fr', '')).toBe(true);
+    expect(isCurrent('/fr/newsletter/', 'fr', 'news')).toBe(false);
   });
 });
 

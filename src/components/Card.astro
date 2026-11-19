@@ -1,0 +1,46 @@
+---
+// Content card. When `href` is set, the whole card is clickable through the heading link
+// (one link per card: no duplicate tab stops for screen-reader and keyboard users).
+interface Props {
+  title: string;
+  href?: string;
+  /** Heading level inside the page outline. */
+  level?: 2 | 3;
+  /** Small line above the title (date, category). */
+  meta?: string;
+  /** Language of the card text, when it differs from the page (e.g. an Arabic-only news item on the French site). */
+  lang?: string;
+}
+
+const { title, href, level = 3, meta, lang } = Astro.props;
+const Heading = `h${level}` as 'h2' | 'h3';
+const hasImage = Astro.slots.has('image');
+---
+
+<article
+  class="relative flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-card transition-shadow focus-within:shadow-md hover:shadow-md"
+  lang={lang}
+>
+  {hasImage && (
+    <div class="aspect-video overflow-hidden bg-surface-alt">
+      <slot name="image" />
+    </div>
+  )}
+  <div class="flex flex-1 flex-col gap-2 p-5">
+    {meta && <p class="text-sm text-muted">{meta}</p>}
+    <Heading class="text-lg font-bold">
+      {
+        href ? (
+          <a href={href} class="text-text no-underline after:absolute after:inset-0 hover:text-primary">
+            {title}
+          </a>
+        ) : (
+          title
+        )
+      }
+    </Heading>
+    <div class="text-muted">
+      <slot />
+    </div>
+  </div>
+</article>

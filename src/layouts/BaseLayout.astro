@@ -19,9 +19,11 @@ interface Props {
   title: string;
   /** Meta description. Must be unique per page and language. */
   description: string;
+  /** Override language-switcher targets for pages that do not exist in every language. */
+  alternates?: Partial<Record<Locale, string>>;
 }
 
-const { locale, title, description } = Astro.props;
+const { locale, title, description, alternates } = Astro.props;
 const dir = getDir(locale);
 const siteName = t(locale, 'site.name');
 const fullTitle = `${title} | ${siteName}`;
@@ -29,11 +31,21 @@ const fullTitle = `${title} | ${siteName}`;
 const site = Astro.site ?? new URL('https://example.invalid');
 const pathname = Astro.url.pathname;
 const canonical = new URL(pathname, site).href;
-const alternates = locales.map((code) => ({
-  hreflang: localeMeta[code].hreflang,
-  href: new URL(localizedPath(pathname, code), site).href,
-}));
-const xDefault = new URL(localizedPath(pathname, defaultLocale), site).href;
+
+// Which translations of this page exist. By default every locale has the same page.
+// When `alternates` is given, only those locales (plus the current one) have a translation:
+// hreflang lists only them, and the language switcher sends other locales to their home page.
+const existing: Partial<Record<Locale, string>> = alternates
+  ? { ...alternates, [locale]: pathname }
+  : Object.fromEntries(locales.map((code) => [code, localizedPath(pathname, code)]));
+const switchTargets = Object.fromEntries(
+  locales.map((code) => [code, existing[code] ?? `/${code}/`]),
+) as Record<Locale, string>;
+const hreflangLinks = locales
+  .filter((code) => existing[code] !== undefined)
+  .map((code) => ({ hreflang: localeMeta[code].hreflang, href: new URL(switchTargets[code], site).href }));
+const xDefaultPath = existing[defaultLocale];
+const xDefault = xDefaultPath ? new URL(xDefaultPath, site).href : undefined;
 ---
 
 <!doctype html>
@@ -44,13 +56,13 @@ const xDefault = new URL(localizedPath(pathname, defaultLocale), site).href;
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    {alternates.map((alt) => <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />)}
-    <link rel="alternate" hreflang="x-default" href={xDefault} />
+    {hreflangLinks.map((alt) => <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />)}
+    {xDefault && <link rel="alternate" hreflang="x-default" href={xDefault} />}
   </head>
   <body class="bg-surface text-text antialiased">
     <a href="#main" class="skip-link">{t(locale, 'a11y.skipToContent')}</a>
-    <SiteHeader locale={locale} />
-    <main id="main" tabindex="-1" class="container-page flex-1 py-8">
+    <SiteHeader locale={locale} alternates={switchTargets} />
+    <main id="main" tabindex="-1" class="flex-1 focus:outline-none">
       <slot />
     </main>
     <SiteFooter locale={locale} />
