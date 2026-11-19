@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    # Wait a few days after a release before proposing it (supply-chain safety).
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    groups:
+      astro-and-tooling:
+        patterns: ['astro', '@astrojs/*', 'tailwindcss', '@tailwindcss/*', 'vitest']
+      lint:
+        patterns: ['eslint', '@eslint/*', 'eslint-plugin-*', 'typescript-eslint', 'typescript', 'globals']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
