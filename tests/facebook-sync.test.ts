@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import sharp from 'sharp';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { appSecretProof, fetchPublishedPosts, GraphError, redact } from '~/server/facebook/graph';
-import { detectCareFlags, markdownText, postFileStem, titleFrom, toDraftNews } from '~/server/facebook/transform';
+import { detectCareFlags, hasHashtag, markdownText, postFileStem, titleFrom, toDraftNews } from '~/server/facebook/transform';
 import { downloadImage, isAllowedImageUrl } from '~/server/facebook/images';
 import { knownPostIds, runSync } from '~/server/facebook/sync';
 import { findExif } from './helpers/exif';
@@ -235,5 +235,39 @@ describe('markdownText paragraphs', () => {
   it('keeps paragraphs and line breaks of the post', () => {
     expect(markdownText('line one\nline two\n\nsecond paragraph')).toBe('line one  \nline two\n\nsecond paragraph');
     expect(markdownText('\n\n\nonly\n\n\n')).toBe('only');
+  });
+});
+
+describe('review round 1 fixes', () => {
+  it('escapes lines that would become headings or rules', () => {
+    expect(markdownText('Intro line\n---')).toBe('Intro line  \n\\-\\-\\-');
+    expect(markdownText('Title\n===')).toBe('Title  \n\\=\\=\\=');
+  });
+
+  it('matches the exact hashtag only', () => {
+    expect(hasHashtag('خبر #موقع_المعهد', '#موقع_المعهد')).toBe(true);
+    expect(hasHashtag('خبر #موقع_المعهد.', '#موقع_المعهد')).toBe(true);
+    expect(hasHashtag('خبر #موقع_المعهد_القديم', '#موقع_المعهد')).toBe(false);
+    expect(hasHashtag('a+b', 'a+b')).toBe(true);
+  });
+
+  it('skips malformed posts instead of failing the whole run', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'fb-sync-'));
+    const impl = vi.fn(async () =>
+      jsonResponse({
+        data: [
+          { id: '../etc', created_time: '2026-11-01T00:00:00+0000', message: 'bad id' },
+          { id: '1_2', created_time: 'not a date', message: 'bad date' },
+          { id: '1_3', created_time: '2026-11-01T00:00:00+0000', message: 'نص سليم' },
+        ],
+      }),
+    ) as unknown as typeof fetch;
+    const result = await runSync({ root, pageId: PAGE_ID, token: TOKEN, fetchImpl: impl });
+    expect(result.skippedInvalid).toBe(2);
+    expect(result.created).toEqual(['src/content/news/ar/fb-1-3.md']);
+
+    const allBad = vi.fn(async () => jsonResponse({ data: [{ id: 'x', created_time: 'y' }] })) as unknown as typeof fetch;
+    await expect(runSync({ root, pageId: PAGE_ID, token: TOKEN, fetchImpl: allBad })).rejects.toThrow(/format/);
+    rmSync(root, { recursive: true, force: true });
   });
 });

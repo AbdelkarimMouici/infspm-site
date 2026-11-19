@@ -68,7 +68,9 @@ export function markdownText(message: string): string {
     line
       .trim()
       .replace(/([\\`*_{}[\]()#+!|<>~])/g, '\\$1')
-      .replace(/^(-|\d+\.)(\s)/, '\\$1$2');
+      .replace(/^(-|\d+\.)(\s)/, '\\$1$2')
+      // A line of only "-" or "=" would become a heading underline or a horizontal rule.
+      .replace(/^[-=][-=\s]*$/, (rule) => rule.replace(/[-=]/g, (char) => `\\${char}`));
   const HARD_BREAK = `${' '.repeat(2)}\n`;
   return message
     .replace(/\r\n?/g, '\n')
@@ -76,6 +78,12 @@ export function markdownText(message: string): string {
     .map((paragraph) => paragraph.split('\n').map(escapeLine).filter(Boolean).join(HARD_BREAK))
     .filter(Boolean)
     .join('\n\n');
+}
+
+/** True when the exact hashtag appears (not as the start of a longer hashtag). */
+export function hasHashtag(message: string, hashtag: string): boolean {
+  const escaped = hashtag.replace(/[.*+?^${}()|[\]\\]/g, (char) => `\\${char}`);
+  return new RegExp(`${escaped}(?![\\p{L}\\p{N}_])`, 'u').test(message);
 }
 
 export interface DraftNews {
@@ -105,7 +113,7 @@ export function toDraftNews(post: GraphPost, options: { autoPublishHashtag?: str
   const urls = imageUrls(post);
   const careFlags = detectCareFlags(message, urls.length > 0);
   const hashtag = options.autoPublishHashtag?.trim();
-  const autoPublish = Boolean(hashtag && message.includes(hashtag) && careFlags.length === 0);
+  const autoPublish = Boolean(hashtag && hasHashtag(message, hashtag) && careFlags.length === 0);
   const permalink =
     post.permalink_url && /^https:\/\/([a-z0-9-]+\.)*facebook\.com\//i.test(post.permalink_url) ? post.permalink_url : undefined;
   const title = titleFrom(message, date);

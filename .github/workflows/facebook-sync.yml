@@ -24,30 +24,39 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
-      contents: write # push the facebook-sync/pending branch
+      contents: write # push (and reset) the facebook-sync/pending branch
       pull-requests: write # open the review pull request
     steps:
+      - name: Not configured yet
+        if: ${{ vars.FB_PAGE_ID == '' }}
+        run: echo "::notice::Facebook sync is not configured (vars.FB_PAGE_ID is empty). See docs/FACEBOOK-SYNC.md."
+
       - name: Checkout
         if: ${{ vars.FB_PAGE_ID != '' }}
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          # The write token is NOT stored in .git/config, so npm install scripts and the build cannot read it.
+          persist-credentials: false
 
-      - name: Not configured yet
-        if: ${{ vars.FB_PAGE_ID == '' }}
-        run: echo "::notice::Facebook sync is not configured (vars.FB_PAGE_ID is empty). See docs/FACEBOOK-SYNC.md."
-
-      - name: Use the pending branch (keeps earlier unreviewed drafts, avoids duplicates)
+      - name: Choose the branch
         if: ${{ vars.FB_PAGE_ID != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
+          open_pr="$(gh pr list --head "$BRANCH" --state open --json number -q '.[0].number')"
+          if [ -n "$open_pr" ]; then
+            # An open review PR exists: add to it (keeps earlier unreviewed drafts, no duplicates).
             git switch --track "origin/$BRANCH"
-            # Bring in main (new files only in this branch, so conflicts are not expected).
             git merge --no-edit origin/main
+            echo "Adding to open pull request #$open_pr"
           else
-            git switch -c "$BRANCH" origin/main
+            # No open PR (merged, closed or never created): start fresh from main, so drafts that were
+            # rejected or edited on main never come back. Posts not yet imported are fetched again.
+            git switch -C "$BRANCH" origin/main
+            echo "RESET_BRANCH=1" >> "$GITHUB_ENV"
           fi
 
       - name: Set up Node.js
@@ -75,17 +84,24 @@ jobs:
         if: ${{ steps.sync.outputs.created != '' && steps.sync.outputs.created != '0' }}
         run: npm run build
 
-      - name: Commit, push and open/update the pull request
+      - name: Commit, push and open the pull request
         if: ${{ steps.sync.outputs.created != '' && steps.sync.outputs.created != '0' }}
         env:
           GH_TOKEN: ${{ github.token }}
           CREATED: ${{ steps.sync.outputs.created }}
           FLAGGED: ${{ steps.sync.outputs.flagged }}
         run: |
-          git add src/content/news src/assets/uploads/facebook
+          # src/assets/uploads always exists (.gitkeep); a run without images must not fail here.
+          git add -- src/content/news src/assets/uploads
           git commit -m "Facebook sync: ${CREATED} new draft(s)"
-          git push origin "$BRANCH"
-          if [ -z "$(gh pr list --head "$BRANCH" --state open --json number -q '.[].number')" ]; then
+          # Credentials only for this push (not persisted in .git/config).
+          gh auth setup-git
+          if [ "${RESET_BRANCH:-0}" = "1" ]; then
+            git push --force-with-lease origin "$BRANCH"
+          else
+            git push origin "$BRANCH"
+          fi
+          if [ -z "$(gh pr list --head "$BRANCH" --state open --json number -q '.[0].number')" ]; then
             gh pr create --base main --head "$BRANCH" \
               --title "Facebook posts to review" \
               --body "New Facebook posts imported as **draft** news (${CREATED} in this run, ${FLAGGED} flagged).

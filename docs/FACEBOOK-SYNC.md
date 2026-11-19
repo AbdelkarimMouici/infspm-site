@@ -10,7 +10,7 @@ configure an agreed hashtag (off by default).
 ## How it works
 
 ```
-GitHub Actions (every 45 min, or by hand)
+GitHub Actions (every 30 min, or by hand)
   └─ node scripts/facebook-sync.ts
        1. GET https://graph.facebook.com/v27.0/{FB_PAGE_ID}/published_posts   (Page access token, server side)
        2. skip posts already in the repo (same fbPostId), never touch existing files
@@ -21,8 +21,17 @@ GitHub Actions (every 45 min, or by hand)
 
 - **One rolling pull request.** New drafts accumulate on `facebook-sync/pending` and its single open PR,
   so a slow review never produces duplicate PRs or duplicate drafts.
+  The branch is reused only while its PR is **open**. Once the PR is merged or closed, the next run starts a new branch
+  from `main`, so drafts deleted or edited on `main` never come back.
+  Turn on GitHub → Settings → General → **Automatically delete head branches** so merged branches disappear.
 - **Rejecting a post for good.** Delete its file in the PR and add its id (`fbPostId`) to
-  `src/content/news/facebook-ignored.txt` (one per line, `#` for comments). Without that line, the next run would import it again.
+  `src/content/news/facebook-ignored.txt` (one per line, `#` for comments). Without that line, the next run would import it
+  again (also after closing the PR without merging).
+- **Photos of unpublished items are not deployed.** The content schema drops the images of every entry that is not
+  `status: published`, so photos waiting for the consent check never reach the built site. They are still in the
+  repository and the PR, so exclude `facebook-sync/*` from Cloudflare preview builds (docs/DEPLOYMENT.md §3).
+- **Malformed posts** (unexpected id or date) are skipped and counted. The job fails only if every post is malformed,
+  which usually means Meta changed the response format.
 
 - **Only the Graph API.** No scraping, no browser automation, no Facebook password or session (CLAUDE.md).
 - **Token and secrets** exist only in GitHub Actions secrets. They are never written to files, logs or the website.

@@ -38,7 +38,7 @@ By default Cloudflare Pages builds **every branch** and publishes it on a public
 CMS draft branches (`cms/...`), so unreviewed drafts would be publicly reachable.
 
 - Cloudflare Pages → project → Settings → Builds & deployments → **Preview deployments** → **Custom branches**:
-  include only branches you choose (e.g. `staging`) and exclude `cms/*`.
+  include only branches you choose (e.g. `staging`) and exclude `cms/*` and `facebook-sync/*`.
 - Or protect all preview URLs with **Cloudflare Access** (Zero Trust → Access → application for `*.<project>.pages.dev`).
 
 ## 4. Cloudflare Pages project *(completed in step 8)*

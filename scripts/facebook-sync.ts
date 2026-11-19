@@ -51,7 +51,7 @@ try {
   // Counts only: never print post contents, URLs or tokens.
   console.log(
     `Facebook sync: fetched ${result.fetched}, new drafts ${result.created.length}, already known ${result.skippedExisting}, ` +
-      `empty ${result.skippedEmpty}, flagged for review ${result.flagged}, image errors ${result.imageErrors}`,
+      `empty ${result.skippedEmpty}, invalid ${result.skippedInvalid}, flagged for review ${result.flagged}, image errors ${result.imageErrors}`,
   );
   for (const file of result.created) console.log(`  + ${file}`);
   output('created', result.created.length);

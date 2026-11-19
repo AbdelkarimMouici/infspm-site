@@ -24,6 +24,8 @@ export interface SyncResult {
   created: string[];
   skippedExisting: number;
   skippedEmpty: number;
+  /** Posts with an unexpected shape (bad id or date), skipped. */
+  skippedInvalid: number;
   flagged: number;
   imageErrors: number;
 }
@@ -108,14 +110,22 @@ export async function runSync(options: SyncOptions): Promise<SyncResult> {
   const log = options.log ?? (() => {});
   const posts: GraphPost[] = await fetchPublishedPosts(options);
   const known = knownPostIds(options.root);
-  const result: SyncResult = { fetched: posts.length, created: [], skippedExisting: 0, skippedEmpty: 0, flagged: 0, imageErrors: 0 };
+  const result: SyncResult = { fetched: posts.length, created: [], skippedExisting: 0, skippedEmpty: 0, skippedInvalid: 0, flagged: 0, imageErrors: 0 };
 
   for (const post of posts) {
     if (known.has(post.id)) {
       result.skippedExisting++;
       continue;
     }
-    const draft = toDraftNews(post, { autoPublishHashtag: options.autoPublishHashtag });
+    let draft: DraftNews;
+    try {
+      draft = toDraftNews(post, { autoPublishHashtag: options.autoPublishHashtag });
+    } catch (error) {
+      // One malformed post must not block the others.
+      result.skippedInvalid++;
+      log(`Post skipped: ${(error as Error).message}`);
+      continue;
+    }
     if (!draft.body.trim() && draft.imageUrls.length === 0) {
       result.skippedEmpty++; // nothing to show (e.g. video-only or shared link without text)
       continue;
@@ -154,6 +164,9 @@ export async function runSync(options: SyncOptions): Promise<SyncResult> {
     known.add(post.id);
     result.created.push(relative(options.root, mdPath).split('\\').join('/'));
     if (draft.frontmatter.careFlags.length > 0) result.flagged++;
+  }
+  if (posts.length > 0 && result.skippedInvalid === posts.length) {
+    throw new Error('Every Facebook post had an unexpected format: the API response shape may have changed');
   }
   return result;
 }
