@@ -1,0 +1,63 @@
+---
+// Contact page. Only the confirmed email is shown; address, hours and map are TODO(content).
+// The contact form is added in step 6 (serverless function + Turnstile).
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PageHeader from '~/components/PageHeader.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import NeedsReviewNotice from '~/components/NeedsReviewNotice.astro';
+import { locales, type Locale } from '~/i18n/config';
+import { t } from '~/i18n/utils';
+import { site } from '~/config/site';
+
+export function getStaticPaths() {
+  return locales.map((locale) => ({ params: { locale } }));
+}
+
+const locale = Astro.params.locale as Locale;
+const pending = t(locale, 'common.toBeConfirmed');
+---
+
+<BaseLayout locale={locale} title={t(locale, 'contact.title')} description={t(locale, 'contact.description')}>
+  <PageHeader title={t(locale, 'contact.title')} lead={t(locale, 'contact.lead')}>
+    <Breadcrumbs
+      slot="before"
+      locale={locale}
+      items={[{ label: t(locale, 'nav.home'), href: `/${locale}/` }, { label: t(locale, 'contact.title') }]}
+    />
+  </PageHeader>
+  <div class="container-page grid gap-10 py-8 lg:grid-cols-[1fr_2fr]">
+    <section aria-labelledby="contact-details">
+      <NeedsReviewNotice locale={locale} />
+      <h2 id="contact-details" class="mt-4 text-xl font-bold">{t(locale, 'contact.detailsHeading')}</h2>
+      <dl class="mt-4 space-y-4">
+        <div>
+          <dt class="font-semibold">{t(locale, 'footer.email')}</dt>
+          <dd><a href={`mailto:${site.email}`} dir="ltr" class="ltr-inline">{site.email}</a></dd>
+        </div>
+        <div>
+          <dt class="font-semibold">{t(locale, 'contact.address')}</dt>
+          <dd class="text-muted">{site.address ?? pending}</dd>
+        </div>
+        <div>
+          <dt class="font-semibold">{t(locale, 'contact.phone')}</dt>
+          <dd class="text-muted">{site.phone ?? pending}</dd>
+        </div>
+        <div>
+          <dt class="font-semibold">{t(locale, 'contact.hours')}</dt>
+          <dd class="text-muted">{pending}</dd>
+        </div>
+        <div>
+          <dt class="font-semibold">{t(locale, 'contact.map')}</dt>
+          <dd class="text-muted">{pending}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section aria-labelledby="contact-form-heading">
+      <h2 id="contact-form-heading" class="text-xl font-bold">{t(locale, 'contact.formHeading')}</h2>
+      <div id="contact-form-slot" class="mt-4">
+        <p class="text-muted">{t(locale, 'contact.formUnavailable')}</p>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

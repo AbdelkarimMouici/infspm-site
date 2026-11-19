@@ -1,0 +1,20 @@
+---
+// Visible marker on sample entries (only ever rendered in dev or SHOW_EXAMPLE_CONTENT builds).
+import type { Locale } from '~/i18n/config';
+import { t } from '~/i18n/utils';
+
+interface Props {
+  locale: Locale;
+  show: boolean;
+}
+
+const { locale, show } = Astro.props;
+---
+
+{
+  show && (
+    <span class="inline-block rounded-sm border border-on-notice bg-notice-soft px-2 py-0.5 text-xs font-semibold text-on-notice">
+      {t(locale, 'common.example')}
+    </span>
+  )
+}

@@ -1,0 +1,10 @@
+---
+import ContentPage from '~/components/ContentPage.astro';
+import { locales } from '~/i18n/config';
+
+export function getStaticPaths() {
+  return locales.map((locale) => ({ params: { locale } }));
+}
+---
+
+<ContentPage slug="privacy" titleKey="nav.privacy" />

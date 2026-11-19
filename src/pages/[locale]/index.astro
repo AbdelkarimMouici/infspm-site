@@ -1,20 +1,86 @@
 ---
 import BaseLayout from '~/layouts/BaseLayout.astro';
-import PageHeader from '~/components/PageHeader.astro';
+import Button from '~/components/Button.astro';
+import Card from '~/components/Card.astro';
+import EntryList from '~/components/EntryList.astro';
 import NeedsReviewNotice from '~/components/NeedsReviewNotice.astro';
 import { locales, type Locale } from '~/i18n/config';
 import { t } from '~/i18n/utils';
+import type { UIKey } from '~/i18n/ui';
+import { getLocalizedEntries } from '~/lib/localized';
 
 export function getStaticPaths() {
   return locales.map((locale) => ({ params: { locale } }));
 }
 
 const locale = Astro.params.locale as Locale;
+const newest = <T extends { entry: { data: { date: Date } } }>(items: T[]) =>
+  items.sort((a, b) => b.entry.data.date.getTime() - a.entry.data.date.getTime()).slice(0, 3);
+const news = newest(await getLocalizedEntries('news', locale));
+const activities = newest(await getLocalizedEntries('activities', locale));
+
+const quickLinks: { title: UIKey; text: UIKey; slug: string }[] = [
+  { title: 'nav.programs', text: 'home.quick.programs', slug: 'programs' },
+  { title: 'nav.admissions', text: 'home.quick.admissions', slug: 'admissions' },
+  { title: 'nav.news', text: 'home.quick.news', slug: 'news' },
+  { title: 'nav.contact', text: 'home.quick.contact', slug: 'contact' },
+];
 ---
 
 <BaseLayout locale={locale} title={t(locale, 'home.title')} description={t(locale, 'home.description')}>
-  <PageHeader title={t(locale, 'site.name')} lead={t(locale, 'home.underConstruction')} />
-  <div class="container-page py-8">
+  <section class="border-b border-border bg-primary-soft" aria-labelledby="home-title">
+    <div class="container-page py-10 md:py-14">
+      <h1 id="home-title" class="max-w-3xl text-2xl font-bold md:text-4xl">{t(locale, 'site.name')}</h1>
+      <p class="mt-4 max-w-prose text-lg text-muted">{t(locale, 'home.intro')}</p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <Button href={`/${locale}/programs/`}>{t(locale, 'nav.programs')}</Button>
+        <Button href={`/${locale}/contact/`} variant="secondary">{t(locale, 'nav.contact')}</Button>
+      </div>
+    </div>
+  </section>
+
+  <div class="container-page py-10">
     <NeedsReviewNotice locale={locale} />
+
+    <section aria-labelledby="quick-links" class="mt-6">
+      <h2 id="quick-links" class="text-xl font-bold md:text-2xl">{t(locale, 'home.quickLinks')}</h2>
+      <ul class="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4" role="list">
+        {
+          quickLinks.map((link) => (
+            <li>
+              <Card title={t(locale, link.title)} href={`/${locale}/${link.slug}/`}>
+                <p>{t(locale, link.text)}</p>
+              </Card>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section aria-labelledby="latest-news" class="mt-12">
+      <div class="flex flex-wrap items-baseline justify-between gap-3">
+        <h2 id="latest-news" class="text-xl font-bold md:text-2xl">{t(locale, 'home.latestNews')}</h2>
+        <a href={`/${locale}/news/`}>{t(locale, 'home.allNews')}</a>
+      </div>
+      <div class="mt-5">
+        <EntryList locale={locale} items={news} section="news" emptyMessage={t(locale, 'news.empty')} level={3} />
+      </div>
+    </section>
+
+    <section aria-labelledby="latest-activities" class="mt-12">
+      <div class="flex flex-wrap items-baseline justify-between gap-3">
+        <h2 id="latest-activities" class="text-xl font-bold md:text-2xl">{t(locale, 'home.latestActivities')}</h2>
+        <a href={`/${locale}/activities/`}>{t(locale, 'home.allActivities')}</a>
+      </div>
+      <div class="mt-5">
+        <EntryList
+          locale={locale}
+          items={activities}
+          section="activities"
+          emptyMessage={t(locale, 'activities.empty')}
+          level={3}
+        />
+      </div>
+    </section>
   </div>
 </BaseLayout>

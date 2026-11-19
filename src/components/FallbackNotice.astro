@@ -1,0 +1,20 @@
+---
+// Shown on French/English pages that display the Arabic original because no translation exists yet.
+import type { Locale } from '~/i18n/config';
+import { t } from '~/i18n/utils';
+
+interface Props {
+  locale: Locale;
+  show: boolean;
+}
+
+const { locale, show } = Astro.props;
+---
+
+{
+  show && (
+    <p class="mb-6 rounded-md border border-border bg-notice-soft px-4 py-2 text-sm text-on-notice" role="note">
+      {t(locale, 'content.onlyInArabic')}
+    </p>
+  )
+}

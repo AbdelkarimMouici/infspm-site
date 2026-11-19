@@ -18,6 +18,25 @@ export default defineConfig(
     },
   },
   {
+    // Content must be read through src/lib/ helpers, which hide drafts and example entries.
+    files: ['src/**/*.{ts,astro}'],
+    ignores: ['src/lib/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'astro:content',
+              importNames: ['getCollection', 'getEntry', 'getEntries', 'getLiveCollection', 'getLiveEntry'],
+              message: 'Use the helpers in src/lib/ (they filter drafts and example entries).',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['**/*.astro'],
     rules: {
       // Allow role="list" on unstyled lists: Safari/VoiceOver drops list semantics when list-style is none.
