@@ -1,0 +1,21 @@
+---
+// Minimal header for step 1. The full design (logo, navigation) comes in step 2.
+import type { Locale } from '~/i18n/config';
+import { t } from '~/i18n/utils';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+---
+
+<header class="border-b border-border bg-surface">
+  <div class="container-page flex flex-wrap items-center justify-between gap-4 py-4">
+    <a href={`/${locale}/`} class="text-lg font-bold text-text no-underline">
+      {t(locale, 'site.shortName')}
+    </a>
+    <LanguageSwitcher locale={locale} />
+  </div>
+</header>

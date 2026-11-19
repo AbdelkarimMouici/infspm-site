@@ -43,11 +43,21 @@ Admissions and registration, Activities, News (list + article pages), Gallery, C
 - Facts must come from the institute (documents, official announcements, the administration). Facebook posts are a source to verify, not to copy verbatim.
 
 ## Commands (update as the project grows)
-- `npm run dev` – local dev server
-- `npm run build` – production build
-- `npm run check` – type check + lint
-- `npm test` – tests
-- `npm audit` – dependency audit
+- `npm run dev` – local dev server (http://localhost:4321, redirects to `/ar/`)
+- `npm run build` – production build to `dist/`
+- `npm run preview` – serve the production build locally
+- `npm run check` – type check (`astro check`) + lint (ESLint, incl. jsx-a11y rules for `.astro`)
+- `npm test` – tests (Vitest): i18n helpers, dictionary parity, RTL guard (no physical left/right classes), token contrast
+- `npm audit` – dependency audit (CI fails on moderate or higher)
+- Node: version in `.nvmrc` (24). `eslint-plugin-astro` expects Node ≥ 24.16.
+
+## Project layout (step 1)
+- `src/i18n/` – locales config, UI dictionaries (`ui/ar.ts` is the reference key set), helpers (`t`, `getDir`, `localizedPath`).
+- `src/layouts/BaseLayout.astro` – `lang`/`dir`, title/description, canonical, hreflang, skip link, header/footer.
+- `src/styles/global.css` – Tailwind v4 `@theme` design tokens (placeholder colours until step 2).
+- `src/pages/[locale]/` – localized pages; `src/pages/index.astro` – static meta-refresh to `/ar/`.
+- Dependencies are pinned exactly; prefer releases at least ~7 days old (Dependabot uses a 7-day cooldown).
+- Output must stay free of inline scripts/styles (`inlineStylesheets: 'never'`, `assetsInlineLimit: 0`) for the strict CSP in step 7.
 
 ## Working style
 - Work in small steps; propose a plan before large changes; commit often with clear messages.

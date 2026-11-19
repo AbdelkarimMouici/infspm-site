@@ -1,0 +1,112 @@
+@import 'tailwindcss';
+
+/*
+ * Design tokens.
+ * TODO(content): colours below are neutral placeholders (all text pairs meet WCAG AA).
+ * Step 2 replaces them with the palette taken from the official logo.
+ */
+@theme {
+  /* Typography: one self-hosted family covering Arabic and Latin (French). */
+  --font-sans: 'IBM Plex Sans Arabic', system-ui, 'Segoe UI', Tahoma, sans-serif;
+
+  /* Colour roles */
+  --color-primary: #0b5266; /* 8.7:1 on white */
+  --color-primary-hover: #083d4c;
+  --color-on-primary: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f2f4f6;
+  --color-text: #1b2126; /* 16.2:1 on white */
+  --color-muted: #48535d; /* 7.8:1 on white, 7.1:1 on surface-alt */
+  --color-border: #c7cfd6;
+  --color-focus: #b34700; /* focus ring: 5.5:1 on white, 5.0:1 on surface-alt (needs >= 3:1) */
+
+  /* Radii */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+
+  /* Layout */
+  --container-page: 72rem;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    color: var(--color-text);
+    background-color: var(--color-surface);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.7; /* Arabic script needs generous line height */
+  }
+
+  :lang(fr) body {
+    line-height: 1.6;
+  }
+
+  a {
+    color: var(--color-primary);
+    text-decoration-line: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  a:hover {
+    color: var(--color-primary-hover);
+  }
+
+  /* One clear, consistent focus indicator for keyboard users (WCAG 2.4.7 / 2.4.11). */
+  :focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Page container using logical properties only (works in RTL and LTR). */
+  .container-page {
+    inline-size: 100%;
+    max-inline-size: var(--container-page);
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+
+  @media (min-width: 48rem) {
+    .container-page {
+      padding-inline: 1.5rem;
+    }
+  }
+
+  /* Skip link: hidden until focused. */
+  .skip-link {
+    position: absolute;
+    inset-inline-start: 1rem;
+    inset-block-start: -100%;
+    z-index: 50;
+    padding: 0.5rem 1rem;
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
+    border-radius: var(--radius-md);
+  }
+
+  .skip-link:focus {
+    inset-block-start: 1rem;
+    color: var(--color-on-primary);
+  }
+}

@@ -1,0 +1,35 @@
+---
+// Root "/" sends visitors to the Arabic home page.
+// Static meta refresh (no script) plus visible links as a fallback.
+// When hosting is set up (step 9), a server-side redirect "/ -> /ar/" will make this instant.
+import { localeMeta } from '~/i18n/config';
+import { t } from '~/i18n/utils';
+
+const site = Astro.site ?? new URL('https://example.invalid');
+const arHome = new URL('/ar/', site).href;
+const frHome = new URL('/fr/', site).href;
+---
+
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{t('ar', 'site.name')}</title>
+    <meta name="robots" content="noindex" />
+    <meta http-equiv="refresh" content="0; url=/ar/" />
+    <link rel="canonical" href={arHome} />
+    <link rel="alternate" hreflang="ar" href={arHome} />
+    <link rel="alternate" hreflang="fr" href={frHome} />
+    <link rel="alternate" hreflang="x-default" href={arHome} />
+  </head>
+  <body>
+    <main>
+      <h1>{t('ar', 'site.name')}</h1>
+      <ul>
+        <li><a href="/ar/" hreflang="ar">{localeMeta.ar.label}</a></li>
+        <li><a href="/fr/" hreflang="fr" lang="fr">{localeMeta.fr.label}</a></li>
+      </ul>
+    </main>
+  </body>
+</html>
