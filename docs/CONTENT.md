@@ -22,3 +22,10 @@
 - [ ] Person responsible for content and who publishes news
 - [ ] Photo consent policy (students, staff, patients)
 - [ ] Domain name decision (.dz or other) and who owns the registrar account
+
+## TODO(content) placeholders in the code (step 1)
+- `astro.config.mjs`: `site` is `https://example.invalid` until the domain is decided (affects canonical and hreflang URLs).
+- `src/i18n/ui/fr.ts`: French institute name "Institut National de Formation Supérieure Paramédicale de Tébessa" is unconfirmed (`needs-review`). All French UI strings need review.
+- `src/styles/global.css`: colours are neutral placeholders; replace with the official logo palette (step 2).
+- `src/components/SiteFooter.astro`: address, phone, hours and the Facebook page URL are missing; only the confirmed email is shown.
+- Home pages show only a neutral "under construction" message; no institutional content yet.
