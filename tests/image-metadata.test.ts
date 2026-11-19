@@ -24,8 +24,14 @@ function listImages(dir: string): string[] {
 describe('committed images', () => {
   const images = ['src', 'public'].flatMap(listImages);
 
-  it('use only JPEG, PNG or WebP (formats the metadata check understands)', () => {
-    expect(images.filter((path) => !ALLOWED_EXT.test(path))).toEqual([]);
+  it('use only JPEG, PNG or WebP (formats the metadata check understands), or safe SVG icons', () => {
+    const svgs = images.filter((path) => /\.svg$/i.test(path));
+    expect(images.filter((path) => !ALLOWED_EXT.test(path) && !/\.svg$/i.test(path))).toEqual([]);
+    // SVG is code: no scripts, event handlers, external references, foreign content or metadata blocks.
+    for (const path of svgs) {
+      const svg = readFileSync(path, 'utf8');
+      expect(svg, path).not.toMatch(/<script|<foreignObject|<metadata|\son[a-z]+\s*=|(href|src)\s*=\s*["']?\s*(https?:|\/\/|data:|javascript:)/i);
+    }
   });
 
   it('carry no EXIF/XMP/GPS metadata', () => {
