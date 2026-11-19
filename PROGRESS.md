@@ -21,4 +21,24 @@ with one PR per step whose base is the previous step's branch. Nothing is pushed
 
 ## Step 2 – Design system
 
-_In progress._
+**Done**
+- `src/styles/tokens.css`: the single tokens file. It holds a neutral medical blue/teal palette, the font, radii and shadow. Tests check every colour pair used by components for WCAG AA, and that no colour is defined anywhere else.
+- Header: wordmark, desktop navigation with `aria-current`, and a mobile menu built on `<details>`, so it needs no JavaScript and suits the CSP. The language switcher is always visible.
+- Footer: dark band with the link list and the confirmed email, which is kept left-to-right inside Arabic text.
+- Components: `Button`, `Card` (the whole card is clickable through a single link), `PageHeader` and `NeedsReviewNotice`.
+- English locale (`/en/`). All French and English interface text is marked `needs-review`, and English pages show a visible "translation awaiting review" notice.
+- hreflang and x-default list only translations that exist, using the `alternates` override in `BaseLayout`.
+- Trilingual `404.html` with `noindex`. `.gitattributes` normalizes line endings to LF.
+
+**Checks:** build, `npm run check`, 36 tests and `npm audit` (0 vulnerabilities) pass. Checked in the browser at desktop and 375px (ar/fr/en): no horizontal scroll, the menu works, and the footer is readable.
+
+**Review:** round 1 by the reviewer sub-agent found 0 high, 2 medium and 3 low issues, all fixed:
+- `dir` added on cards in another language
+- current language announced to screen readers
+- CSP-unsafe Button attributes removed
+- email `dir=ltr` restored
+- 404 page added
+
+**For you to review**
+- The palette is a placeholder until the logo arrives (`TODO(content)`).
+- The navigation links to pages that only exist from step 4 on. Do not deploy step 2 alone.
