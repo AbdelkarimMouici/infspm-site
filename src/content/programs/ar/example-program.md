@@ -1,0 +1,12 @@
+---
+title: "مثال: برنامج تكوين تجريبي"
+summary: "برنامج تجريبي لعرض شكل صفحة التكوين. لا يمثل تخصصًا حقيقيًا."
+order: 100
+status: published
+example: true
+needs-review: false
+---
+
+هذا **نص تجريبي**. ستُضاف التخصصات الرسمية (المدة، شروط القبول، الشهادة) بعد تأكيدها من إدارة المعهد.
+
+<!-- TODO(content): list of real programs, durations, admission conditions and diplomas (docs/CONTENT.md). -->
