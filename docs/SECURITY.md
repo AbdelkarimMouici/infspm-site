@@ -15,7 +15,7 @@ with the same values (docs/DEPLOYMENT.md §4).
 | Header | Value | Why |
 |---|---|---|
 | `Content-Security-Policy` | `default-src 'self'`, `script-src 'self'`, `style-src 'self'`, no `unsafe-inline`/`unsafe-eval`, `frame-ancestors 'none'`, `base-uri 'none'`, `object-src 'none'`, `form-action 'self'` | Only our own files can run. There is no inline code anywhere in the build |
-| `Strict-Transport-Security` | `max-age=63072000; includeSubDomains` | HTTPS only, for 2 years. **Not** `preload`: adding the domain to browsers' preload lists is hard to undo, so decide it once the domain is final. **Before going live, confirm every subdomain serves HTTPS** (webmail, intranet…): `includeSubDomains` blocks plain-HTTP subdomains for 2 years. If unsure, remove `includeSubDomains` first |
+| `Strict-Transport-Security` | `max-age=63072000` | HTTPS only, for 2 years, for this host. **No `includeSubDomains` yet**: it would block any plain-HTTP subdomain (webmail, intranet…) for 2 years, and the domain is not known. Add it once every subdomain serves HTTPS (docs/DEPLOYMENT.md §7). **No `preload`**: it is hard to undo, so decide once the domain is final |
 | `X-Content-Type-Options` | `nosniff` | No MIME sniffing |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` | Other sites see only our domain. **Must not be `no-referrer`**: the contact form's same-origin check needs the `Origin` header |
 | `Permissions-Policy` | camera, microphone, geolocation, payment, USB, sensors, `browsing-topics` all off | The site needs none of them |

@@ -14,6 +14,8 @@ with one PR per step whose base is the previous step's branch. Nothing is pushed
 | 5 | `feat/step-5-facebook-sync` | `feat/step-4-pages` | PR #5 open |
 | 6 | `feat/step-6-contact` | `feat/step-5-facebook-sync` | PR #6 open |
 | 7 | `feat/step-7-security-headers` | `feat/step-6-contact` | PR #7 open |
+| 8 | `feat/step-8-seo-a11y` | `feat/step-7-security-headers` | PR #8 open |
+| 9 | – | – | **not done (as instructed)**: `docs/DEPLOYMENT.md` is ready for you |
 
 ## Notes for the maintainer (please review)
 
@@ -206,3 +208,78 @@ with one PR per step whose base is the previous step's branch. Nothing is pushed
 **Not verified (stop condition):** the headers on a real Cloudflare deployment, Turnstile and the signed-in Decap editor under their CSPs, and whether GitHub's sign-in page keeps the popup opener. Check these on staging (`docs/SECURITY.md`).
 
 **For you to decide:** HSTS `includeSubDomains` and preload, once the domain is known.
+
+## Step 8 – SEO, accessibility, Lighthouse
+
+**Done**
+- **`sitemap.xml` (with hreflang alternates) and `robots.txt`:** generated at build time, with no dependency. They list only indexable pages.
+- **schema.org `EducationalOrganization` JSON-LD:** Arabic name and email only. The French and English names stay out until confirmed.
+- **Open Graph tags, a favicon placeholder and `theme-color`.**
+- **`_redirects`:** `/ → /ar/` (301) and `/favicon.ico`.
+- **`SITE_URL` build variable:** must be an https origin, and the build fails on Cloudflare if it is missing.
+- **`tests-dist/seo.test.ts`** checks:
+  - `lang`/`dir` on every page;
+  - unique titles and descriptions;
+  - canonical links;
+  - **hreflang reciprocity and x-default**;
+  - the sitemap matches the indexable pages and their hreflang;
+  - `robots.txt`, JSON-LD, and no broken internal links.
+- **HSTS:** `includeSubDomains` is no longer sent until the domain's subdomains are checked.
+- **Docs:** `docs/QUALITY.md` (Lighthouse results, manual checks) and the full `docs/DEPLOYMENT.md` (step 9 guide).
+
+**Lighthouse 13.6.0, mobile, 6 pages:** performance 95–100; accessibility, best practices and SEO 100; no console errors. Details in `docs/QUALITY.md`.
+
+**Checks:**
+- Build, check, 134 unit tests and 64 built-site checks pass (73 on the example build).
+- Audit: 0 vulnerabilities.
+
+**Review**
+- 0 high, 5 medium, 6 low. All fixed:
+  - deployment order (the domain now comes before the CMS sign-in and the contact form);
+  - testing staging behind Access;
+  - HSTS `includeSubDomains`;
+  - unconfirmed names in the JSON-LD;
+  - silent fallback to the placeholder `SITE_URL`;
+  - hreflang tests, root page signals, CNAME note, OG locales, `theme-color`, favicon fallback.
+
+---
+
+# Final summary (end of the autonomous run)
+
+**All branches are pushed and every step has a PR:** #1 (step 1, open) and #2 to #8, stacked. Merge them in order.
+
+**Every step passed build, check, tests and audit, plus 2–3 independent review rounds** by a reviewer sub-agent.
+There are no open review findings.
+
+## What failed or could not be verified (stop conditions)
+- No real external service was used or created:
+  - **GitHub OAuth app:** the CMS sign-in is untested;
+  - **Meta app and Page token:** the Facebook sync was tested with synthetic fixtures only;
+  - **Cloudflare account and domain:** headers, Turnstile, email delivery, the WAF rule and the mailer Worker were not deployed.
+- **Not verified:** how real Facebook API image fields look (`media.image.src`), and the Decap editor and the Turnstile widget under their CSPs on a real host.
+- **Not done:** deployment, DNS and domain (step 9).
+
+## What you must review / decide
+1. **Merging:** merge PR #1, then #2 to #8 in order (each PR's base is the previous branch).
+2. **Content:** every `TODO(content)` in `docs/CONTENT.md`.
+   - Logo and colours, the French and English names, programs, contact details, the About and Admissions texts, and the privacy rights/law section.
+   - All French and English text, and the Arabic drafts, are marked `needs-review`.
+3. **Account setup:** `docs/DEPLOYMENT.md` (in its stated order), `docs/FACEBOOK-SYNC.md` and `docs/ENVIRONMENT.md`.
+4. **Decisions:**
+   - the domain;
+   - HSTS `includeSubDomains`/preload;
+   - who publishes and approves;
+   - the auto-publish hashtag (optional).
+5. **Dependencies added during the run:**
+   - `decap-cms-app` 3.18.0 (one day old: a security-fix exception to the 7-day rule), `react`/`react-dom` 19.2.9;
+   - `@astrojs/markdown-satteri` and `sharp`, both already installed by Astro and now pinned as direct dependencies;
+   - npm overrides for `trim` and `minimatch`;
+   - Lighthouse was run with `npx`, not installed.
+6. **Permission rules hit and respected:**
+   - `.env.example` could not be written (`Read(./.env.*)` deny), so `docs/ENVIRONMENT.md` lists the variables instead;
+   - `rm -rf` and `curl` were denied, so I used alternatives.
+7. **Scratch files to delete:** reviewer sub-agents left a few files outside the repo (they were not allowed to delete them):
+   - `C:\Users\abdel\AppData\Local\Temp\r3\sat.mjs`
+   - `C:\Users\abdel\AppData\Local\Temp\claude\20c430722e7fe582\55f444be-2fbf-43de-a0ba-e65ab36c4460\scratchpad\t.mts`
+   - `C:\Users\abdel\AppData\Local\Temp\claude\20c430722e7fe582\55f444be-2fbf-43de-a0ba-e65ab36c4460\scratchpad\cmp.mjs`
+   - `C:\Users\abdel\AppData\Local\Temp\claude\20c430722e7fe582\55f444be-2fbf-43de-a0ba-e65ab36c4460\scratchpad\crawl.mjs`

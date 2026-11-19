@@ -30,7 +30,9 @@ $env:SITE_URL='http://localhost:4321'; npm run build; npm run preview
 npx --yes lighthouse@13.6.0 http://localhost:4321/ar/ --view --only-categories=performance,accessibility,best-practices,seo
 ```
 
-Or use PageSpeed Insights on the staging URL (https://pagespeed.web.dev/), which tests from Google's servers.
+Or use PageSpeed Insights (https://pagespeed.web.dev/), which tests from Google's servers. Staging sits behind
+Cloudflare Access, so PageSpeed only works while a temporary bypass policy is active (docs/DEPLOYMENT.md §4).
+Otherwise, use Chrome DevTools → Lighthouse while signed in.
 
 ## Automatic checks (CI)
 

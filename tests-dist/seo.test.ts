@@ -100,6 +100,41 @@ describe.skipIf(!built)('built pages: SEO and document basics', () => {
     for (const path of listed) expect(pathExists(path), path).toBe(true);
   });
 
+  /** hreflang set of a page: "lang path" strings, including itself and x-default. */
+  const hreflangSet = (html: string) =>
+    [...html.matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)"/g)]
+      .map((m) => `${m[1]} ${new URL(m[2] ?? '').pathname}`)
+      .sort();
+
+  it('hreflang annotations are reciprocal, self-referencing, and x-default is the Arabic page', () => {
+    const byPath = new Map(indexable.map((p) => [p.path, p]));
+    for (const page of indexable.filter((p) => /^\/(ar|fr|en)\//.test(p.path))) {
+      const set = hreflangSet(page.html);
+      const locale = page.path.split('/')[1];
+      expect(set, `${page.path} references itself`).toContain(`${locale} ${page.path}`);
+      const arabic = set.find((entry) => entry.startsWith('ar '));
+      const xDefault = set.find((entry) => entry.startsWith('x-default '));
+      if (arabic) expect(xDefault?.split(' ')[1], `${page.path} x-default`).toBe(arabic.split(' ')[1]);
+      for (const entry of set) {
+        const target = byPath.get(entry.split(' ')[1] ?? '');
+        expect(target, `${entry} from ${page.path}`).toBeTruthy();
+        expect(hreflangSet(target?.html ?? ''), `${target?.path} reciprocates ${page.path}`).toEqual(set);
+      }
+    }
+  });
+
+  it('sitemap alternates match each page’s hreflang links', () => {
+    const xml = readFileSync(join(DIST, 'sitemap.xml'), 'utf8');
+    const byPath = new Map(indexable.map((p) => [p.path, p]));
+    for (const [, block] of xml.matchAll(/<url>([\s\S]*?)<\/url>/g)) {
+      const loc = new URL(/<loc>([^<]+)<\/loc>/.exec(block ?? '')?.[1] ?? '').pathname;
+      const alternates = [...(block ?? '').matchAll(/hreflang="([^"]+)" href="([^"]+)"/g)]
+        .map((m) => `${m[1]} ${new URL(m[2] ?? '').pathname}`)
+        .sort();
+      expect(alternates, `sitemap alternates for ${loc}`).toEqual(hreflangSet(byPath.get(loc)?.html ?? ''));
+    }
+  });
+
   it('robots.txt keeps the CMS and API out and points to the sitemap', () => {
     const robots = readFileSync(join(DIST, 'robots.txt'), 'utf8');
     expect(robots).toMatch(/^Disallow: \/admin\/$/m);

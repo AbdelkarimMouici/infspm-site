@@ -60,6 +60,7 @@ const xDefault = xDefaultPath ? new URL(xDefaultPath, site).href : undefined;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- TODO(content): theme colour from the official logo palette (placeholder = primary token). -->
     <meta name="theme-color" content="#0a5a78" />
     <meta name="description" content={description} />
     {
@@ -87,7 +88,7 @@ const xDefault = xDefaultPath ? new URL(xDefaultPath, site).href : undefined;
                 content={localeMeta[locales.find((code) => localeMeta[code].hreflang === alt.hreflang) ?? locale].ogLocale}
               />
             ))}
-          <StructuredData locale={locale} />
+          <StructuredData />
         </>
       )
     }

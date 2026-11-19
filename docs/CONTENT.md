@@ -47,3 +47,4 @@
 - `public/favicon.svg`: neutral placeholder icon (white cross); replace with the official logo.
 - `src/components/StructuredData.astro`: address, telephone, logo and Facebook URL (`sameAs`) to add once confirmed.
 - Open Graph image (`og:image`) to add once the logo exists.
+- `src/layouts/BaseLayout.astro`: `theme-color` uses the placeholder primary colour.

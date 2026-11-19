@@ -5,13 +5,14 @@
 >
 > 1. Merge the stacked PRs into `main` in order (#1 → #8).
 > 2. §1 GitHub protection.
-> 3. §4 Cloudflare Pages project, first on **staging**.
-> 4. §2 CMS OAuth.
-> 5. §5 Contact form.
-> 6. `docs/FACEBOOK-SYNC.md`.
-> 7. §6 Review with the administration.
-> 8. §7 Production domain.
-> 9. §8 Go-live checklist.
+> 3. §4 Cloudflare Pages project and a first **staging** on `*.pages.dev` (public pages only).
+> 4. §7 Domain on Cloudflare. The CMS sign-in and the contact email both need the real domain, so do this before §2 and §5.
+>    Use a staging subdomain such as `staging.<domain>` (behind Cloudflare Access) to test them before production.
+> 5. §2 CMS OAuth (on `staging.<domain>`, then production).
+> 6. §5 Contact form.
+> 7. `docs/FACEBOOK-SYNC.md`.
+> 8. §6 Review with the administration.
+> 9. §8 Go-live checklist, then point the production custom domain to `main`.
 
 ## 1. GitHub repository protection *(step 3, required)*
 
@@ -65,17 +66,25 @@ least two administrators, so access does not depend on one person.
    - `SITE_URL`:
      - Production: `https://<final domain>`.
      - Preview/staging: the staging URL (e.g. `https://staging.<project>.pages.dev`).
-     - Without it, canonical URLs and the sitemap use the placeholder `example.invalid`.
+     - Required on Cloudflare: the build **fails** if it is missing (it would otherwise publish URLs for the placeholder `example.invalid`).
    - `PUBLIC_TURNSTILE_SITE_KEY` (§5). Leave it empty until the contact form is fully set up; the page then asks people to email.
    - **Staging only:** `SHOW_EXAMPLE_CONTENT=true` if you want to see the example entries. **Never in production.**
    - **Secrets** (type *Secret*): `GITHUB_OAUTH_CLIENT_SECRET`, `TURNSTILE_SECRET_KEY`.
 3. **Preview branches:** restrict them as in §3 (exclude `cms/*` and `facebook-sync/*`).
 4. **Staging.** Create a `staging` branch from `main`. Cloudflare publishes it at `staging.<project>.pages.dev`. Protect it with
    **Cloudflare Access** (Zero Trust → Access → Applications → Self-hosted, email one-time PIN for the review team).
-5. **Check staging:**
-   - **Headers:** run https://observatory.mozilla.org on a public page. The CSP, HSTS, nosniff, Referrer-Policy and Permissions-Policy should all be present.
+5. **Redirects.** `public/_redirects` answers `/` with a 301 to `/ar/`, and `/favicon.ico` with the SVG icon. Check both on staging.
+6. **Check staging.** Staging sits behind Cloudflare Access, so online scanners (Observatory, PageSpeed) only see the Access
+   login page. Either:
+   - create an Access **service token** and add a *Service Auth* policy;
+   - or temporarily add a *Bypass* policy for the scan, and remove it right after.
+
+   Then check:
+   - **Headers:** in the browser DevTools → Network → the page → Response headers, look for the CSP, HSTS, nosniff,
+     Referrer-Policy and Permissions-Policy. Or run https://observatory.mozilla.org while the bypass is active.
    - **Browser console:** open `/ar/`, `/ar/contact/` and `/admin/`. There must be no "Content Security Policy" errors.
-   - **Lighthouse:** run it on mobile, or use https://pagespeed.web.dev/. Compare with docs/QUALITY.md.
+   - **Lighthouse:** Chrome DevTools → Lighthouse → Mobile, while signed in to Access, or PageSpeed while the bypass is active.
+     Compare with docs/QUALITY.md.
    - **Sitemap:** `/sitemap.xml` and `/robots.txt` show the staging origin.
 
 ## 5. Contact form *(step 6)*
@@ -120,14 +129,17 @@ write by email. **Not tested against a live account:** these steps need the inst
 1. **Domain decision.** `.dz` (through the registrar the administration uses) or another TLD.
    Register it in the institute's name, with the account protected by 2FA.
 2. **Add the domain to Cloudflare** (Add a site), then change the nameservers at the registrar to Cloudflare's.
-   - If the registry does not allow that, use a CNAME setup where available.
+   - If the registry does not allow that, a CNAME ("partial") setup needs a Business or Enterprise plan, and it
+     cannot serve the bare domain. In that case, publish the site on `www.<domain>` and redirect the bare domain at the registrar.
 3. **Pages → Custom domains:** add the domain (and `www`, redirected to the bare domain or the reverse). Cloudflare issues the certificate.
 4. **SSL/TLS settings:**
    - mode **Full (strict)**;
    - **Always Use HTTPS** on;
    - **Minimum TLS 1.2**;
-   - **Edge HSTS** on, with the same values as `public/_headers`. It then also covers Pages Function responses.
-   - **Before enabling `includeSubDomains`**, confirm every subdomain (mail, intranet…) works over HTTPS.
+   - **Edge HSTS** on, with the same values as `public/_headers` (`max-age` 2 years, **without** `includeSubDomains`).
+     It then also covers Pages Function responses.
+   - **`includeSubDomains`** is deliberately **not** sent yet, neither by `_headers` nor at the edge. Once every subdomain
+     (mail, intranet…) is confirmed to work over HTTPS, add it in both places.
    - **Do not enable preload yet.**
 5. **Update the domain everywhere:**
    - `SITE_URL` (production);

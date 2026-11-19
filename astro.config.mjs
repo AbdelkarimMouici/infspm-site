@@ -8,8 +8,14 @@ import { safeMarkdownPlugin } from './src/lib/remark-safe-markdown.ts';
 // Set SITE_URL in the build environment (Cloudflare Pages: Settings → Environment variables), e.g. for staging.
 // TODO(content): set the real domain once the administration decides it (see docs/CONTENT.md).
 const SITE_URL = process.env.SITE_URL?.trim() || 'https://example.invalid';
-if (!/^https?:\/\/[^/]+$/.test(SITE_URL)) {
-  throw new Error(`SITE_URL must be an origin without a trailing slash, e.g. https://example.dz (got "${SITE_URL}")`);
+// On Cloudflare Pages (CF_PAGES=1) a missing SITE_URL would silently publish canonical/hreflang/sitemap URLs
+// pointing to the placeholder domain: fail the build instead.
+if (process.env.CF_PAGES && !process.env.SITE_URL?.trim()) {
+  throw new Error('SITE_URL is not set for this Cloudflare Pages environment (see docs/DEPLOYMENT.md §4).');
+}
+// HTTPS origin only (http allowed for localhost, e.g. Lighthouse runs), no path, query or trailing slash.
+if (!/^(https:\/\/[a-z0-9.-]+|http:\/\/(localhost|127\.0\.0\.1))(:\d+)?$/.test(SITE_URL)) {
+  throw new Error(`SITE_URL must be an https origin without a trailing slash, e.g. https://example.dz (got "${SITE_URL}")`);
 }
 
 export default defineConfig({

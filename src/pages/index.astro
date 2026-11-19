@@ -1,14 +1,10 @@
 ---
 // Root "/" sends visitors to the Arabic home page.
-// Static meta refresh (no script) plus visible links as a fallback.
-// When hosting is set up (step 9), a server-side redirect "/ -> /ar/" will make this instant.
+// On Cloudflare Pages, public/_redirects answers "/" with a 301 to "/ar/" before this file is served.
+// This page is the fallback for other hosts: a static meta refresh (no script) plus visible links.
+// It is noindex and carries no canonical/hreflang (those would conflict with noindex).
 import { localeMeta } from '~/i18n/config';
 import { t } from '~/i18n/utils';
-
-const site = Astro.site ?? new URL('https://example.invalid');
-const arHome = new URL('/ar/', site).href;
-const frHome = new URL('/fr/', site).href;
-const enHome = new URL('/en/', site).href;
 ---
 
 <!doctype html>
@@ -20,11 +16,6 @@ const enHome = new URL('/en/', site).href;
     <title>{t('ar', 'site.name')}</title>
     <meta name="robots" content="noindex" />
     <meta http-equiv="refresh" content="0; url=/ar/" />
-    <link rel="canonical" href={arHome} />
-    <link rel="alternate" hreflang="ar" href={arHome} />
-    <link rel="alternate" hreflang="fr" href={frHome} />
-    <link rel="alternate" hreflang="en" href={enHome} />
-    <link rel="alternate" hreflang="x-default" href={arHome} />
   </head>
   <body>
     <main>
