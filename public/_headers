@@ -1,6 +1,6 @@
 # Security headers for Cloudflare Pages (static assets only; Pages Functions set their own headers).
 # Docs: https://developers.cloudflare.com/pages/configuration/headers/
-# Rules apply in order; "! Name" detaches a header set by an earlier rule. Checked by tests-dist/headers.test.ts.
+# Rules apply in order; "! Name" detaches a header set by an earlier rule. Checked by tests-dist/output.test.ts.
 
 /*
   Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; frame-src 'none'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests
@@ -22,7 +22,7 @@
 /admin/*
   ! Content-Security-Policy
   ! Cross-Origin-Opener-Policy
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://avatars.githubusercontent.com https://raw.githubusercontent.com; font-src 'self' data:; connect-src 'self' https://api.github.com; form-action 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://avatars.githubusercontent.com; font-src 'self' data:; connect-src 'self' https://api.github.com; form-action 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'
   Cross-Origin-Opener-Policy: same-origin-allow-popups
   X-Robots-Tag: noindex, nofollow
   Cache-Control: no-store

@@ -5,12 +5,17 @@ How the rules in CLAUDE.md are enforced, and what is checked automatically.
 ## HTTP security headers (`public/_headers`)
 
 Cloudflare Pages applies `public/_headers` to static files. It does **not** apply it to Pages Functions, which set their own
-headers: `/api/decap/*` sends a strict nonce-based CSP, and `/api/contact` only redirects.
+headers:
+- `/api/decap/*` sends a strict nonce-based CSP, `nosniff`, `no-store` and `no-referrer`.
+- `/api/contact` returns 303 redirects, or short plain-text 403/405 responses, with `nosniff` and `no-store`.
+
+To get HSTS on those responses too, turn on **HSTS at the edge** (Cloudflare → SSL/TLS → Edge Certificates → HSTS),
+with the same values (docs/DEPLOYMENT.md §4).
 
 | Header | Value | Why |
 |---|---|---|
 | `Content-Security-Policy` | `default-src 'self'`, `script-src 'self'`, `style-src 'self'`, no `unsafe-inline`/`unsafe-eval`, `frame-ancestors 'none'`, `base-uri 'none'`, `object-src 'none'`, `form-action 'self'` | Only our own files can run. There is no inline code anywhere in the build |
-| `Strict-Transport-Security` | `max-age=63072000; includeSubDomains` | HTTPS only, for 2 years. **Not** `preload`: adding the domain to browsers' preload lists is hard to undo, so decide it once the domain is final |
+| `Strict-Transport-Security` | `max-age=63072000; includeSubDomains` | HTTPS only, for 2 years. **Not** `preload`: adding the domain to browsers' preload lists is hard to undo, so decide it once the domain is final. **Before going live, confirm every subdomain serves HTTPS** (webmail, intranet…): `includeSubDomains` blocks plain-HTTP subdomains for 2 years. If unsure, remove `includeSubDomains` first |
 | `X-Content-Type-Options` | `nosniff` | No MIME sniffing |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` | Other sites see only our domain. **Must not be `no-referrer`**: the contact form's same-origin check needs the `Origin` header |
 | `Permissions-Policy` | camera, microphone, geolocation, payment, USB, sensors, `browsing-topics` all off | The site needs none of them |
@@ -26,8 +31,11 @@ headers: `/api/decap/*` sends a strict nonce-based CSP, and `/api/contact` only 
 - **`/admin/*`** (Decap CMS, only for signed-in editors):
   - `'unsafe-eval'` (configuration validation);
   - inline styles (CSS-in-JS);
-  - `https://api.github.com`;
-  - GitHub avatars;
+  - `connect-src https://api.github.com`;
+  - images from `data:`, `blob:` (upload previews) and GitHub avatars;
+  - `data:` fonts;
+  - `frame-src 'self'` (editor preview);
+  - COOP `same-origin-allow-popups` (sign-in popup);
   - plus `noindex` and `no-store`.
 
 Each exception **replaces** the site policy with `! Content-Security-Policy`, rather than merging with it.
@@ -35,8 +43,8 @@ Each exception **replaces** the site policy with `! Content-Security-Policy`, ra
 ### Automatic checks
 
 `npm run test:dist` (`tests-dist/output.test.ts`) runs in CI after every build, twice: with and without the contact form.
-- **Every built page:** no inline `<script>`, `<style>`, `style=` attributes, `on*=` handlers or `javascript:` URLs.
-- **External resources:** every external script, stylesheet, image and form target must be allowed by **that page's** CSP,
+- **Every built page:** no inline `<script>` (only JSON-LD data blocks), `<style>`, `style=` attributes, `on*=` handlers or `javascript:` URLs. Tags and attributes are read quoted or unquoted, in any case.
+- **Resources:** every script, stylesheet, image and `srcset`, media, frame, object, preload, icon or manifest link and form target must be allowed by **that page's** CSP, resolved like a browser (relative, `//host`, `data:`, `blob:`). Meta refresh may only stay on the site. CSS may not load anything remote,
   computed from `_headers` with Cloudflare's rule order and `!` detaches.
 - **Headers file:** the required headers exist, the default policy is strict, and only `/admin/*` uses `unsafe-*`.
 
