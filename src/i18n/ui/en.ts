@@ -95,4 +95,9 @@ export const en: UIStrings = {
   'contact.notSent.title': 'Message not sent',
   'contact.notSent.body': 'Your message could not be sent. Check the fields and try again later, or write to us directly by email.',
   'contact.back': 'Back to the contact page',
+  'contact.notSent.keepText': 'Your browser’s Back button may still have your text.',
+  'contact.notSent.invalid': 'Some fields are not valid: check the name, the email address, and that the message has at least 10 characters.',
+  'contact.notSent.busy': 'Too many messages were sent in a short time. Please try again in a few minutes.',
+  'contact.notSent.check': 'The anti-bot check failed or expired. Please try again.',
+  'contact.notSent.unavailable': 'Sending is not available right now. Please write to us directly by email.',
 };

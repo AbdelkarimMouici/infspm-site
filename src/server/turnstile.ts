@@ -19,7 +19,7 @@ export async function verifyTurnstile(options: {
 }): Promise<TurnstileResult> {
   const { secret, token, remoteIp, fetchImpl = fetch } = options;
   if (!token || token.length > 2048) return { success: false, errorCodes: ['invalid-input-response'] };
-  const body = new URLSearchParams({ secret, response: token, idempotency_key: crypto.randomUUID() });
+  const body = new URLSearchParams({ secret, response: token });
   if (remoteIp) body.set('remoteip', remoteIp);
   try {
     const response = await fetchImpl(SITEVERIFY_URL, {

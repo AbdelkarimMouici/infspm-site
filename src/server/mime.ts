@@ -11,11 +11,27 @@ function base64Utf8(text: string): string {
   return btoa(binary);
 }
 
-/** RFC 2047 encoded-word for header text (handles Arabic and strips control characters). */
+/**
+ * RFC 2047 encoded-words for header text (Arabic, emoji…). Control and format characters are removed,
+ * the text is cut on whole characters, and split into words of at most 45 UTF-8 bytes (60 base64 chars,
+ * well under the 75-character limit), folded onto continuation lines.
+ */
 export function encodeHeaderText(text: string): string {
-  // eslint-disable-next-line no-control-regex
-  const clean = text.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 200);
-  return `=?UTF-8?B?${base64Utf8(clean)}?=`;
+  const clean = Array.from(text.replace(/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/gu, ' ').trim())
+    .slice(0, 200)
+    .join('');
+  const encoder = new TextEncoder();
+  const words: string[] = [];
+  let current = '';
+  for (const char of clean) {
+    if (encoder.encode(current + char).length > 45) {
+      words.push(current);
+      current = '';
+    }
+    current += char;
+  }
+  if (current || words.length === 0) words.push(current);
+  return words.map((word) => `=?UTF-8?B?${base64Utf8(word)}?=`).join('\r\n ');
 }
 
 const ADDRESS = /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/;

@@ -29,20 +29,20 @@ export default {
     } catch {
       return new Response(null, { status: 400 });
     }
-    let formatted: { subject: string; text: string };
+    let formatted: ReturnType<typeof formatContactEmail>;
     try {
       // Re-validate: defence in depth, even though only the Pages Function can call this Worker.
-      formatted = formatContactEmail(payload);
+      formatted = formatContactEmail(payload); // returns the trimmed, validated payload
     } catch {
       return new Response(null, { status: 400 });
     }
-    const { subject, text } = formatted;
+    const { subject, text, payload: valid } = formatted;
     const raw = buildPlainEmail({
       from: env.MAIL_FROM,
       fromName: 'INFSPM – formulaire de contact',
       to: env.MAIL_TO,
-      replyTo: payload.email,
-      replyToName: payload.name,
+      replyTo: valid.email,
+      replyToName: valid.name,
       subject,
       text,
       messageIdDomain: env.MAIL_FROM.split('@')[1] ?? 'invalid',

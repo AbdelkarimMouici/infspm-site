@@ -59,11 +59,28 @@ describe('contact handler', () => {
   it('rejects cross-site posts, wrong content types, other methods and oversized bodies', async () => {
     const d = deps();
     expect((await handleContact(post(valid, { origin: 'https://evil.example' }), env, d)).status).toBe(403);
-    expect((await handleContact(post(valid, { 'content-type': 'application/json' }), env, d)).status).toBe(415);
+    expect((await handleContact(post(valid, { origin: 'null' }), env, d)).status).toBe(403);
+    const wrongType = await handleContact(post(valid, { 'content-type': 'application/json', referer: `${SITE}/en/contact/` }), env, d);
+    expect(location(wrongType)).toBe('/en/contact/not-sent/invalid/');
     expect((await handleContact(new Request(`${SITE}/api/contact`), env, d)).status).toBe(405);
     const big = post({ ...valid, message: 'x'.repeat(MAX_BODY_BYTES) });
-    expect((await handleContact(big, env, d)).status).toBe(413);
+    expect(location(await handleContact(big, env, d))).toBe('/ar/contact/not-sent/invalid/'); // no Referer: Arabic
     expect(d.send).not.toHaveBeenCalled();
+  });
+
+  it('accepts a 5,000-character Arabic message (6 bytes per character once encoded)', async () => {
+    const d = deps();
+    const res = await handleContact(post({ ...valid, locale: 'ar', message: 'م'.repeat(5000) }), env, d);
+    expect(location(res)).toBe('/ar/contact/sent/');
+  });
+
+  it('counts browser line breaks (CRLF) as one character', async () => {
+    const d = deps();
+    const message = Array.from({ length: 2400 }, () => 'a').join('\r\n'); // 2,400 chars + 2,399 CRLF
+    const res = await handleContact(post({ ...valid, message }), env, d);
+    expect(location(res)).toBe('/fr/contact/sent/');
+    const sent = (d.send as unknown as { mock: { calls: [{ message: string }][] } }).mock.calls[0]?.[0];
+    expect(sent?.message).not.toContain('\r');
   });
 
   it.each([
@@ -73,10 +90,16 @@ describe('contact handler', () => {
     ['long message', { message: 'x'.repeat(5001) }],
     ['missing captcha', { 'cf-turnstile-response': '' }],
     ['unknown locale falls back to ar', { locale: 'xx' }],
+    ['line break in the name (forged email line)', { name: 'Ali\nCourriel : boss@inpfp.dz' }],
+    ['line break in the subject', { subject: 'Hello\r\nObjet : urgent' }],
+    ['invisible characters as a name', { name: '​​' }],
+    ['control characters as a name', { name: '\u0007\u0007' }],
+    ['bidi override in the subject', { subject: 'abc‮dcba' }],
+    ['message of spaces', { message: '          x         ' }],
   ])('refuses invalid input: %s', async (_label, change) => {
     const d = deps();
     const res = await handleContact(post({ ...valid, ...change }), env, d);
-    expect(location(res)).toMatch(/^\/(fr|ar)\/contact\/not-sent\/$/);
+    expect(location(res)).toMatch(/^\/(fr|ar)\/contact\/not-sent\/invalid\/$/);
     expect(d.send).not.toHaveBeenCalled();
   });
 
@@ -88,17 +111,17 @@ describe('contact handler', () => {
     ]) {
       const d = deps({ verify: vi.fn(async () => result) });
       const res = await handleContact(post(valid), env, d);
-      expect(location(res)).toBe('/fr/contact/not-sent/');
+      expect(location(res)).toBe('/fr/contact/not-sent/check/');
       expect(d.send).not.toHaveBeenCalled();
     }
   });
 
   it('fails closed without a Turnstile secret, and reports delivery failures', async () => {
     const d = deps();
-    expect(location(await handleContact(post(valid), {}, d))).toBe('/fr/contact/not-sent/');
+    expect(location(await handleContact(post(valid), {}, d))).toBe('/fr/contact/not-sent/unavailable/');
     expect(d.send).not.toHaveBeenCalled();
     const failing = deps({ send: vi.fn(async () => Promise.reject(new Error('down'))) });
-    expect(location(await handleContact(post(valid), env, failing))).toBe('/fr/contact/not-sent/');
+    expect(location(await handleContact(post(valid), env, failing))).toBe('/fr/contact/not-sent/unavailable/');
   });
 
   it('rate-limits a client', async () => {
@@ -106,7 +129,7 @@ describe('contact handler', () => {
     await handleContact(post(valid), env, d);
     await handleContact(post(valid), env, d);
     const third = await handleContact(post(valid), env, d);
-    expect(location(third)).toBe('/fr/contact/not-sent/');
+    expect(location(third)).toBe('/fr/contact/not-sent/busy/');
     expect(d.send).toHaveBeenCalledTimes(2);
   });
 });
@@ -124,13 +147,13 @@ describe('rate limiter', () => {
 });
 
 describe('Turnstile siteverify', () => {
-  it('posts secret, token, IP and an idempotency key, and fails closed on errors', async () => {
+  it('posts secret, token and IP, and fails closed on errors', async () => {
     const fetchImpl = vi.fn(async (_url: string | URL | Request, init?: RequestInit) => {
       const body = new URLSearchParams(String(init?.body));
       expect(body.get('secret')).toBe('s');
       expect(body.get('response')).toBe('t');
       expect(body.get('remoteip')).toBe('203.0.113.7');
-      expect(body.get('idempotency_key')).toMatch(/^[0-9a-f-]{36}$/);
+      expect(body.has('idempotency_key')).toBe(false); // a fresh key per call would add nothing
       return new Response(JSON.stringify({ success: true, hostname: 'h', action: 'contact' }));
     }) as unknown as typeof fetch;
     const ok = await verifyTurnstile({ secret: 's', token: 't', remoteIp: '203.0.113.7', fetchImpl });
@@ -168,5 +191,24 @@ describe('email', () => {
     expect(text).toContain('Courriel : amina@example.org');
     expect(text).toContain(valid.message);
     expect(() => formatContactEmail({ ...valid, email: 'bad' })).toThrow();
+  });
+});
+
+describe('review round 1 fixes', () => {
+  it('folds long Arabic headers into encoded words of at most 75 characters, without splitting characters', () => {
+    const encoded = encodeHeaderText('سؤال '.repeat(40) + '😀');
+    const words = encoded.split('\r\n ');
+    expect(words.length).toBeGreaterThan(1);
+    for (const word of words) {
+      expect(word.length).toBeLessThanOrEqual(75);
+      const bytes = Uint8Array.from(atob(word.slice(10, -2)), (c) => c.charCodeAt(0));
+      expect(() => new TextDecoder('utf-8', { fatal: true }).decode(bytes)).not.toThrow();
+    }
+  });
+
+  it('keeps the rate limiter memory bounded', async () => {
+    const limiter = new RateLimiter({ limit: 1, windowMs: 60_000 });
+    for (let i = 0; i < 5100; i++) await limiter.allow(`client-${i}`);
+    expect((limiter as unknown as { hits: Map<string, number[]> }).hits.size).toBeLessThanOrEqual(5000);
   });
 });

@@ -6,6 +6,8 @@
  * /api/contact (docs/DEPLOYMENT.md). IP addresses are hashed with a per-isolate random salt and kept only
  * for the length of the window.
  */
+const MAX_CLIENTS = 5000;
+
 export interface RateLimiterOptions {
   limit: number;
   windowMs: number;
@@ -40,10 +42,14 @@ export class RateLimiter {
       return false;
     }
     recent.push(now);
+    // Re-insert so the Map's insertion order is "least recently seen first".
+    this.hits.delete(key);
     this.hits.set(key, recent);
-    // Keep memory bounded.
-    if (this.hits.size > 5000) {
-      for (const [k, times] of this.hits) if (times.every((t) => now - t >= this.windowMs)) this.hits.delete(k);
+    // Hard memory bound: drop the least recently seen clients (O(1) each, no full scans).
+    while (this.hits.size > MAX_CLIENTS) {
+      const oldest = this.hits.keys().next().value;
+      if (oldest === undefined) break;
+      this.hits.delete(oldest);
     }
     return true;
   }

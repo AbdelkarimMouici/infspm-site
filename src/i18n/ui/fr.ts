@@ -94,4 +94,9 @@ export const fr: UIStrings = {
   'contact.notSent.title': 'Message non envoyé',
   'contact.notSent.body': 'Votre message n’a pas pu être envoyé. Vérifiez les champs et réessayez plus tard, ou écrivez-nous directement par courriel.',
   'contact.back': 'Retour à la page Contact',
+  'contact.notSent.keepText': 'Le bouton Retour du navigateur peut avoir conservé votre texte.',
+  'contact.notSent.invalid': 'Certains champs ne sont pas valides : vérifiez le nom, l’adresse électronique et que le message contient au moins 10 caractères.',
+  'contact.notSent.busy': 'Trop de messages ont été envoyés en peu de temps. Merci de réessayer dans quelques minutes.',
+  'contact.notSent.check': 'La vérification anti-robots a échoué ou a expiré. Merci de réessayer.',
+  'contact.notSent.unavailable': 'L’envoi n’est pas disponible pour le moment. Merci de nous écrire directement par courriel.',
 };
