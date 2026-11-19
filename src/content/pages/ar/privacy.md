@@ -20,3 +20,5 @@ needs-review: true
 ## للتواصل
 
 لأي سؤال حول هذه الصفحة، راسلوا المعهد على البريد الإلكتروني الرسمي: infspmtebessa@inpfp.dz.
+
+<!-- TODO(content): data-subject rights and the applicable Algerian law, pending administration/legal review (docs/CONTENT.md). Hosting and contact-form sections are added when those exist. -->

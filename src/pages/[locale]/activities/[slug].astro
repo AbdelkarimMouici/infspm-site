@@ -30,7 +30,9 @@ const alternates = await translationAlternates('activities', item.slug, 'activit
 const switchTargets = await switcherTargets('activities', item.slug, 'activities');
 const contentAttrs = isFallback ? { lang: contentLocale, dir: getDir(contentLocale) } : {};
 // Fallback pages keep a description in the page language (the content itself is Arabic).
-const description = isFallback ? t(locale, 'activities.description') : (data.summary ?? t(locale, 'activities.description'));
+const description = isFallback
+  ? `${data.title} (${t(locale, 'content.onlyInArabicShort')}) – ${t(locale, 'activities.description')}`
+  : (data.summary ?? t(locale, 'activities.description'));
 ---
 
 <BaseLayout

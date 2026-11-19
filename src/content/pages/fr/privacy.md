@@ -20,3 +20,5 @@ Lorsque vous suivez un lien vers un autre site (comme la page Facebook de l'inst
 ## Contact
 
 Pour toute question sur cette page, écrivez à l'adresse officielle de l'institut : infspmtebessa@inpfp.dz.
+
+<!-- TODO(content): data-subject rights and the applicable Algerian law, pending administration/legal review (docs/CONTENT.md). Hosting and contact-form sections are added when those exist. -->

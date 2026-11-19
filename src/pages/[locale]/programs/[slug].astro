@@ -40,7 +40,9 @@ const facts = [
 <BaseLayout
   locale={locale}
   title={data.title}
-  description={isFallback ? t(locale, 'programs.description') : (data.summary ?? t(locale, 'programs.description'))}
+  description={isFallback
+    ? `${data.title} (${t(locale, 'content.onlyInArabicShort')}) – ${t(locale, 'programs.description')}`
+    : (data.summary ?? t(locale, 'programs.description'))}
   alternates={alternates}
   switchTargets={switchTargets}
   noindex={isFallback}
