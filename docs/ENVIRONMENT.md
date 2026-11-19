@@ -11,4 +11,14 @@ This page is the reference instead. **Never commit real values.** Secrets live o
 | `GITHUB_OAUTH_SCOPE` | Cloudflare Pages | no | `functions/api/decap/*` | `public_repo` if the repository is public (narrower, recommended). `repo` (default) is needed for a private repository but grants access to all of the editor's private repos |
 | `SHOW_EXAMPLE_CONTENT` | build (staging only) | no | `src/lib/content.ts` | `true` shows `example: true` entries. Leave unset in production |
 
+### Facebook sync (step 5) – GitHub Actions, see docs/FACEBOOK-SYNC.md
+
+| Name | Kind | Secret? | Notes |
+|---|---|---|---|
+| `FB_PAGE_ID` | Actions **variable** | no | Numeric Page id. Empty = sync disabled (runs exit with a notice) |
+| `FB_PAGE_TOKEN` | Actions **secret** | **yes** | Long-lived Page access token. Never in the repo, logs or client code |
+| `FB_APP_SECRET` | Actions **secret** | **yes** | Optional; enables `appsecret_proof` (turn on "Require App Secret" in the Meta app) |
+| `FB_AUTO_PUBLISH_HASHTAG` | Actions variable | no | Optional agreed hashtag for auto-publishing posts without care flags |
+| `FB_MAX_POSTS` | env | no | Optional, default 25 |
+
 Later steps add their variables below.

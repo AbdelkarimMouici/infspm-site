@@ -1,0 +1,96 @@
+name: Facebook sync
+
+# New Facebook posts → draft news in ONE rolling pull request (branch facebook-sync/pending).
+# Setup and token renewal: docs/FACEBOOK-SYNC.md. Until vars.FB_PAGE_ID is set, runs exit early with a notice.
+
+on:
+  schedule:
+    - cron: '17,47 * * * *' # every 30 minutes
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: facebook-sync
+  cancel-in-progress: false
+
+env:
+  BRANCH: facebook-sync/pending
+  ASTRO_TELEMETRY_DISABLED: '1'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write # push the facebook-sync/pending branch
+      pull-requests: write # open the review pull request
+    steps:
+      - name: Checkout
+        if: ${{ vars.FB_PAGE_ID != '' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Not configured yet
+        if: ${{ vars.FB_PAGE_ID == '' }}
+        run: echo "::notice::Facebook sync is not configured (vars.FB_PAGE_ID is empty). See docs/FACEBOOK-SYNC.md."
+
+      - name: Use the pending branch (keeps earlier unreviewed drafts, avoids duplicates)
+        if: ${{ vars.FB_PAGE_ID != '' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
+            git switch --track "origin/$BRANCH"
+            # Bring in main (new files only in this branch, so conflicts are not expected).
+            git merge --no-edit origin/main
+          else
+            git switch -c "$BRANCH" origin/main
+          fi
+
+      - name: Set up Node.js
+        if: ${{ vars.FB_PAGE_ID != '' }}
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        if: ${{ vars.FB_PAGE_ID != '' }}
+        run: npm ci
+
+      - name: Fetch new posts
+        id: sync
+        if: ${{ vars.FB_PAGE_ID != '' }}
+        env:
+          FB_PAGE_ID: ${{ vars.FB_PAGE_ID }}
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+          FB_APP_SECRET: ${{ secrets.FB_APP_SECRET }}
+          FB_AUTO_PUBLISH_HASHTAG: ${{ vars.FB_AUTO_PUBLISH_HASHTAG }}
+        run: node scripts/facebook-sync.ts
+
+      - name: Check the site still builds with the new drafts
+        if: ${{ steps.sync.outputs.created != '' && steps.sync.outputs.created != '0' }}
+        run: npm run build
+
+      - name: Commit, push and open/update the pull request
+        if: ${{ steps.sync.outputs.created != '' && steps.sync.outputs.created != '0' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CREATED: ${{ steps.sync.outputs.created }}
+          FLAGGED: ${{ steps.sync.outputs.flagged }}
+        run: |
+          git add src/content/news src/assets/uploads/facebook
+          git commit -m "Facebook sync: ${CREATED} new draft(s)"
+          git push origin "$BRANCH"
+          if [ -z "$(gh pr list --head "$BRANCH" --state open --json number -q '.[].number')" ]; then
+            gh pr create --base main --head "$BRANCH" \
+              --title "Facebook posts to review" \
+              --body "New Facebook posts imported as **draft** news (${CREATED} in this run, ${FLAGGED} flagged).
+
+          Before merging: check text, photos (consent for identifiable students/patients), care flags and alt text.
+          Set \`status: published\` only on items to publish. To reject a post for good, delete its file and add its id to \`src/content/news/facebook-ignored.txt\`.
+          Guide: docs/FACEBOOK-SYNC.md. CI does not start automatically on bot PRs: close and reopen this PR to run it."
+          fi

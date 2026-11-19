@@ -1,0 +1,16 @@
+{
+  "data": [
+    {
+      "id": "100000000000001_200000000000001",
+      "message": "نص اختباري بدون صور.\n\n*نجمة* و <b>وسم</b> و [رابط](javascript:alert(1)) #موقع_المعهد",
+      "created_time": "2026-11-10T12:00:00+0000",
+      "permalink_url": "https://www.facebook.com/100000000000001/posts/200000000000001"
+    },
+    {
+      "id": "100000000000001_200000000000000",
+      "created_time": "2026-11-09T12:00:00+0000",
+      "attachments": { "data": [{ "media_type": "video", "type": "video_inline" }] }
+    }
+  ],
+  "paging": { "cursors": { "before": "QVFIUjEz", "after": "QVFIUjE0" } }
+}
