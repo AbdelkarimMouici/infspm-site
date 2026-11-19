@@ -48,6 +48,7 @@ Admissions and registration, Activities, News (list + article pages), Gallery, C
 - `npm run preview` – serve the production build locally
 - `npm run check` – type check (`astro check`) + lint (ESLint, incl. jsx-a11y rules for `.astro`)
 - `npm test` – tests (Vitest): i18n helpers, dictionary parity, RTL guard (no physical left/right classes), token contrast
+- `npm run test:dist` – after a build: checks dist/ against public/_headers (CSP, no inline code); see docs/SECURITY.md
 - `npm audit` – dependency audit (CI fails on moderate or higher)
 - Node: version in `.nvmrc` (24). `eslint-plugin-astro` expects Node ≥ 24.16.
 

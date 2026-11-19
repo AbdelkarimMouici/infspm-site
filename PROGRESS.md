@@ -13,6 +13,7 @@ with one PR per step whose base is the previous step's branch. Nothing is pushed
 | 4 | `feat/step-4-pages` | `feat/step-3-content-cms` | PR #4 open |
 | 5 | `feat/step-5-facebook-sync` | `feat/step-4-pages` | PR #5 open |
 | 6 | `feat/step-6-contact` | `feat/step-5-facebook-sync` | PR #6 open |
+| 7 | `feat/step-7-security-headers` | `feat/step-6-contact` | PR #7 open |
 
 ## Notes for the maintainer (please review)
 
@@ -166,3 +167,42 @@ with one PR per step whose base is the previous step's branch. Nothing is pushed
 - Deploy the Worker and set `MAIL_FROM`.
 - Add the service binding.
 - Add the WAF rate-limiting rule.
+
+## Step 7 – Security headers, CSP, audit
+
+**Done**
+- **`public/_headers`:**
+  - strict CSP (`'self'` only, no inline code, `frame-ancestors 'none'`, `base-uri`/`object-src 'none'`);
+  - HSTS for 2 years, without preload;
+  - `nosniff`, `strict-origin-when-cross-origin`, Permissions-Policy, COOP/CORP, `X-Frame-Options`;
+  - long cache for `/_astro/`.
+- **Two exceptions, each replacing the main policy:**
+  - Turnstile on `/:locale/contact/` only;
+  - Decap's needs on `/admin/*` only (`unsafe-eval`, inline styles, GitHub API, COOP that allows popups, `noindex`).
+- **`tests-dist/output.test.ts`** checks every built page:
+  - no inline code;
+  - every resource is allowed by that page's own CSP, computed with Cloudflare's rule order and `!` detaches;
+  - meta refresh stays on the site, and CSS loads nothing remote.
+- **CI:** runs these checks twice, with and without the contact form.
+- **Function responses** now also send `nosniff`.
+- **`.gitignore`:** now ignores `.dev.vars*`.
+- **Docs:** `docs/SECURITY.md`.
+
+**Checks:**
+- Build, check, 134 unit tests, 55 built-site checks and audit pass.
+- **Planted violations are caught:** an inline script, a misplaced Turnstile script, a protocol-relative CDN image, and an unquoted upper-case `onerror`.
+- **Decap under its admin CSP** (applied as a meta tag locally): it loads with no CSP errors.
+
+**Review (security audit, also covering the whole stack)**
+- 0 high, 1 medium (the checker missed some cases), 6 low. All fixed:
+  - an unneeded admin host;
+  - `nosniff` on function responses;
+  - tests for COOP and the exception policies;
+  - `.dev.vars` ignored;
+  - the HSTS `includeSubDomains` warning;
+  - doc errors.
+- **History scan:** a search of the git history for secrets found only test fixtures.
+
+**Not verified (stop condition):** the headers on a real Cloudflare deployment, Turnstile and the signed-in Decap editor under their CSPs, and whether GitHub's sign-in page keeps the popup opener. Check these on staging (`docs/SECURITY.md`).
+
+**For you to decide:** HSTS `includeSubDomains` and preload, once the domain is known.

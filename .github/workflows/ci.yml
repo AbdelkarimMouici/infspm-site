@@ -44,3 +44,11 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Check the built site against the security headers (CSP, no inline code)
+        run: npm run test:dist
+
+      - name: Build and check again with the contact form enabled (Cloudflare's public test site key)
+        env:
+          PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
+        run: npm run build && npm run test:dist

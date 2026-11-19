@@ -48,12 +48,17 @@ const defaultLimiter = new RateLimiter({ limit: 5, windowMs: 10 * 60 * 1000 });
 function redirect(origin: string, path: string): Response {
   return new Response(null, {
     status: 303,
-    headers: { Location: new URL(path, origin).href, 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' },
+    headers: {
+      Location: new URL(path, origin).href,
+      'Cache-Control': 'no-store',
+      'Referrer-Policy': 'no-referrer',
+      'X-Content-Type-Options': 'nosniff',
+    },
   });
 }
 
 function plain(status: number, text: string): Response {
-  return new Response(text, { status, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
+  return new Response(text, { status, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } });
 }
 
 function localeOf(value: unknown): Locale {
