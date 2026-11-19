@@ -24,7 +24,8 @@ export default defineConfig({
 
   markdown: {
     // Strip raw HTML, unsafe links and body images from all Markdown content (see the plugin).
-    processor: satteri({ mdastPlugins: [safeMarkdownPlugin] }),
+    // Footnotes are off: their generated labels are English only ("Footnotes", "Back to reference").
+    processor: satteri({ mdastPlugins: [safeMarkdownPlugin], features: { gfm: { footnotes: false } } }),
   },
 
   build: {
