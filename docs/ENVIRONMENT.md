@@ -22,3 +22,15 @@ This page is the reference instead. **Never commit real values.** Secrets live o
 | `FB_MAX_POSTS` | env | no | Optional, default 25 |
 
 Later steps add their variables below.
+
+### Contact form (step 6) – Cloudflare, see docs/DEPLOYMENT.md §5
+
+| Name | Where | Secret? | Notes |
+|---|---|---|---|
+| `PUBLIC_TURNSTILE_SITE_KEY` | Pages **build** variable | no (public) | Turnstile widget site key. Empty = the form is not rendered (visitors are asked to email) |
+| `TURNSTILE_SECRET_KEY` | Pages Function | **yes** | Turnstile secret for siteverify. Missing = every submission is refused (fail closed) |
+| `CONTACT_MAILER` | Pages **service binding** | – | Binding to the `infspm-contact-mailer` Worker |
+| `MAIL_FROM`, `MAIL_TO` | mailer Worker vars (`workers/contact-mailer/wrangler.toml`) | no | Sender on the institute's domain; verified destination (the institute's address) |
+| `EMAIL` | mailer Worker `send_email` binding | – | Restricted to the verified destination address |
+
+For local testing only, Cloudflare publishes test keys (for example site key `1x00000000000000000000AA`). Never use them in production.

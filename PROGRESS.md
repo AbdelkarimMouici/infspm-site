@@ -12,6 +12,7 @@ with one PR per step whose base is the previous step's branch. Nothing is pushed
 | 3 | `feat/step-3-content-cms` | `feat/step-2-design-system` | PR #3 open |
 | 4 | `feat/step-4-pages` | `feat/step-3-content-cms` | PR #4 open |
 | 5 | `feat/step-5-facebook-sync` | `feat/step-4-pages` | PR #5 open |
+| 6 | `feat/step-6-contact` | `feat/step-5-facebook-sync` | PR #6 open |
 
 ## Notes for the maintainer (please review)
 
@@ -130,3 +131,38 @@ with one PR per step whose base is the previous step's branch. Nothing is pushed
 - Add the GitHub secrets and variables.
 - Allow Actions to create pull requests, and turn on "Automatically delete head branches".
 - Exclude `facebook-sync/*` from Cloudflare previews.
+
+## Step 6 – Contact form
+
+**Done**
+- **`POST /api/contact` (Pages Function):**
+  - same-origin check, form-urlencoded only, 64 KB limit, honeypot field;
+  - Zod validation: no forged lines in the email, and harmless Arabic direction marks are removed rather than refused;
+  - Turnstile siteverify (`hostname` and `action` checked, fails closed);
+  - best-effort rate limit, hashed and capped, nothing persisted;
+  - redirects to a "sent" page or a "not sent" page for each reason;
+  - nothing stored or logged.
+- **Email:** a private `contact-mailer` Worker behind a service binding (no public URL) re-validates the message and builds a plain-text MIME email with no new dependency, sent to the verified institute address.
+- **Form:** shown only when `PUBLIC_TURNSTILE_SITE_KEY` is set. It is accessible and works in RTL.
+- **Privacy page:** updated, with Turnstile named as the only third-party script, on the contact page only.
+
+**Cloudflare docs checked:**
+- **Turnstile siteverify:** tokens last 5 minutes, are single-use and at most 2048 characters.
+- **Pages Functions:** there is no rate-limiting or `send_email` binding, hence the WAF rule and the Worker.
+
+**Checks:**
+- Build, check, 134 tests and audit pass.
+- **Browser:** the form checked with Cloudflare's public test site key.
+
+**Review**
+- **Round 1:** 0 high, 3 medium, 4 low, all fixed. They covered refused Arabic messages, forged email lines, errors with no reason, RFC 2047 folding, the rate limiter's memory, and small fixes.
+- **Round 2:** 1 medium (harmless Arabic marks refused) and 1 low (first Subject line length). Both fixed and tested.
+
+**Not verified (stop condition):** no Cloudflare account or domain, so real email delivery and the WAF rule are untested.
+
+**For you to do:** the steps in `docs/DEPLOYMENT.md` §5.
+- Create the Turnstile widget.
+- Turn on Email Routing and verify the institute's address.
+- Deploy the Worker and set `MAIL_FROM`.
+- Add the service binding.
+- Add the WAF rate-limiting rule.

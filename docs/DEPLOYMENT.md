@@ -44,3 +44,31 @@ CMS draft branches (`cms/...`), so unreviewed drafts would be publicly reachable
 ## 4. Cloudflare Pages project *(completed in step 8)*
 
 _To be completed in step 8._
+
+## 5. Contact form *(step 6)*
+
+The form is shown only when `PUBLIC_TURNSTILE_SITE_KEY` is set at build time. Until then, the contact page asks visitors to
+write by email. **Not tested against a live account:** these steps need the institute's domain on Cloudflare.
+
+1. **Turnstile widget.** Cloudflare dashboard → Turnstile → **Add widget**.
+   - **Hostnames:** the production domain (and staging if needed).
+   - **Mode:** Managed.
+   - Put the site key in the Pages **build** variable `PUBLIC_TURNSTILE_SITE_KEY`.
+   - Put the secret key in the Pages secret `TURNSTILE_SECRET_KEY`.
+2. **Email Routing.** On the institute's domain: Email → Email Routing → enable it.
+   - Under **Destination addresses**, add and verify the institute's address (`infspmtebessa@inpfp.dz`).
+   - Choose a sender such as `contact-form@<domain>`.
+3. **Mailer Worker** (`workers/contact-mailer`).
+   - Set `MAIL_FROM` in `wrangler.toml` (remove the `TODO`).
+   - Deploy it with Wrangler (`npx wrangler deploy` from that folder, logged in to the institute's Cloudflare account).
+   - It has **no public URL** (`workers_dev = false`).
+4. **Service binding.** Pages project → Settings → Bindings → **Add** → Service binding.
+   - Name it `CONTACT_MAILER`, pointing to `infspm-contact-mailer`.
+   - Redeploy the project.
+5. **Rate limiting (required).** Pages Functions have no rate-limiting binding; the code's limit is only best effort.
+   - Add a WAF rule: Security → WAF → **Rate limiting rules**.
+   - Use: if URI path equals `/api/contact` and method is `POST`, then **Block** after 5 requests per 10 minutes, per IP.
+6. **Test.**
+   - Send a message from each language and check that it arrives, with Reply-To set to the sender.
+   - Submit with the honeypot filled (developer tools) and check that no email arrives.
+   - Submit 6 times quickly and check that the WAF rule blocks it.

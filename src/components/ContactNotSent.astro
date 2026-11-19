@@ -1,0 +1,38 @@
+---
+// Result page when a contact message was not sent: says why (WCAG 3.3.1/3.3.3) and how to recover.
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PageHeader from '~/components/PageHeader.astro';
+import Button from '~/components/Button.astro';
+import type { Locale } from '~/i18n/config';
+import type { UIKey } from '~/i18n/ui';
+import { t } from '~/i18n/utils';
+import { site } from '~/config/site';
+import type { FailureReason } from '~/server/contact';
+
+interface Props {
+  locale: Locale;
+  reason?: FailureReason | undefined;
+}
+
+const { locale, reason } = Astro.props;
+const reasonKey: UIKey | undefined = reason ? (`contact.notSent.${reason}` as UIKey) : undefined;
+---
+
+<BaseLayout
+  locale={locale}
+  title={t(locale, 'contact.notSent.title')}
+  description={t(locale, 'contact.notSent.body')}
+  noindex
+>
+  <PageHeader title={t(locale, 'contact.notSent.title')} />
+  <div class="container-page space-y-5 py-8">
+    <p class="max-w-prose text-lg" role="alert">
+      {reasonKey ? t(locale, reasonKey) : t(locale, 'contact.notSent.body')}
+    </p>
+    <p class="max-w-prose text-muted">{t(locale, 'contact.notSent.keepText')}</p>
+    <p>
+      <a href={`mailto:${site.email}`} dir="ltr" class="ltr-inline">{site.email}</a>
+    </p>
+    <Button href={`/${locale}/contact/`} variant="secondary">{t(locale, 'contact.back')}</Button>
+  </div>
+</BaseLayout>

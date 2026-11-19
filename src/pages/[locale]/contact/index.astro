@@ -1,7 +1,9 @@
 ---
 // Contact page. Only the confirmed email is shown; address, hours and map are TODO(content).
-// The contact form is added in step 6 (serverless function + Turnstile).
+// The contact form (Pages Function + Turnstile) is shown only when a Turnstile site key is configured
+// at build time (PUBLIC_TURNSTILE_SITE_KEY); otherwise visitors are asked to write by email.
 import BaseLayout from '~/layouts/BaseLayout.astro';
+import ContactForm from '~/components/ContactForm.astro';
 import PageHeader from '~/components/PageHeader.astro';
 import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import NeedsReviewNotice from '~/components/NeedsReviewNotice.astro';
@@ -15,6 +17,7 @@ export function getStaticPaths() {
 
 const locale = Astro.params.locale as Locale;
 const pending = t(locale, 'common.toBeConfirmed');
+const siteKey = (import.meta.env['PUBLIC_TURNSTILE_SITE_KEY'] as string | undefined)?.trim() ?? '';
 ---
 
 <BaseLayout locale={locale} title={t(locale, 'contact.title')} description={t(locale, 'contact.description')}>
@@ -55,8 +58,14 @@ const pending = t(locale, 'common.toBeConfirmed');
 
     <section aria-labelledby="contact-form-heading">
       <h2 id="contact-form-heading" class="text-xl font-bold">{t(locale, 'contact.formHeading')}</h2>
-      <div id="contact-form-slot" class="mt-4">
-        <p class="text-muted">{t(locale, 'contact.formUnavailable')}</p>
+      <div class="mt-4">
+        {
+          siteKey ? (
+            <ContactForm locale={locale} siteKey={siteKey} />
+          ) : (
+            <p class="text-muted">{t(locale, 'contact.formUnavailable')}</p>
+          )
+        }
       </div>
     </section>
   </div>

@@ -10,8 +10,15 @@ needs-review: true
 ## ما لا يقوم به الموقع
 
 - لا يستعمل أدوات تحليل الزيارات ولا ملفات تعريف الارتباط (الكوكيز) الإعلانية أو التتبعية.
-- لا يحمّل سكريبتات أو خطوطًا من مواقع خارجية، ولا يتضمن منشورات فيسبوك مدمجة.
+- لا يحمّل سكريبتات أو خطوطًا من مواقع خارجية، باستثناء خدمة الحماية من الرسائل الآلية في صفحة الاتصال (انظر أدناه)، ولا يتضمن منشورات فيسبوك مدمجة.
 - لا يطلب إنشاء حساب.
+
+## نموذج الاتصال
+
+عندما يكون نموذج الاتصال متاحًا:
+
+- تُرسل المعلومات التي تكتبونها (الاسم، البريد الإلكتروني، الموضوع، الرسالة) إلى البريد الإلكتروني للمعهد، ولا تُحفظ في الموقع. تبقى الرسالة في صندوق البريد الإلكتروني للمعهد.
+- للحماية من الرسائل الآلية، تستعمل صفحة الاتصال وحدها خدمة Cloudflare Turnstile. تُحمَّل هذه الخدمة من موقع Cloudflare وتعالج معطيات تقنية (مثل عنوان IP ومعلومات المتصفح).
 
 ## الروابط الخارجية
 
@@ -21,4 +28,4 @@ needs-review: true
 
 لأي سؤال حول هذه الصفحة، راسلوا المعهد على البريد الإلكتروني الرسمي: infspmtebessa@inpfp.dz.
 
-<!-- TODO(content): data-subject rights and the applicable Algerian law, pending administration/legal review (docs/CONTENT.md). Hosting and contact-form sections are added when those exist. -->
+<!-- TODO(content): data-subject rights and the applicable Algerian law, pending administration/legal review (docs/CONTENT.md). A hosting section is added at deployment (step 9). -->

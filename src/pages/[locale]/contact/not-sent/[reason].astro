@@ -1,0 +1,15 @@
+---
+// "Not sent" page for each failure reason (/{locale}/contact/not-sent/{reason}/). Not indexed.
+import ContactNotSent from '~/components/ContactNotSent.astro';
+import { locales, type Locale } from '~/i18n/config';
+import { FAILURE_REASONS, type FailureReason } from '~/server/contact';
+
+export function getStaticPaths() {
+  return locales.flatMap((locale) => FAILURE_REASONS.map((reason) => ({ params: { locale, reason } })));
+}
+
+const locale = Astro.params.locale as Locale;
+const reason = Astro.params.reason as FailureReason;
+---
+
+<ContactNotSent locale={locale} reason={reason} />
