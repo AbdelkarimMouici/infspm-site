@@ -21,9 +21,11 @@ interface Props {
   description: string;
   /** Override language-switcher targets for pages that do not exist in every language. */
   alternates?: Partial<Record<Locale, string>>;
+  /** Exclude from search engines (404, utility pages). Also drops canonical and hreflang. */
+  noindex?: boolean;
 }
 
-const { locale, title, description, alternates } = Astro.props;
+const { locale, title, description, alternates, noindex = false } = Astro.props;
 const dir = getDir(locale);
 const siteName = t(locale, 'site.name');
 const fullTitle = `${title} | ${siteName}`;
@@ -55,9 +57,19 @@ const xDefault = xDefaultPath ? new URL(xDefaultPath, site).href : undefined;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
-    {hreflangLinks.map((alt) => <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />)}
-    {xDefault && <link rel="alternate" hreflang="x-default" href={xDefault} />}
+    {
+      noindex ? (
+        <meta name="robots" content="noindex" />
+      ) : (
+        <>
+          <link rel="canonical" href={canonical} />
+          {hreflangLinks.map((alt) => (
+            <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />
+          ))}
+          {xDefault && <link rel="alternate" hreflang="x-default" href={xDefault} />}
+        </>
+      )
+    }
   </head>
   <body class="bg-surface text-text antialiased">
     <a href="#main" class="skip-link">{t(locale, 'a11y.skipToContent')}</a>

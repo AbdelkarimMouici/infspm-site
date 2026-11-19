@@ -24,6 +24,7 @@ const pathname = Astro.url.pathname;
               lang={code}
             >
               {localeMeta[code].label}
+              <span class="sr-only" lang={locale}>{` ${t(locale, 'lang.current')}`}</span>
             </span>
           ) : (
             <a

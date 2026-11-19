@@ -4,12 +4,18 @@ import type { HTMLAttributes } from 'astro/types';
 
 type Variant = 'primary' | 'secondary' | 'ghost';
 
+/** Extra attributes. Inline styles, event handlers, class and type are excluded (strict CSP, stable styling). */
+type SafeAttrs = Omit<
+  HTMLAttributes<'a'> & HTMLAttributes<'button'>,
+  'style' | 'class' | 'class:list' | 'type' | `on${string}`
+>;
+
 interface Props {
   href?: string;
   variant?: Variant;
   type?: 'button' | 'submit' | 'reset';
   /** Extra attributes (e.g. aria-describedby, name, disabled). */
-  attrs?: HTMLAttributes<'a'> & HTMLAttributes<'button'>;
+  attrs?: SafeAttrs;
 }
 
 const { href, variant = 'primary', type = 'button', attrs = {} } = Astro.props;
@@ -26,11 +32,11 @@ const className = `${base} ${variants[variant]}`;
 
 {
   href ? (
-    <a href={href} class={className} {...attrs}>
+    <a {...attrs} href={href} class={className}>
       <slot />
     </a>
   ) : (
-    <button type={type} class={className} {...attrs}>
+    <button {...attrs} type={type} class={className}>
       <slot />
     </button>
   )

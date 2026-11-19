@@ -1,0 +1,32 @@
+---
+// Single static 404 page (hosting serves /404.html for every unknown URL).
+// Arabic first, then French and English, each block with its own lang/dir.
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { locales } from '~/i18n/config';
+import { getDir, t } from '~/i18n/utils';
+---
+
+<BaseLayout
+  locale="ar"
+  title={t('ar', 'notFound.title')}
+  description={t('ar', 'notFound.body')}
+  alternates={{}}
+  noindex
+>
+  <div class="container-page py-10">
+    <h1 class="text-2xl font-bold md:text-3xl">{t('ar', 'notFound.title')}</h1>
+    <ul class="mt-6 grid gap-6 md:grid-cols-3" role="list">
+      {
+        locales.map((code) => (
+          <li lang={code} dir={getDir(code)} class="rounded-lg border border-border p-5">
+            {code !== 'ar' && <p class="font-semibold">{t(code, 'notFound.title')}</p>}
+            <p class="text-muted">{t(code, 'notFound.body')}</p>
+            <p class="mt-3">
+              <a href={`/${code}/`}>{t(code, 'notFound.home')}</a>
+            </p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</BaseLayout>
