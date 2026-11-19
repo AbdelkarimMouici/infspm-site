@@ -7,7 +7,7 @@ export const localeMeta: Record<
   Locale,
   { dir: 'rtl' | 'ltr'; label: string; hreflang: string; ogLocale: string }
 > = {
-  ar: { dir: 'rtl', label: 'العربية', hreflang: 'ar', ogLocale: 'ar_DZ' },
-  fr: { dir: 'ltr', label: 'Français', hreflang: 'fr', ogLocale: 'fr_DZ' },
+  ar: { dir: 'rtl', label: 'العربية', hreflang: 'ar', ogLocale: 'ar_AR' },
+  fr: { dir: 'ltr', label: 'Français', hreflang: 'fr', ogLocale: 'fr_FR' },
   en: { dir: 'ltr', label: 'English', hreflang: 'en', ogLocale: 'en_US' },
 };
