@@ -73,11 +73,16 @@ describe('Sätteri pipeline (as used by the Astro build)', () => {
       '![photo](https://scontent.fbcdn.net/x.jpg)',
       '',
       '[ref]: javascript:alert(2)',
+      '',
+      '[<iframe src=x></iframe>nested](javascript:alert(3))',
+      '',
+      '[a ![i](https://e.example/x.png) b](javascript:x)',
     ].join('\n');
     const result = await markdownToHtml(source, { mdastPlugins: [safeMarkdownPlugin] as never });
     const html = typeof result === 'string' ? result : result.html;
     for (const bad of ['<iframe', '<script', '<meta', 'javascript:', 'fbcdn', '<img']) expect(html).not.toContain(bad);
     expect(html).toContain('click');
+    expect(html).toContain('nested');
     expect(html).toContain('href="https://example.org"');
     expect(html).toContain('Hello');
   });

@@ -32,6 +32,16 @@ export function isSafeUrl(url: string): boolean {
   return ALLOWED_PROTOCOLS.has(`${match[1]?.toLowerCase()}:`);
 }
 
+/**
+ * Visible text of a node, ignoring raw HTML and images. An unsafe link is replaced by this text only,
+ * so nothing nested inside it (HTML, images, other links) can survive.
+ */
+export function plainText(node: MdNode): string {
+  if (DROPPED_TYPES.has(node.type)) return '';
+  if (node.type === 'text' || node.type === 'inlineCode') return node.value ?? '';
+  return (node.children ?? []).map(plainText).join('');
+}
+
 /** Applies the safety rules to a plain mdast tree, in place. */
 export function cleanMarkdownTree(node: MdNode): void {
   if (!node.children) return;
@@ -39,7 +49,7 @@ export function cleanMarkdownTree(node: MdNode): void {
   for (const child of node.children) {
     if (DROPPED_TYPES.has(child.type)) continue;
     if ((child.type === 'link' || child.type === 'definition') && child.url !== undefined && !isSafeUrl(child.url)) {
-      if (child.type === 'link') result.push(...(child.children ?? []));
+      if (child.type === 'link') result.push({ type: 'text', value: plainText(child) });
       continue;
     }
     cleanMarkdownTree(child);
@@ -53,7 +63,7 @@ interface VisitorContext {
   removeNode(node: unknown): void;
   replaceNode(node: unknown, replacement: unknown): void;
 }
-type UrlNode = { url: string; children?: unknown[] };
+type UrlNode = { type: string; url: string; children?: MdNode[] };
 
 /** Sätteri mdast plugin with the same rules as `cleanMarkdownTree`. */
 export const safeMarkdownPlugin = {
@@ -71,6 +81,6 @@ export const safeMarkdownPlugin = {
     if (!isSafeUrl(node.url)) ctx.removeNode(node);
   },
   link(node: UrlNode, ctx: VisitorContext) {
-    if (!isSafeUrl(node.url)) ctx.replaceNode(node, [...(node.children ?? [])]);
+    if (!isSafeUrl(node.url)) ctx.replaceNode(node, { type: 'text', value: plainText(node) });
   },
 };

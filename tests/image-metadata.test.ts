@@ -8,12 +8,15 @@ import { describe, expect, it } from 'vitest';
  * Strip metadata before committing (the Facebook sync does it automatically, step 5).
  */
 
+const IMAGE_EXT = /\.(jpe?g|png|webp|avif|gif|tiff?|heic|heif|bmp|svg)$/i;
+const ALLOWED_EXT = /\.(jpe?g|png|webp)$/i;
+
 function listImages(dir: string): string[] {
   if (!existsSync(dir)) return [];
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name);
     if (statSync(path).isDirectory()) return listImages(path);
-    return /\.(jpe?g|png|webp)$/i.test(name) ? [path] : [];
+    return IMAGE_EXT.test(name) ? [path] : [];
   });
 }
 
@@ -29,6 +32,7 @@ export function findExif(bytes: Uint8Array): string | null {
       const marker = bytes[offset + 1] ?? 0;
       const length = ((bytes[offset + 2] ?? 0) << 8) | (bytes[offset + 3] ?? 0);
       if (marker === 0xe1 && ascii(offset + 4, 4) === 'Exif') return 'JPEG APP1 Exif';
+      if (marker === 0xe1 && ascii(offset + 4, 28) === 'http://ns.adobe.com/xap/1.0/') return 'JPEG APP1 XMP';
       if (marker === 0xda) break; // start of scan: no more metadata segments
       offset += 2 + length;
     }
@@ -42,6 +46,7 @@ export function findExif(bytes: Uint8Array): string | null {
         (((bytes[offset] ?? 0) << 24) >>> 0) + ((bytes[offset + 1] ?? 0) << 16) + ((bytes[offset + 2] ?? 0) << 8) + (bytes[offset + 3] ?? 0);
       const type = ascii(offset + 4, 4);
       if (type === 'eXIf') return 'PNG eXIf chunk';
+      if ((type === 'iTXt' || type === 'tEXt' || type === 'zTXt') && ascii(offset + 8, 17) === 'XML:com.adobe.xmp') return 'PNG XMP chunk';
       if (type === 'IEND') break;
       offset += 12 + length;
     }
@@ -55,6 +60,7 @@ export function findExif(bytes: Uint8Array): string | null {
       const length =
         (bytes[offset + 4] ?? 0) + ((bytes[offset + 5] ?? 0) << 8) + ((bytes[offset + 6] ?? 0) << 16) + (((bytes[offset + 7] ?? 0) << 24) >>> 0);
       if (type === 'EXIF') return 'WebP EXIF chunk';
+      if (type === 'XMP ') return 'WebP XMP chunk';
       offset += 8 + length + (length % 2);
     }
   }
@@ -64,7 +70,11 @@ export function findExif(bytes: Uint8Array): string | null {
 describe('committed images', () => {
   const images = ['src', 'public'].flatMap(listImages);
 
-  it('carry no EXIF/GPS metadata', () => {
+  it('use only JPEG, PNG or WebP (formats the metadata check understands)', () => {
+    expect(images.filter((path) => !ALLOWED_EXT.test(path))).toEqual([]);
+  });
+
+  it('carry no EXIF/XMP/GPS metadata', () => {
     const offenders = images
       .map((path) => ({ path, found: findExif(readFileSync(path)) }))
       .filter((item) => item.found)
@@ -79,6 +89,12 @@ describe('findExif detector', () => {
     const clean = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x04, 0x4a, 0x46, 0xff, 0xda]);
     expect(findExif(exif)).toBe('JPEG APP1 Exif');
     expect(findExif(clean)).toBeNull();
+  });
+
+  it('detects XMP in JPEG', () => {
+    const xmp = new TextEncoder().encode('http://ns.adobe.com/xap/1.0/');
+    const bytes = Uint8Array.from([0xff, 0xd8, 0xff, 0xe1, 0x00, xmp.length + 2, ...xmp, 0xff, 0xda]);
+    expect(findExif(bytes)).toBe('JPEG APP1 XMP');
   });
 
   it('detects an EXIF chunk in WebP', () => {
