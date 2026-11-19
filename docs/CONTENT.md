@@ -24,7 +24,7 @@
 - [ ] Domain name decision (.dz or other) and who owns the registrar account
 
 ## TODO(content) placeholders in the code (step 1)
-- `astro.config.mjs`: `site` is `https://example.invalid` until the domain is decided (affects canonical and hreflang URLs).
+- Domain: `SITE_URL` defaults to `https://example.invalid` until the domain is decided (affects canonical/hreflang, sitemap, robots.txt, structured data).
 - `src/i18n/ui/fr.ts`: French institute name "Institut National de Formation Supérieure Paramédicale de Tébessa" is unconfirmed (`needs-review`). All French UI strings need review.
 - `src/i18n/ui/en.ts`: English name "National Institute of Higher Training in Paramedical Sciences, Tébessa" comes from the project brief, not from the administration (`needs-review`). All English UI strings need review.
 - `src/styles/tokens.css`: colours are a neutral medical blue/teal placeholder palette; replace with the official logo palette.
@@ -42,3 +42,8 @@
 - Contact page: address, phone, opening hours and map link show "to be confirmed" until set in `src/config/site.ts`.
 - Programs: no real programs yet (only an example entry hidden from production builds).
 - Every page in all three languages is marked `needs-review: true`, including the Arabic drafts, which were not written by the administration.
+
+## TODO(content) placeholders (step 8 – SEO)
+- `public/favicon.svg`: neutral placeholder icon (white cross); replace with the official logo.
+- `src/components/StructuredData.astro`: address, telephone, logo and Facebook URL (`sameAs`) to add once confirmed.
+- Open Graph image (`og:image`) to add once the logo exists.

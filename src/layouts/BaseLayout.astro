@@ -10,6 +10,7 @@ import '~/styles/global.css';
 
 import SiteHeader from '~/components/SiteHeader.astro';
 import SiteFooter from '~/components/SiteFooter.astro';
+import StructuredData from '~/components/StructuredData.astro';
 import { defaultLocale, localeMeta, locales, type Locale } from '~/i18n/config';
 import { getDir, localizedPath, t } from '~/i18n/utils';
 
@@ -58,6 +59,8 @@ const xDefault = xDefaultPath ? new URL(xDefaultPath, site).href : undefined;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#0a5a78" />
     <meta name="description" content={description} />
     {
       noindex ? (
@@ -69,6 +72,22 @@ const xDefault = xDefaultPath ? new URL(xDefaultPath, site).href : undefined;
             <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />
           ))}
           {xDefault && <link rel="alternate" hreflang="x-default" href={xDefault} />}
+          {/* Open Graph: how links to the site look when shared. TODO(content): og:image once the logo exists. */}
+          <meta property="og:type" content="website" />
+          <meta property="og:site_name" content={siteName} />
+          <meta property="og:title" content={title} />
+          <meta property="og:description" content={description} />
+          <meta property="og:url" content={canonical} />
+          <meta property="og:locale" content={localeMeta[locale].ogLocale} />
+          {hreflangLinks
+            .filter((alt) => alt.hreflang !== localeMeta[locale].hreflang)
+            .map((alt) => (
+              <meta
+                property="og:locale:alternate"
+                content={localeMeta[locales.find((code) => localeMeta[code].hreflang === alt.hreflang) ?? locale].ogLocale}
+              />
+            ))}
+          <StructuredData locale={locale} />
         </>
       )
     }
