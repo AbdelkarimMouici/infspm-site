@@ -8,6 +8,8 @@ import { locales, type Locale } from '~/i18n/config';
 import { t } from '~/i18n/utils';
 import type { UIKey } from '~/i18n/ui';
 import { getLocalizedEntries } from '~/lib/localized';
+import { getLogo } from '~/lib/logo';
+import { getImage } from 'astro:assets';
 
 export function getStaticPaths() {
   return locales.map((locale) => ({ params: { locale } }));
@@ -25,6 +27,10 @@ const quickLinks: { title: UIKey; text: UIKey; slug: string; icon: 'book' | 'reg
   { title: 'nav.news', text: 'home.quick.news', slug: 'news', icon: 'news' },
   { title: 'nav.contact', text: 'home.quick.contact', slug: 'contact', icon: 'contact' },
 ];
+// Logo texture for the 3D medallion (same-origin, optimised WebP).
+const logo = getLogo();
+const logoTextureUrl = logo ? (await getImage({ src: logo, width: 1024, height: 1024, format: 'webp' })).src : undefined;
+
 const btn =
   'inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 font-bold no-underline transition-all duration-300 hover:-translate-y-0.5';
 ---
@@ -36,11 +42,11 @@ const btn =
       <div>
         <p class="eyebrow rise">{t(locale, 'home.eyebrow')}</p>
         <h1 id="home-title" class="rise rise-d1 mt-4 text-4xl font-extrabold leading-tight tracking-tight md:text-6xl">
-          {t(locale, 'site.name')}
+          <span class="text-shimmer">{t(locale, 'site.name')}</span>
         </h1>
         <p class="rise rise-d2 mt-6 max-w-xl text-lg leading-relaxed md:text-xl">{t(locale, 'home.intro')}</p>
         <div class="rise rise-d2 mt-8 flex flex-wrap gap-3">
-          <a href={`/${locale}/programs/`} class:list={[btn, 'btn bg-white text-primary shadow-lift hover:text-primary']}>
+          <a data-magnetic href={`/${locale}/programs/`} class:list={[btn, 'btn bg-white text-primary shadow-lift hover:text-primary']}>
             {t(locale, 'nav.programs')}
             <svg class="rtl:-scale-x-100" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
@@ -48,6 +54,7 @@ const btn =
             </svg>
           </a>
           <a
+            data-magnetic
             href={`/${locale}/about/`}
             class:list={[btn, 'btn border border-white/40 text-white hover:bg-white/10 hover:text-white']}
           >
@@ -56,14 +63,25 @@ const btn =
         </div>
       </div>
 
-      <!-- Hero visual: the logo in an animated orbit (stage 2 adds the interactive 3D scene here). -->
-      <div class="hero-visual relative mx-auto grid aspect-square w-full max-w-md place-items-center" aria-hidden="true">
-        <span class="orbit orbit-1"></span>
-        <span class="orbit orbit-2"></span>
-        <span class="orbit orbit-3"></span>
-        <span class="medallion float size-56 md:size-72">
-          <Logo size={280} alt="" eager />
-        </span>
+      <!--
+        Hero visual: an interactive 3D scene (logo medallion, DNA helix, particles) loaded after the page displays.
+        The CSS version below (logo in orbit) shows first and stays when 3D is skipped (reduced motion, data saver…).
+      -->
+      <div
+        class="hero-visual relative mx-auto grid aspect-square w-full max-w-lg place-items-center"
+        aria-hidden="true"
+        data-hero-3d
+        data-logo={logoTextureUrl}
+      >
+        <canvas class="hero-canvas"></canvas>
+        <div class="hero-fallback absolute inset-0 grid place-items-center">
+          <span class="orbit orbit-1"></span>
+          <span class="orbit orbit-2"></span>
+          <span class="orbit orbit-3"></span>
+          <span class="medallion float size-56 md:size-72">
+            <Logo size={288} alt="" eager />
+          </span>
+        </div>
       </div>
     </div>
   </section>
@@ -120,3 +138,7 @@ const btn =
     </section>
   </div>
 </BaseLayout>
+
+<script>
+  import '~/scripts/hero-loader';
+</script>

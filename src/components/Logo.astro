@@ -3,7 +3,7 @@
 // Optimised at build time (resized, WebP, metadata stripped). Until the file exists, a neutral icon is shown.
 // Stage 3 of the redesign makes the logo replaceable from the admin panel.
 import { Image } from 'astro:assets';
-import type { ImageMetadata } from 'astro';
+import { getLogo } from '~/lib/logo';
 
 interface Props {
   /** Rendered size in CSS pixels (square). */
@@ -15,10 +15,7 @@ interface Props {
 }
 
 const { size, alt, class: className, eager = false } = Astro.props;
-const files = import.meta.glob<{ default: ImageMetadata }>('/src/assets/brand/logo.{png,jpg,jpeg,webp,svg}', {
-  eager: true,
-});
-const logo = Object.values(files)[0]?.default;
+const logo = getLogo();
 ---
 
 {

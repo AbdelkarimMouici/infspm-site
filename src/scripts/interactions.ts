@@ -77,6 +77,46 @@ function setupTilt(): void {
   }
 }
 
+/** A soft light that follows the pointer (mouse/pen only). */
+function setupCursorGlow(): void {
+  if (reducedMotion.matches || !finePointer.matches) return;
+  const glow = document.createElement('div');
+  glow.className = 'cursor-glow';
+  glow.setAttribute('aria-hidden', 'true');
+  document.body.append(glow);
+  let frame = 0;
+  window.addEventListener(
+    'pointermove',
+    (event) => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        glow.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
+        glow.classList.add('is-active');
+      });
+    },
+    { passive: true },
+  );
+  document.documentElement.addEventListener('pointerleave', () => glow.classList.remove('is-active'));
+}
+
+/** Buttons drawn slightly towards the pointer. */
+function setupMagnetic(): void {
+  if (reducedMotion.matches || !finePointer.matches) return;
+  for (const element of document.querySelectorAll<HTMLElement>('[data-magnetic]')) {
+    element.addEventListener('pointermove', (event) => {
+      const rect = element.getBoundingClientRect();
+      const x = event.clientX - (rect.left + rect.width / 2);
+      const y = event.clientY - (rect.top + rect.height / 2);
+      element.style.transform = `translate3d(${x * 0.25}px, ${y * 0.35}px, 0)`;
+    });
+    element.addEventListener('pointerleave', () => {
+      element.style.transform = '';
+    });
+  }
+}
+
 setupThemeToggle();
 setupReveal();
 setupTilt();
+setupCursorGlow();
+setupMagnetic();

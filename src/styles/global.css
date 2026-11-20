@@ -287,11 +287,7 @@
     display: grid;
     place-items: center;
     border-radius: 50%;
-    padding: 0.35rem;
-    background: var(--grad-silver);
-    box-shadow:
-      0 0 0 1px rgb(255 255 255 / 0.4) inset,
-      0 18px 40px -12px rgb(0 0 0 / 0.45);
+    box-shadow: 0 18px 40px -12px rgb(0 0 0 / 0.45);
     overflow: hidden;
   }
 
@@ -517,5 +513,172 @@
       opacity: 1;
       transform: none;
     }
+  }
+}
+
+/* ---------- Stage 2: life and interaction ---------- */
+
+@layer components {
+  /* 3D hero: the canvas fades in over the CSS version once the scene is ready. */
+  .hero-canvas {
+    position: absolute;
+    inset: -12%;
+    inline-size: 124%;
+    block-size: 124%;
+    opacity: 0;
+    transition: opacity 1.2s var(--ease-out);
+    cursor: grab;
+    touch-action: pan-y;
+  }
+
+  .hero-canvas:active {
+    cursor: grabbing;
+  }
+
+  .hero-fallback {
+    transition: opacity 1s var(--ease-out);
+  }
+
+  .is-ready .hero-canvas {
+    opacity: 1;
+  }
+
+  .is-ready .hero-fallback {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Shimmering headline on brand bands (white → light sky; both far above AA on navy). */
+  .text-shimmer {
+    background: linear-gradient(110deg, #ffffff 20%, #8fd3f5 40%, #ffffff 60%);
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 6s linear infinite;
+  }
+
+  @keyframes shimmer {
+    to {
+      background-position: -220% 0;
+    }
+  }
+
+  /* Cards: animated glowing border on hover. */
+  @property --border-angle {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+  }
+
+  .glow-border {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
+      conic-gradient(from var(--border-angle), var(--color-border), var(--color-border)) border-box;
+  }
+
+  .glow-border:hover,
+  .glow-border:focus-within {
+    background:
+      linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
+      conic-gradient(from var(--border-angle), #35a6dd, #1b4a70, #8fd3f5, #35a6dd) border-box;
+    animation: border-spin 3s linear infinite;
+  }
+
+  @keyframes border-spin {
+    to {
+      --border-angle: 1turn;
+    }
+  }
+
+  /* Cursor glow (pointer devices; position set by src/scripts/interactions.ts). */
+  .cursor-glow {
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    z-index: 30;
+    inline-size: 26rem;
+    block-size: 26rem;
+    margin-block-start: -13rem;
+    margin-inline-start: -13rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(53 166 221 / 0.16), transparent 65%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    mix-blend-mode: plus-lighter;
+  }
+
+  .cursor-glow.is-active {
+    opacity: 1;
+  }
+
+  /* Scroll progress bar (CSS scroll-driven animation; ignored by browsers without support). */
+  .scroll-progress {
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline: 0;
+    z-index: 60;
+    block-size: 3px;
+    background: var(--grad-sky);
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+    pointer-events: none;
+  }
+
+  [dir='rtl'] .scroll-progress {
+    transform-origin: 100% 50%;
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .scroll-progress {
+      animation: progress linear both;
+      animation-timeline: scroll(root);
+    }
+  }
+
+  @keyframes progress {
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  /* Magnetic buttons (transform set by JS). */
+  [data-magnetic] {
+    transition: transform 0.35s var(--ease-out);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .text-shimmer,
+    .glow-border:hover,
+    .glow-border:focus-within,
+    .scroll-progress {
+      animation: none;
+    }
+
+    .cursor-glow {
+      display: none;
+    }
+  }
+}
+
+/* Smooth cross-page transitions (supporting browsers), with the logo flying between pages. */
+@view-transition {
+  navigation: auto;
+}
+
+.site-logo {
+  view-transition-name: site-logo;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.45s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
   }
 }
