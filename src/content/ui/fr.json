@@ -1,0 +1,162 @@
+{
+  "site": {
+    "name": "Institut National de Formation Supérieure Paramédicale de Tébessa",
+    "shortName": "INFSPM Tébessa"
+  },
+  "a11y": {
+    "skipToContent": "Aller au contenu principal",
+    "external": "(ouvre un site externe)"
+  },
+  "nav": {
+    "label": "Menu principal",
+    "menu": "Menu",
+    "home": "Accueil",
+    "about": "L'institut",
+    "programs": "Formations",
+    "admissions": "Inscription et admission",
+    "activities": "Activités",
+    "news": "Actualités",
+    "gallery": "Galerie",
+    "contact": "Contact",
+    "privacy": "Confidentialité"
+  },
+  "lang": {
+    "switchLabel": "Choisir la langue",
+    "current": "(langue actuelle)"
+  },
+  "notFound": {
+    "title": "Page introuvable",
+    "body": "Cette page est introuvable. Le contenu est peut-être en cours de préparation.",
+    "home": "Retour à l'accueil"
+  },
+  "home": {
+    "title": "Accueil",
+    "description": "Site officiel de l'Institut National de Formation Supérieure Paramédicale de Tébessa.",
+    "intro": "Bienvenue sur le site officiel de l'institut. Vous y trouverez des informations sur les formations, l'inscription, les actualités et les activités.",
+    "quickLinks": "Accès rapide",
+    "quick": {
+      "programs": "Découvrir les formations proposées par l'institut.",
+      "admissions": "Conditions et étapes d'inscription et d'admission.",
+      "news": "Actualités et annonces officielles.",
+      "contact": "Comment contacter l'institut."
+    },
+    "latestNews": "Dernières actualités",
+    "allNews": "Toutes les actualités",
+    "latestActivities": "Dernières activités",
+    "allActivities": "Toutes les activités",
+    "scroll": "Faites défiler",
+    "eyebrow": "Formation supérieure paramédicale · Tébessa",
+    "discover": "Découvrir l'institut"
+  },
+  "footer": {
+    "email": "Courriel",
+    "contactHeading": "Nous contacter",
+    "linksHeading": "Liens",
+    "rights": "Tous droits réservés."
+  },
+  "common": {
+    "readMore": "Lire la suite",
+    "example": "Contenu de démonstration",
+    "toBeConfirmed": "À confirmer"
+  },
+  "breadcrumb": {
+    "label": "Fil d'Ariane"
+  },
+  "content": {
+    "onlyInArabic": "Ce contenu n'est disponible qu'en arabe pour le moment.",
+    "onlyInArabicShort": "En arabe uniquement",
+    "inPreparation": "Cette page est en préparation. Son contenu sera publié après validation par l'administration de l'institut."
+  },
+  "news": {
+    "title": "Actualités",
+    "description": "Actualités et annonces de l'Institut National de Formation Supérieure Paramédicale de Tébessa.",
+    "lead": "Les actualités et annonces officielles de l'institut.",
+    "empty": "Aucune actualité publiée pour le moment.",
+    "viewOnFacebook": "Voir la publication originale sur Facebook"
+  },
+  "activities": {
+    "title": "Activités",
+    "description": "Activités scientifiques et pédagogiques de l'Institut National de Formation Supérieure Paramédicale de Tébessa.",
+    "lead": "Les activités et événements organisés par l'institut ou auxquels il participe.",
+    "empty": "Aucune activité publiée pour le moment.",
+    "location": "Lieu"
+  },
+  "programs": {
+    "title": "Formations",
+    "description": "Formations de l'Institut National de Formation Supérieure Paramédicale de Tébessa : durée, admission et diplôme.",
+    "lead": "Les spécialités proposées par l'institut, avec la durée, les conditions d'admission et le diplôme.",
+    "empty": "La liste des spécialités sera publiée après validation par l'administration.",
+    "keyFacts": "Informations clés",
+    "duration": "Durée",
+    "diploma": "Diplôme",
+    "admission": "Conditions d'admission",
+    "seeAdmissions": "Inscription et admission"
+  },
+  "gallery": {
+    "title": "Galerie",
+    "description": "Photos des actualités et activités de l'Institut National de Formation Supérieure Paramédicale de Tébessa.",
+    "lead": "Photos des actualités et des activités de l'institut.",
+    "empty": "Aucune photo publiée pour le moment."
+  },
+  "contact": {
+    "title": "Contact",
+    "description": "Coordonnées de l'Institut National de Formation Supérieure Paramédicale de Tébessa.",
+    "lead": "Pour toute question, écrivez-nous à l'adresse électronique officielle de l'institut.",
+    "detailsHeading": "Coordonnées",
+    "address": "Adresse",
+    "phone": "Téléphone",
+    "hours": "Horaires d'accueil",
+    "map": "Plan",
+    "formHeading": "Envoyer un message",
+    "formUnavailable": "Le formulaire de contact n'est pas encore disponible. Merci de nous écrire par courriel.",
+    "form": {
+      "required": "Les champs marqués d’un * sont obligatoires.",
+      "name": "Nom complet",
+      "email": "Adresse électronique",
+      "emailHint": "Nous vous répondrons à cette adresse.",
+      "subject": "Objet",
+      "message": "Message",
+      "privacy": "Votre message est envoyé à l’adresse électronique de l’institut et n’est pas conservé sur le site.",
+      "send": "Envoyer le message"
+    },
+    "sent": {
+      "title": "Message envoyé",
+      "body": "Merci. Votre message a été transmis à l’institut. Une réponse vous sera envoyée par courriel."
+    },
+    "notSent": {
+      "title": "Message non envoyé",
+      "body": "Votre message n’a pas pu être envoyé. Vérifiez les champs et réessayez plus tard, ou écrivez-nous directement par courriel.",
+      "keepText": "Le bouton Retour du navigateur peut avoir conservé votre texte.",
+      "invalid": "Certains champs ne sont pas valides : vérifiez le nom, l’adresse électronique et que le message contient au moins 10 caractères.",
+      "busy": "Trop de messages ont été envoyés en peu de temps. Merci de réessayer dans quelques minutes.",
+      "check": "La vérification anti-robots a échoué ou a expiré. Merci de réessayer.",
+      "unavailable": "L’envoi n’est pas disponible pour le moment. Merci de nous écrire directement par courriel."
+    },
+    "back": "Retour à la page Contact"
+  },
+  "motion": {
+    "pause": "Mettre en pause les animations"
+  },
+  "journey": {
+    "start": "Commencer le voyage",
+    "chapters": "Étapes du voyage",
+    "intro": "Départ",
+    "vessel": {
+      "title": "Un voyage au cœur du corps humain",
+      "text": "Faites défiler pour traverser la circulation sanguine et découvrir l'institut en chemin. Cliquez n'importe où pour accélérer le flux."
+    },
+    "heart": {
+      "hint": "Cliquez sur le cœur pour accélérer ses battements."
+    },
+    "pump": "Accélérer le cœur",
+    "bpm": "battements par minute",
+    "lungs": {
+      "hint": "Maintenez le bouton pour remplir les poumons d'oxygène."
+    },
+    "breathe": "Maintenir pour inspirer",
+    "brain": {
+      "hint": "Cliquez dans le cerveau pour déclencher un signal nerveux."
+    },
+    "fire": "Déclencher un signal"
+  }
+}

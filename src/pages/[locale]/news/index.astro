@@ -3,7 +3,6 @@ import BaseLayout from '~/layouts/BaseLayout.astro';
 import PageHeader from '~/components/PageHeader.astro';
 import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import EntryList from '~/components/EntryList.astro';
-import NeedsReviewNotice from '~/components/NeedsReviewNotice.astro';
 import { locales, type Locale } from '~/i18n/config';
 import { t } from '~/i18n/utils';
 import { getLocalizedEntries } from '~/lib/localized';
@@ -23,7 +22,6 @@ const items = (await getLocalizedEntries('news', locale)).sort(
     <Breadcrumbs slot="before" locale={locale} items={[{ label: t(locale, 'nav.home'), href: `/${locale}/` }, { label: t(locale, 'news.title') }]} />
   </PageHeader>
   <div class="container-page py-8">
-    <NeedsReviewNotice locale={locale} />
     <div class="mt-6">
       <EntryList locale={locale} items={items} section="news" emptyMessage={t(locale, 'news.empty')} />
     </div>

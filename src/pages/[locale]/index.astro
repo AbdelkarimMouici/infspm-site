@@ -2,7 +2,6 @@
 // Home page: a scroll-driven journey through the human body (src/scripts/journey/).
 // Each chapter is a real, readable section with links; the 3D world behind it is decoration and play.
 import BaseLayout from '~/layouts/BaseLayout.astro';
-import NeedsReviewNotice from '~/components/NeedsReviewNotice.astro';
 import { locales, type Locale } from '~/i18n/config';
 import { getDir, t } from '~/i18n/utils';
 import type { UIKey } from '~/i18n/ui';
@@ -62,7 +61,6 @@ const stages: { id: string; label: UIKey }[] = [
           </a>
           <a href={`/${locale}/programs/`} class="j-btn j-btn-ghost">{t(locale, 'nav.programs')}</a>
         </div>
-        <div class="mt-8 max-w-xl"><NeedsReviewNotice locale={locale} /></div>
         <p class="scroll-cue journey-cue" aria-hidden="true">{t(locale, 'home.scroll')}</p>
       </div>
     </section>

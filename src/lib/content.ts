@@ -1,15 +1,18 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { isLocale } from '~/i18n/utils';
+import { site } from '~/config/site';
 import type { Locale } from '~/i18n/config';
 
 type Collection = 'news' | 'activities' | 'programs' | 'pages';
 
 /**
- * Example entries (`example: true`) are visible in development and when SHOW_EXAMPLE_CONTENT=true
- * (e.g. a staging build for review). They are never part of a normal production build.
+ * Example (demo) entries (`example: true`, always shown with a "demo content" badge) are visible:
+ * - in development and when SHOW_EXAMPLE_CONTENT=true (staging builds);
+ * - when the administration leaves "Show demo content" on in the CMS settings, so the site looks complete
+ *   until the official content is entered. Turn it off before the public launch (docs/CMS.md).
  */
 export const showExamples: boolean =
-  import.meta.env.DEV || import.meta.env['SHOW_EXAMPLE_CONTENT'] === 'true';
+  import.meta.env.DEV || import.meta.env['SHOW_EXAMPLE_CONTENT'] === 'true' || site.showExamples;
 
 /** Splits an entry id "fr/my-slug" into its locale and slug. */
 export function splitId(id: string): { locale: Locale; slug: string } {

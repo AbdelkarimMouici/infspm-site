@@ -1,12 +1,12 @@
 ---
-// Contact page. Only the confirmed email is shown; address, hours and map are TODO(content).
+// Contact page. Details come from the CMS settings (src/content/settings/site.json);
+// empty values show "to be confirmed" (TODO(content) until the administration fills them in).
 // The contact form (Pages Function + Turnstile) is shown only when a Turnstile site key is configured
 // at build time (PUBLIC_TURNSTILE_SITE_KEY); otherwise visitors are asked to write by email.
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import ContactForm from '~/components/ContactForm.astro';
 import PageHeader from '~/components/PageHeader.astro';
 import Breadcrumbs from '~/components/Breadcrumbs.astro';
-import NeedsReviewNotice from '~/components/NeedsReviewNotice.astro';
 import { locales, type Locale } from '~/i18n/config';
 import { t } from '~/i18n/utils';
 import { site } from '~/config/site';
@@ -17,6 +17,8 @@ export function getStaticPaths() {
 
 const locale = Astro.params.locale as Locale;
 const pending = t(locale, 'common.toBeConfirmed');
+const address = site.address(locale);
+const hours = site.hours(locale);
 const siteKey = (import.meta.env['PUBLIC_TURNSTILE_SITE_KEY'] as string | undefined)?.trim() ?? '';
 ---
 
@@ -30,7 +32,6 @@ const siteKey = (import.meta.env['PUBLIC_TURNSTILE_SITE_KEY'] as string | undefi
   </PageHeader>
   <div class="container-page grid gap-10 py-8 lg:grid-cols-[1fr_2fr]">
     <section aria-labelledby="contact-details">
-      <NeedsReviewNotice locale={locale} />
       <h2 id="contact-details" class="mt-4 text-xl font-bold">{t(locale, 'contact.detailsHeading')}</h2>
       <dl class="mt-4 space-y-4">
         <div>
@@ -39,19 +40,45 @@ const siteKey = (import.meta.env['PUBLIC_TURNSTILE_SITE_KEY'] as string | undefi
         </div>
         <div>
           <dt class="font-semibold">{t(locale, 'contact.address')}</dt>
-          <dd class="text-muted">{site.address ?? pending}</dd>
+          <dd class:list={[!address && 'text-muted']}>{address ?? pending}</dd>
         </div>
         <div>
           <dt class="font-semibold">{t(locale, 'contact.phone')}</dt>
-          <dd class="text-muted">{site.phone ?? pending}</dd>
+          <dd class:list={[!site.phone && 'text-muted']}>
+            {
+              site.phone ? (
+                <a href={`tel:${site.phone.replace(/[^\d+]/g, '')}`} dir="ltr" class="ltr-inline">
+                  {site.phone}
+                </a>
+              ) : (
+                pending
+              )
+            }
+          </dd>
         </div>
         <div>
           <dt class="font-semibold">{t(locale, 'contact.hours')}</dt>
-          <dd class="text-muted">{pending}</dd>
+          <dd class:list={[!hours && 'text-muted']}>{hours ?? pending}</dd>
         </div>
         <div>
           <dt class="font-semibold">{t(locale, 'contact.map')}</dt>
-          <dd class="text-muted">{pending}</dd>
+          <dd class:list={[!site.mapUrl && 'text-muted']}>
+            {site.mapUrl ? <a href={site.mapUrl}>{t(locale, 'contact.map')}</a> : pending}
+          </dd>
+        </div>
+        <div>
+          <dt class="font-semibold">Facebook</dt>
+          <dd class:list={[!site.facebookUrl && 'text-muted']}>
+            {
+              site.facebookUrl ? (
+                <a href={site.facebookUrl} dir="ltr" class="ltr-inline">
+                  facebook.com
+                </a>
+              ) : (
+                pending
+              )
+            }
+          </dd>
         </div>
       </dl>
     </section>
