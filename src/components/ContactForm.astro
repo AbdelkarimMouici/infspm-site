@@ -1,0 +1,78 @@
+---
+// Contact form. Plain HTML form posting to /api/contact (Pages Function) and redirected to a static result page.
+// Rendered only when a Turnstile site key is configured at build time (PUBLIC_TURNSTILE_SITE_KEY).
+// The Turnstile script from challenges.cloudflare.com is the only third-party script on the site, loaded on
+// this page only and allowed by the contact-page CSP (public/_headers, step 7).
+// The textarea allows 4,500 characters; the server allows 5,000 after normalizing line breaks, so a message
+// accepted by the browser is never refused for its length.
+import type { Locale } from '~/i18n/config';
+import { t } from '~/i18n/utils';
+import Button from './Button.astro';
+
+interface Props {
+  locale: Locale;
+  siteKey: string;
+}
+
+const { locale, siteKey } = Astro.props;
+const field = 'mt-1 block w-full rounded-md border border-muted bg-surface px-3 py-2 text-text';
+---
+
+<form method="post" action="/api/contact" class="space-y-5" accept-charset="utf-8">
+  <input type="hidden" name="locale" value={locale} />
+
+  <p class="text-sm text-muted">{t(locale, 'contact.form.required')}</p>
+
+  <div>
+    <label for="contact-name" class="font-semibold">
+      {t(locale, 'contact.form.name')} <span aria-hidden="true">*</span>
+    </label>
+    <input id="contact-name" name="name" type="text" required minlength="2" maxlength="100" autocomplete="name" class={field} />
+  </div>
+
+  <div>
+    <label for="contact-email" class="font-semibold">
+      {t(locale, 'contact.form.email')} <span aria-hidden="true">*</span>
+    </label>
+    <input
+      id="contact-email"
+      name="email"
+      type="email"
+      required
+      maxlength="254"
+      autocomplete="email"
+      dir="ltr"
+      aria-describedby="contact-email-hint"
+      class={field}
+    />
+    <p id="contact-email-hint" class="mt-1 text-sm text-muted">{t(locale, 'contact.form.emailHint')}</p>
+  </div>
+
+  <div>
+    <label for="contact-subject" class="font-semibold">{t(locale, 'contact.form.subject')}</label>
+    <input id="contact-subject" name="subject" type="text" maxlength="150" class={field} />
+  </div>
+
+  <div>
+    <label for="contact-message" class="font-semibold">
+      {t(locale, 'contact.form.message')} <span aria-hidden="true">*</span>
+    </label>
+    <textarea id="contact-message" name="message" required minlength="10" maxlength="4500" rows="7" class={field}
+    ></textarea>
+  </div>
+
+  <!-- Honeypot: hidden from people and assistive technologies; bots that fill it are ignored. -->
+  <div class="hidden" aria-hidden="true">
+    <label for="contact-website">Website</label>
+    <input id="contact-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+  </div>
+
+  <div class="cf-turnstile" data-sitekey={siteKey} data-action="contact" data-language={locale}></div>
+
+  <p class="text-sm text-muted">
+    {`${t(locale, 'contact.form.privacy')} `}<a href={`/${locale}/privacy/`}>{t(locale, 'nav.privacy')}</a>
+  </p>
+
+  <Button type="submit">{t(locale, 'contact.form.send')}</Button>
+</form>
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>

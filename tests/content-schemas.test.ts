@@ -32,10 +32,19 @@ describe('news schema', () => {
     expect(news.safeParse({ ...valid, fbPermalink: 'javascript:alert(1)' }).success).toBe(false);
   });
 
-  it('requires alt text on every image', () => {
-    expect(news.safeParse({ ...valid, images: [{ src: 'a.webp', alt: '' }] }).success).toBe(false);
-    expect(news.safeParse({ ...valid, images: [{ src: 'a.webp', alt: '   ' }] }).success).toBe(false);
-    expect(news.safeParse({ ...valid, images: [{ src: 'a.webp', alt: 'Students in the lab' }] }).success).toBe(true);
+  it('requires alt text on every image of a published entry', () => {
+    const pub = { ...valid, status: 'published' };
+    expect(news.safeParse({ ...pub, images: [{ src: 'a.webp', alt: '' }] }).success).toBe(false);
+    expect(news.safeParse({ ...pub, images: [{ src: 'a.webp', alt: '   ' }] }).success).toBe(false);
+    expect(news.safeParse({ ...pub, images: [{ src: 'a.webp', alt: 'Students in the lab' }] }).success).toBe(true);
+  });
+
+  it('never resolves the images of unpublished entries (so they are not deployed)', () => {
+    const draft = news.parse({ ...valid, status: 'draft', images: [{ src: 'a.webp', alt: 'x' }] });
+    expect(draft.images).toEqual([]);
+    const pub = news.parse({ ...valid, status: 'published', images: [{ src: 'a.webp', alt: 'x' }] });
+    expect(pub.images).toHaveLength(1);
+    expect(program.parse({ title: 'P', image: { src: 'a.webp', alt: 'x' } }).image).toBeUndefined();
   });
 
   it('refuses to publish a post that still carries a care flag', () => {

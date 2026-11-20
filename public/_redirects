@@ -1,0 +1,4 @@
+# Cloudflare Pages redirects (applied before _headers). Docs: https://developers.cloudflare.com/pages/configuration/redirects/
+/ /ar/ 301
+# Browsers that still ask for /favicon.ico get the SVG icon (TODO(content): official logo).
+/favicon.ico /favicon.svg 301

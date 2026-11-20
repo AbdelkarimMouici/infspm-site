@@ -37,6 +37,11 @@ export default defineConfig(
     },
   },
   {
+    // Tests index into known fixture data.
+    files: ['tests/**/*.ts'],
+    rules: { '@typescript-eslint/no-non-null-assertion': 'off' },
+  },
+  {
     files: ['**/*.astro'],
     rules: {
       // Allow role="list" on unstyled lists: Safari/VoiceOver drops list semantics when list-style is none.

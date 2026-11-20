@@ -78,7 +78,7 @@ describe('Sätteri pipeline (as used by the Astro build)', () => {
       '',
       '[a ![i](https://e.example/x.png) b](javascript:x)',
     ].join('\n');
-    const result = await markdownToHtml(source, { mdastPlugins: [safeMarkdownPlugin] as never });
+    const result = markdownToHtml(source, { mdastPlugins: [safeMarkdownPlugin] as never });
     const html = typeof result === 'string' ? result : result.html;
     for (const bad of ['<iframe', '<script', '<meta', 'javascript:', 'fbcdn', '<img']) expect(html).not.toContain(bad);
     expect(html).toContain('click');
