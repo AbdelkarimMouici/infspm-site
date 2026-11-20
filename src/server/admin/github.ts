@@ -59,7 +59,10 @@ export class GitHub {
     this.owner = owner;
     this.name = name;
     this.branch = config.branch ?? 'main';
-    this.http = config.fetch ?? fetch;
+    // Never store the global fetch unbound: the Workers runtime throws "Illegal invocation" when it is
+    // called as a method of another object. Wrap it so it always runs with its own `this`.
+    const http = config.fetch;
+    this.http = http ? (input, init) => http(input, init) : (input, init) => fetch(input, init);
   }
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {

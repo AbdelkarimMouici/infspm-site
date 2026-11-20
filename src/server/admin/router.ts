@@ -266,7 +266,8 @@ export async function handleAdmin(request: Request, env: AdminEnv, deps: AdminDe
       console.error('admin github error', error.status);
       return json(502, { error: 'github', status: error.status });
     }
-    console.error('admin error', error instanceof Error ? error.name : 'unknown');
+    // Name and message only (never request bodies, cookies or tokens), for the Cloudflare logs.
+    console.error('admin error', error instanceof Error ? `${error.name}: ${error.message}`.slice(0, 300) : 'unknown');
     return json(500, { error: 'server' });
   }
 }

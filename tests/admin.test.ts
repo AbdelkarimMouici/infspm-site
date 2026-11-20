@@ -256,3 +256,24 @@ describe('admin saving', () => {
     ).rejects.toThrow('bad_image');
   });
 });
+
+describe('admin GitHub client on Cloudflare Workers', () => {
+  it('calls the global fetch with the right `this` (Workers throws "Illegal invocation" otherwise)', async () => {
+    const { GitHub } = await import('~/server/admin/github');
+    const original = globalThis.fetch;
+    const calls: string[] = [];
+    // Like the Workers runtime: fetch must not be called as a method of another object.
+    globalThis.fetch = function (this: unknown, input: RequestInfo | URL) {
+      if (this !== undefined && this !== globalThis) throw new TypeError('Illegal invocation');
+      calls.push(String(input));
+      return Promise.resolve(new Response(JSON.stringify({ data: { repository: { f0: { entries: [] } } } }), { status: 200 }));
+    } as typeof fetch;
+    try {
+      const github = new GitHub({ token: 't', repo: 'o/r' });
+      await expect(github.readFolders(['src/content/news/ar'])).resolves.toEqual([]);
+      expect(calls).toEqual(['https://api.github.com/graphql']);
+    } finally {
+      globalThis.fetch = original;
+    }
+  });
+});
