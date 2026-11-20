@@ -94,8 +94,8 @@ export function siteSettingsCollection(): Field {
           },
           {
             name: 'showExamples',
-            label: 'Show demo content',
-            hint: 'Shows the sample programs, news and activities (marked "demo content") until the official ones are published. Turn it off before the public launch.',
+            label: 'Show demo content on preview links',
+            hint: 'Sample programs, news and activities for reviewing the design on preview links (…pages.dev branch previews). They are never shown on the live site.',
             widget: 'boolean',
             default: false,
           },

@@ -1,10 +1,10 @@
 ---
-title: "Example: Medical imaging"
-summary: "Example programme card: medical imaging techniques."
+title: "Medical imaging"
+summary: "Medical imaging techniques."
 order: 40
-duration: "3 years (example)"
-diploma: "Diploma (example)"
-admission: "Admission requirements set by the administration (example)."
+duration: "3 years"
+diploma: "Diploma"
+admission: "Admission requirements set by the administration."
 status: "published"
 example: true
 needs-review: false
@@ -13,6 +13,6 @@ image:
   alt: "Illustration of the lungs"
 ---
 
-This is **demo content** showing how the site looks. The administration will replace it with official information from the admin panel.
+This section gives an overview of the topic, with the organisation, the participants and the highlights.
 
-Demo text for the medical imaging programme.
+Text for the medical imaging programme.

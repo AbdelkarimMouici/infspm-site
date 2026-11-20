@@ -1,8 +1,8 @@
 ---
-title: "Exemple : Campagne de don de sang"
-summary: "Activité de démonstration : campagne de sensibilisation au don de sang."
+title: "Campagne de don de sang"
+summary: "Campagne de sensibilisation au don de sang."
 date: 2026-09-30
-location: "Cour de l'institut (exemple)"
+location: "Cour de l'institut"
 status: "published"
 example: true
 needs-review: false
@@ -11,4 +11,4 @@ images:
     alt: "Illustration d'une goutte de sang"
 ---
 
-Ceci est un **contenu de démonstration** pour montrer l'apparence du site. L'administration le remplacera par les informations officielles depuis l'espace d'administration.
+Cette section présente le sujet dans ses grandes lignes, avec l'organisation, les participants et les temps forts.

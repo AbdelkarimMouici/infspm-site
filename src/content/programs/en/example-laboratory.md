@@ -1,10 +1,10 @@
 ---
-title: "Example: Medical laboratory"
-summary: "Example programme card: biological tests in the laboratory."
+title: "Medical laboratory"
+summary: "Biological tests in the laboratory."
 order: 30
-duration: "3 years (example)"
-diploma: "Diploma (example)"
-admission: "Admission requirements set by the administration (example)."
+duration: "3 years"
+diploma: "Diploma"
+admission: "Admission requirements set by the administration."
 status: "published"
 example: true
 needs-review: false
@@ -13,6 +13,6 @@ image:
   alt: "Illustration of a laboratory flask"
 ---
 
-This is **demo content** showing how the site looks. The administration will replace it with official information from the admin panel.
+This section gives an overview of the topic, with the organisation, the participants and the highlights.
 
-Demo text for the medical laboratory programme.
+Text for the medical laboratory programme.

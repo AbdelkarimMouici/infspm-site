@@ -6,13 +6,19 @@ import type { Locale } from '~/i18n/config';
 type Collection = 'news' | 'activities' | 'programs' | 'pages';
 
 /**
- * Example (demo) entries (`example: true`, always shown with a "demo content" badge) are visible:
- * - in development and when SHOW_EXAMPLE_CONTENT=true (staging builds);
- * - when the administration leaves "Show demo content" on in the CMS settings, so the site looks complete
- *   until the official content is entered. Turn it off before the public launch (docs/CMS.md).
+ * Demo entries (`example: true`) contain illustrative, invented details, so they are NEVER part of the live
+ * site (CLAUDE.md, content integrity). They are visible only:
+ * - in development, and in builds with SHOW_EXAMPLE_CONTENT=true;
+ * - on Cloudflare Pages preview builds (any branch other than the production branch `main`) while the
+ *   administration leaves "Show demo content on preview links" on in the CMS settings.
  */
+const branch = import.meta.env['CF_PAGES_BRANCH'] as string | undefined;
+export const isPreviewBuild = Boolean(branch) && branch !== 'main';
+
 export const showExamples: boolean =
-  import.meta.env.DEV || import.meta.env['SHOW_EXAMPLE_CONTENT'] === 'true' || site.showExamples;
+  import.meta.env.DEV ||
+  import.meta.env['SHOW_EXAMPLE_CONTENT'] === 'true' ||
+  (isPreviewBuild && site.showExamples);
 
 /** Splits an entry id "fr/my-slug" into its locale and slug. */
 export function splitId(id: string): { locale: Locale; slug: string } {

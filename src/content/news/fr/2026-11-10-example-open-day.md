@@ -1,6 +1,6 @@
 ---
-title: "Exemple : Journée portes ouvertes"
-summary: "Actualité de démonstration : une journée pour découvrir les spécialités et rencontrer les enseignants."
+title: "Journée portes ouvertes"
+summary: "Une journée pour découvrir les spécialités et rencontrer les enseignants."
 date: 2026-11-10
 status: "published"
 source: "manual"
@@ -11,4 +11,4 @@ images:
     alt: "Illustration d'un cœur avec un tracé ECG"
 ---
 
-Ceci est un **contenu de démonstration** pour montrer l'apparence du site. L'administration le remplacera par les informations officielles depuis l'espace d'administration.
+Cette section présente le sujet dans ses grandes lignes, avec l'organisation, les participants et les temps forts.

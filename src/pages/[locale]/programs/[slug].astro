@@ -5,7 +5,6 @@ import PageHeader from '~/components/PageHeader.astro';
 import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import Prose from '~/components/Prose.astro';
 import FallbackNotice from '~/components/FallbackNotice.astro';
-import ExampleBadge from '~/components/ExampleBadge.astro';
 import Button from '~/components/Button.astro';
 import type { Locale } from '~/i18n/config';
 import { getDir, t } from '~/i18n/utils';
@@ -59,7 +58,6 @@ const facts = [
   </PageHeader>
   <article class="container-page py-8">
     <FallbackNotice locale={locale} show={isFallback} />
-    <ExampleBadge locale={locale} show={data.example} />
 
     <section aria-labelledby="key-facts" class="my-6 rounded-lg border border-border bg-surface-alt p-5">
       <h2 id="key-facts" class="text-lg font-bold">{t(locale, 'programs.keyFacts')}</h2>

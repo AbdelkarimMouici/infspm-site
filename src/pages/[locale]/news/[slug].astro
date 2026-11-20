@@ -6,7 +6,6 @@ import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import Prose from '~/components/Prose.astro';
 import ImageGallery from '~/components/ImageGallery.astro';
 import FallbackNotice from '~/components/FallbackNotice.astro';
-import ExampleBadge from '~/components/ExampleBadge.astro';
 import type { Locale } from '~/i18n/config';
 import { getDir, t } from '~/i18n/utils';
 import { formatDate, isoDate } from '~/lib/format';
@@ -57,7 +56,6 @@ const description = isFallback
     <FallbackNotice locale={locale} show={isFallback} />
     <p class="mb-6 flex flex-wrap items-center gap-3 text-sm text-muted">
       <time datetime={isoDate(data.date)}>{formatDate(data.date, locale)}</time>
-      <ExampleBadge locale={locale} show={data.example} />
     </p>
     <Prose {...contentAttrs}>
       <Content />
