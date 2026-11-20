@@ -7,8 +7,8 @@ source: "manual"
 example: true
 needs-review: false
 images:
-  - src: ../../../assets/uploads/examples/dna.webp
+  - src: "../../../assets/uploads/examples/dna.webp"
     alt: "رسم توضيحي لشريط الحمض النووي"
 ---
 
-يقدّم هذا القسم لمحة عامة عن الموضوع، مع تفاصيل التنظيم والمشاركين وأهم المحطات.
+يقدّم هذا القسم لمحة عامة عن الموضوع، مع تفاصيل التنظيم والمشاركين وأهم المحطات  .
