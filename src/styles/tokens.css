@@ -1,35 +1,36 @@
 /*
- * Design tokens — the single source of truth for colours, type, radii and shadows.
+ * Design tokens — the single source of truth for colours, type, radii, shadows and motion.
  *
- * Palette: neutral medical blue/teal. Every text/background pair used by components is checked for
- * WCAG 2.2 AA contrast in tests/rtl-and-tokens.test.ts.
- * TODO(content): replace with colours taken from the official logo once the administration provides it
- * (see docs/CONTENT.md). Only the values below need to change.
+ * Palette taken from the official logo: deep navy (graduation cap), sky blue (ring and caduceus) and silver (rim).
+ * Every text/background pair used by components is checked for WCAG 2.2 AA contrast, in both themes,
+ * in tests/rtl-and-tokens.test.ts (light = @theme block, dark = the [data-theme="dark"] block below).
  */
 @theme {
   /* Typography: one self-hosted family covering Arabic and Latin (French, English). */
   --font-sans: 'IBM Plex Sans Arabic', system-ui, 'Segoe UI', Tahoma, sans-serif;
 
-  /* Brand */
-  --color-primary: #0a5a78; /* deep medical blue-teal */
-  --color-primary-hover: #08465e;
-  --color-primary-soft: #e6f2f6; /* tinted backgrounds */
+  /* Brand (from the logo) */
+  --color-primary: #1b4a70; /* navy of the cap */
+  --color-primary-hover: #133a59;
+  --color-primary-soft: #e7f3fb; /* light sky tint */
   --color-on-primary: #ffffff;
-  --color-accent: #0f7466; /* teal accent (also valid as text on white) */
-  --color-accent-soft: #e3f4f1;
+  --color-accent: #0b6fa6; /* sky blue, darkened for text contrast */
+  --color-accent-soft: #e2f2fb;
+  --color-sky: #35a6dd; /* logo ring: decorative only (gradients, glows), never small text */
+  --color-silver: #c7ced6; /* logo rim: decorative only */
 
   /* Neutrals */
   --color-surface: #ffffff;
-  --color-surface-alt: #f3f6f8;
-  --color-text: #15222b;
-  --color-muted: #4a5865;
-  --color-border: #cfd9df;
+  --color-surface-alt: #f2f6fa;
+  --color-text: #0f2235;
+  --color-muted: #475a6b;
+  --color-border: #d3dee8;
 
-  /* Inverse (dark footer) */
-  --color-inverse: #0c2f3e;
+  /* Inverse (dark bands: footer, hero) */
+  --color-inverse: #0b2238;
   --color-on-inverse: #ffffff;
-  --color-on-inverse-muted: #c5d6de;
-  --color-link-inverse: #9fd8ea;
+  --color-on-inverse-muted: #c3d5e4;
+  --color-link-inverse: #8fd3f5;
 
   /* Feedback */
   --color-danger: #b42318;
@@ -41,12 +42,63 @@
   --color-focus: #b34700;
   --color-focus-inverse: #fdba74;
 
-  /* Radii and shadows */
-  --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 1rem;
-  --shadow-card: 0 1px 2px rgb(12 47 62 / 0.08), 0 2px 8px rgb(12 47 62 / 0.06);
+  /* Radii, shadows, depth */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 2rem;
+  --shadow-card: 0 1px 2px rgb(11 34 56 / 0.06), 0 8px 24px -8px rgb(11 34 56 / 0.18);
+  --shadow-lift: 0 2px 4px rgb(11 34 56 / 0.08), 0 24px 48px -12px rgb(11 34 56 / 0.35);
 
   /* Layout */
-  --container-page: 72rem;
+  --container-page: 76rem;
+}
+
+/* Brand gradients and motion (not colours used for text). */
+:root {
+  --grad-brand: linear-gradient(135deg, #0b2238 0%, #1b4a70 50%, #17669a 100%); /* white text >= 6:1 everywhere */
+  --grad-sky: linear-gradient(120deg, #1b4a70, #35a6dd);
+  --grad-silver: linear-gradient(135deg, #f4f6f8 0%, #c7ced6 35%, #ffffff 55%, #aab3bd 80%, #e9edf1 100%);
+  --glass: rgb(255 255 255 / 0.72);
+  --glass-border: rgb(255 255 255 / 0.55);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  color-scheme: light;
+}
+
+/*
+ * Dark theme: same token names, new values. Applied when the visitor picks it (toggle) or when their
+ * system prefers dark and they made no choice (see src/scripts/theme-init.js).
+ */
+:root[data-theme='dark'] {
+  --color-primary: #7cc8f0;
+  --color-primary-hover: #a8dbf6;
+  --color-primary-soft: #12304a;
+  --color-on-primary: #08182a;
+  --color-accent: #6cc4ef;
+  --color-accent-soft: #0f2a40;
+
+  --color-surface: #0a1726;
+  --color-surface-alt: #0f2033;
+  --color-text: #e8f1f8;
+  --color-muted: #a9bccd;
+  --color-border: #22384e;
+
+  --color-inverse: #050f1b;
+  --color-on-inverse: #ffffff;
+  --color-on-inverse-muted: #b9cddd;
+  --color-link-inverse: #8fd3f5;
+
+  --color-danger: #ff8a7a;
+  --color-success: #5fd39b;
+  --color-notice-soft: #2d2410;
+  --color-on-notice: #f6d58c;
+
+  --color-focus: #ffb366;
+  --color-focus-inverse: #ffb366;
+
+  --glass: rgb(10 23 38 / 0.72);
+  --glass-border: rgb(124 200 240 / 0.18);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -8px rgb(0 0 0 / 0.6);
+  --shadow-lift: 0 2px 4px rgb(0 0 0 / 0.5), 0 24px 48px -12px rgb(0 0 0 / 0.7);
+  color-scheme: dark;
 }

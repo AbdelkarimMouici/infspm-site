@@ -25,11 +25,12 @@
 
 ## TODO(content) placeholders in the code (step 1)
 - Domain: `SITE_URL` defaults to `https://example.invalid` until the domain is decided (affects canonical/hreflang, sitemap, robots.txt, structured data).
-- `src/i18n/ui/fr.ts`: French institute name "Institut National de Formation Supérieure Paramédicale de Tébessa" is unconfirmed (`needs-review`). All French UI strings need review.
-- `src/i18n/ui/en.ts`: English name "National Institute of Higher Training in Paramedical Sciences, Tébessa" comes from the project brief, not from the administration (`needs-review`). All English UI strings need review.
-- `src/styles/tokens.css`: colours are a neutral medical blue/teal placeholder palette; replace with the official logo palette.
-- `src/components/SiteHeader.astro`: no logo yet (text wordmark only).
-- `src/config/site.ts` / `src/components/SiteFooter.astro`: address, phone, hours and the Facebook page URL are missing; only the confirmed email is shown.
+- `src/content/ui/fr.json` (CMS "Site texts"): the French name "Institut National de Formation Supérieure Paramédicale de Tébessa" matches the logo but the wording of all French texts still needs review.
+- `src/content/ui/en.json`: the English name "National Institute of Higher Training in Paramedical Sciences, Tébessa" comes from the project brief, not from the administration. All English texts need review.
+- Logo: received from the maintainer (2026-11-19), stored in `src/assets/brand/logo.png`, replaceable in CMS Settings. Colours of the design come from it.
+- `src/content/settings/site.json` (CMS "Settings"): address, phone, hours, map link and the Facebook page URL are empty until confirmed; only the confirmed email is shown.
+- Demo content (`example: true`, shown while Settings → Show demo content is on): 4 programs, 4 news items, 3 activities. Not facts; turn the setting off before launch (docs/CMS.md).
+- The visible "awaiting official review" notice was removed at the maintainer's request (2026-11-20); `needs-review` flags remain in the files.
 - Home page: a generic welcome text and quick links (no institutional facts).
 
 ## TODO(content) placeholders (step 4 – pages)

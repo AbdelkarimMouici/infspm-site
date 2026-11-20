@@ -1,5 +1,6 @@
 ---
-// Page title block: the single <h1> of a page plus an optional lead paragraph.
+// Page title block: the single <h1> of a page plus an optional lead paragraph. Tall and airy so the section's
+// living 3D backdrop (src/scripts/journey/backdrop.ts) shows beside the title.
 import type { Locale } from '~/i18n/config';
 import { getDir } from '~/i18n/utils';
 
@@ -14,10 +15,10 @@ const { title, lead, titleLang } = Astro.props;
 const titleAttrs = titleLang ? { lang: titleLang, dir: getDir(titleLang) } : {};
 ---
 
-<div class="border-b border-border bg-primary-soft">
-  <div class="container-page py-8 md:py-10">
+<div class="page-hero">
+  <div class="container-page">
     <slot name="before" />
-    <h1 class="text-2xl font-bold md:text-3xl" {...titleAttrs}>{title}</h1>
-    {lead && <p class="mt-3 max-w-prose text-lg text-muted">{lead}</p>}
+    <h1 class="page-title rise" {...titleAttrs}>{title}</h1>
+    {lead && <p class="page-lead rise rise-d1">{lead}</p>}
   </div>
 </div>

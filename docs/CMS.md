@@ -26,7 +26,8 @@ Strip location (GPS) data before uploading. The test suite rejects images that s
 
 - **Facts.** Never invent facts: names, dates, numbers, programs. If something is unknown, leave the field empty.
 - **Translations.** A translation that has not been checked by the administration must keep **Translation needs review** ticked.
-  French and English pages then show a visible "awaiting review" notice.
+  The flag is kept in the file for the editors' review list; the public site no longer shows a notice (maintainer's
+  decision, 2026-11-20).
 - **Alternative text.** Every image needs alternative text that describes it, in each language.
 - **Photo consent.** Do not upload identifiable photos of students or patients without written consent (see docs/CONTENT.md).
 - **Facebook posts** are imported as drafts (step 5). Posts flagged *Needs a decision* (memorial, identifiable people,
@@ -46,10 +47,27 @@ src/assets/uploads/              # images uploaded from the CMS (processed at bu
 The same file name in each language folder is the same item in another language.
 Validation rules are in `src/content/schemas.ts`. An invalid entry fails the build, so it cannot be published broken.
 
-## Example entries
+## Settings and site texts (everything else on the site)
 
-Files with `example: true` are samples for layout only. They show in development and in staging builds with
-`SHOW_EXAMPLE_CONTENT=true`, never in a normal production build. Delete them once real content exists.
+- **Settings** (`src/content/settings/site.json`): logo, official email, phone, address and opening hours
+  (in each language), Facebook page link, map link, and **Show demo content**. Leave a value empty until it is
+  officially confirmed: the site then shows "to be confirmed". A new logo is uploaded to `src/assets/brand/`
+  (square PNG or SVG, transparent background). Invalid values (wrong link, logo elsewhere) fail the build.
+- **Site texts** (`src/content/ui/{ar,fr,en}.json`): every interface text (menus, buttons, home-page journey,
+  page titles and descriptions), grouped by section, with the Arabic text shown as a hint when editing French
+  or English. The editor is generated from the Arabic file (`src/admin/collections.ts`): editors change the
+  wording; developers add or remove texts in the JSON files (the tests check all three languages match).
+
+## Demo (example) content
+
+Entries with `example: true` (titles start with "مثال:" / "Exemple :" / "Example:", and a "demo content" badge
+is shown) fill the site until the official content is ready: 4 programs, 4 news items and 3 activities, with
+abstract illustrations (`src/assets/uploads/examples/`, no photos of people). Their details (durations,
+places, dates) are **not facts**.
+
+They are shown when **Settings → Show demo content** is on (currently on, at the maintainer's request), in
+development, and in builds with `SHOW_EXAMPLE_CONTENT=true`. **Turn the setting off before the public launch**,
+then delete the example files once the real entries are published.
 
 ## Setup (maintainer, once)
 

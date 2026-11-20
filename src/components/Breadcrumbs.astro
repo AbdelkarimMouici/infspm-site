@@ -19,13 +19,13 @@ const { locale, items } = Astro.props;
 ---
 
 <nav aria-label={t(locale, 'breadcrumb.label')} class="mb-3 text-sm">
-  <ol class="flex flex-wrap items-center gap-x-2 gap-y-1 text-muted" role="list">
+  <ol class="crumbs flex flex-wrap items-center gap-x-2 gap-y-1" role="list">
     {
       items.map((item, index) => (
         <li class="flex items-center gap-2">
           {index > 0 && <span aria-hidden="true">/</span>}
           {item.href ? (
-            <a href={item.href} class="text-primary">
+            <a href={item.href}>
               {item.label}
             </a>
           ) : (

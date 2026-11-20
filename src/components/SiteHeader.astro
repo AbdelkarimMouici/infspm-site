@@ -1,11 +1,14 @@
 ---
-// Site header: wordmark, main navigation, language switcher.
-// Mobile menu uses <details>/<summary>: works without JavaScript (strict CSP, no inline scripts).
-// TODO(content): add the official logo next to the wordmark once provided (see docs/CONTENT.md).
+// Site header: logo, language pill and a round menu button that opens a full-screen menu.
+// The menu uses <details>/<summary>: it works without JavaScript (strict CSP, no inline scripts);
+// src/scripts/interactions.ts only adds Escape-to-close and focus return.
 import type { Locale } from '~/i18n/config';
 import { t } from '~/i18n/utils';
 import { isCurrent, mainNav, navHref } from '~/config/navigation';
+import { site } from '~/config/site';
 import LanguageSwitcher from './LanguageSwitcher.astro';
+import Logo from './Logo.astro';
+import MotionToggle from './MotionToggle.astro';
 
 interface Props {
   locale: Locale;
@@ -21,66 +24,56 @@ const items = mainNav.map((item) => ({
 }));
 ---
 
-<header class="border-b border-border bg-surface">
-  <div class="container-page flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3">
-    <a href={navHref(locale, '')} class="flex flex-col no-underline">
-      <span class="text-lg font-bold leading-tight text-primary">{t(locale, 'site.shortName')}</span>
-      <span class="hidden max-w-md text-xs leading-snug text-muted sm:block">{t(locale, 'site.name')}</span>
+<header class="site-header">
+  <div class="container-page relative z-10 flex items-center gap-2 py-3 sm:gap-3">
+    <a href={navHref(locale, '')} class="header-brand group flex min-w-0 items-center gap-2.5 no-underline sm:gap-3">
+      <span class="site-logo medallion size-11 shrink-0 transition-transform duration-500 group-hover:rotate-12 sm:size-12">
+        <Logo size={44} alt="" eager />
+      </span>
+      <span class="flex min-w-0 flex-col">
+        <span class="whitespace-nowrap text-base font-extrabold leading-tight sm:text-lg">{t(locale, 'site.shortName')}</span>
+        <span class="header-sub hidden max-w-xs truncate text-xs leading-snug lg:block">{t(locale, 'site.name')}</span>
+      </span>
     </a>
-    <LanguageSwitcher locale={locale} alternates={alternates} />
+
+    <div class="ms-auto flex items-center gap-2">
+      <LanguageSwitcher locale={locale} alternates={alternates} />
+      <details class="site-menu" data-site-menu>
+        <summary class="menu-button" title={t(locale, 'nav.menu')}>
+          <span class="sr-only">{t(locale, 'nav.menu')}</span>
+          <svg class="icon-open" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M4 8h16M4 16h10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path>
+          </svg>
+          <svg class="icon-close" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path>
+          </svg>
+        </summary>
+
+        <div class="menu-overlay on-inverse">
+          <nav aria-label={t(locale, 'nav.label')} class="container-page flex min-h-full flex-col pb-8 pt-28">
+            <ul class="menu-list flex flex-col gap-1" role="list">
+              {
+                items.map((item, index) => (
+                  <li class:list={[`menu-d${Math.min(index + 1, 9)}`]}>
+                    <a href={item.href} aria-current={item.current ? 'page' : undefined} class="menu-link">
+                      <span class="menu-index" aria-hidden="true">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      {item.label}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+            <div class="mt-auto flex flex-wrap items-center justify-between gap-4 border-t border-white/15 pt-6">
+              <a href={`mailto:${site.email}`} dir="ltr" class="ltr-inline font-semibold">{site.email}</a>
+              <div class="flex items-center gap-2">
+                <MotionToggle locale={locale} />
+              </div>
+            </div>
+          </nav>
+        </div>
+      </details>
+    </div>
   </div>
-
-  <nav aria-label={t(locale, 'nav.label')} class="border-t border-border bg-surface">
-    <!-- Desktop: horizontal list -->
-    <ul class="container-page hidden flex-wrap gap-x-1 py-1 lg:flex" role="list">
-      {
-        items.map((item) => (
-          <li>
-            <a
-              href={item.href}
-              aria-current={item.current ? 'page' : undefined}
-              class:list={[
-                'inline-block border-b-2 px-3 py-2.5 font-medium no-underline',
-                item.current
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-text hover:border-border hover:text-primary',
-              ]}
-            >
-              {item.label}
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-
-    <!-- Mobile: disclosure menu (no JavaScript) -->
-    <details class="container-page py-2 lg:hidden">
-      <summary
-        class="menu-toggle inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-border px-4 font-semibold text-text hover:bg-surface-alt"
-      >
-        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-        </svg>
-        {t(locale, 'nav.menu')}
-      </summary>
-      <ul class="mt-2 flex flex-col border-t border-border pt-2" role="list">
-        {
-          items.map((item) => (
-            <li>
-              <a
-                href={item.href}
-                aria-current={item.current ? 'page' : undefined}
-                class:list={[
-                  'flex min-h-11 items-center rounded-md px-3 font-medium no-underline',
-                  item.current ? 'bg-primary-soft text-primary' : 'text-text hover:bg-surface-alt',
-                ]}
-              >
-                {item.label}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </details>
-  </nav>
 </header>

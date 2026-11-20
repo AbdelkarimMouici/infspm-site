@@ -54,7 +54,8 @@ Admissions and registration, Activities, News (list + article pages), Gallery, C
 - Node: version in `.nvmrc` (24). `eslint-plugin-astro` expects Node ≥ 24.16.
 
 ## Project layout
-- `src/i18n/` – locales config, UI dictionaries (`ui/ar.ts` is the reference key set), helpers (`t`, `getDir`, `localizedPath`).
+- `src/i18n/` – locales config, helpers (`t`, `getDir`, `localizedPath`); UI texts live in `src/content/ui/{ar,fr,en}.json` (CMS-editable, `ar.json` is the reference key set).
+- `src/content/settings/site.json` – logo, contact details, "show demo content" (CMS Settings).
 - `src/layouts/BaseLayout.astro` – `lang`/`dir`, title/description, canonical, hreflang, skip link, header/footer.
 - `src/styles/global.css` – Tailwind v4 `@theme` design tokens (placeholder colours until step 2).
 - `src/pages/[locale]/` – localized pages (home, about, programs, admissions, activities, news, gallery, contact, privacy); `src/pages/index.astro` – static meta-refresh to `/ar/`.

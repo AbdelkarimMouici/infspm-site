@@ -126,4 +126,30 @@ export const pageSchema = z.object({
   example: z.boolean().default(false),
 });
 
+/**
+ * Site settings edited in the CMS ("Settings"): src/content/settings/site.json.
+ * Empty strings mean "not confirmed yet": the site then shows "to be confirmed" instead of a value.
+ */
+const localizedLine = z.object({
+  ar: z.string().trim().max(300).default(''),
+  fr: z.string().trim().max(300).default(''),
+  en: z.string().trim().max(300).default(''),
+});
+const emptyOr = <T extends z.ZodType>(schema: T) => z.union([z.literal(''), schema]).default('');
+
+export const settingsSchema = z.object({
+  /** Path from src/content/settings/ to a logo inside src/assets/brand/. */
+  logo: z.string().regex(/^\.\.\/\.\.\/assets\/brand\/[\w.-]+\.(png|jpe?g|webp|svg)$/i, 'The logo must be in src/assets/brand/'),
+  /** Show demo entries (example: true) on the public site until the official content is in. */
+  showExamples: z.boolean().default(false),
+  email: z.email(),
+  phone: z.string().trim().max(40).default(''),
+  address: localizedLine,
+  hours: localizedLine,
+  facebookUrl: emptyOr(z.url({ protocol: /^https$/, hostname: /(^|\.)facebook\.com$/ })),
+  mapUrl: emptyOr(z.url({ protocol: /^https$/ })),
+});
+
+export type Settings = z.infer<typeof settingsSchema>;
+
 export type NewsData = z.infer<ReturnType<typeof newsSchema>>;

@@ -1,85 +1,183 @@
 ---
+// Home page: a scroll-driven journey through the human body (src/scripts/journey/).
+// Each chapter is a real, readable section with links; the 3D world behind it is decoration and play.
 import BaseLayout from '~/layouts/BaseLayout.astro';
-import Button from '~/components/Button.astro';
-import Card from '~/components/Card.astro';
-import EntryList from '~/components/EntryList.astro';
-import NeedsReviewNotice from '~/components/NeedsReviewNotice.astro';
 import { locales, type Locale } from '~/i18n/config';
-import { t } from '~/i18n/utils';
+import { getDir, t } from '~/i18n/utils';
 import type { UIKey } from '~/i18n/ui';
+import { formatDate } from '~/lib/format';
 import { getLocalizedEntries } from '~/lib/localized';
+import { site } from '~/config/site';
 
 export function getStaticPaths() {
   return locales.map((locale) => ({ params: { locale } }));
 }
 
 const locale = Astro.params.locale as Locale;
-const newest = <T extends { entry: { data: { date: Date } } }>(items: T[]) =>
-  items.sort((a, b) => b.entry.data.date.getTime() - a.entry.data.date.getTime()).slice(0, 3);
-const news = newest(await getLocalizedEntries('news', locale));
-const activities = newest(await getLocalizedEntries('activities', locale));
+const news = (await getLocalizedEntries('news', locale))
+  .sort((a, b) => b.entry.data.date.getTime() - a.entry.data.date.getTime())
+  .slice(0, 3);
 
-const quickLinks: { title: UIKey; text: UIKey; slug: string }[] = [
-  { title: 'nav.programs', text: 'home.quick.programs', slug: 'programs' },
-  { title: 'nav.admissions', text: 'home.quick.admissions', slug: 'admissions' },
-  { title: 'nav.news', text: 'home.quick.news', slug: 'news' },
-  { title: 'nav.contact', text: 'home.quick.contact', slug: 'contact' },
+const stages: { id: string; label: UIKey }[] = [
+  { id: 'ch-start', label: 'journey.intro' },
+  { id: 'ch-about', label: 'nav.about' },
+  { id: 'ch-programs', label: 'nav.programs' },
+  { id: 'ch-admissions', label: 'nav.admissions' },
+  { id: 'ch-news', label: 'nav.news' },
+  { id: 'ch-contact', label: 'nav.contact' },
 ];
 ---
 
-<BaseLayout locale={locale} title={t(locale, 'home.title')} description={t(locale, 'home.description')}>
-  <section class="border-b border-border bg-primary-soft" aria-labelledby="home-title">
-    <div class="container-page py-10 md:py-14">
-      <h1 id="home-title" class="max-w-3xl text-2xl font-bold md:text-4xl">{t(locale, 'site.name')}</h1>
-      <p class="mt-4 max-w-prose text-lg text-muted">{t(locale, 'home.intro')}</p>
-      <div class="mt-6 flex flex-wrap gap-3">
-        <Button href={`/${locale}/programs/`}>{t(locale, 'nav.programs')}</Button>
-        <Button href={`/${locale}/contact/`} variant="secondary">{t(locale, 'nav.contact')}</Button>
-      </div>
-    </div>
-  </section>
-
-  <div class="container-page py-10">
-    <NeedsReviewNotice locale={locale} />
-
-    <section aria-labelledby="quick-links" class="mt-6">
-      <h2 id="quick-links" class="text-xl font-bold md:text-2xl">{t(locale, 'home.quickLinks')}</h2>
-      <ul class="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4" role="list">
+<BaseLayout locale={locale} title={t(locale, 'home.title')} description={t(locale, 'home.description')} variant="journey">
+  <div class="journey" data-journey>
+    <nav class="journey-hud" data-hud aria-label={t(locale, 'journey.chapters')}>
+      <ol role="list">
         {
-          quickLinks.map((link) => (
+          stages.map((stage, index) => (
             <li>
-              <Card title={t(locale, link.title)} href={`/${locale}/${link.slug}/`}>
-                <p>{t(locale, link.text)}</p>
-              </Card>
+              <a href={`#${stage.id}`} aria-current={index === 0 ? 'step' : undefined}>
+                <span class="hud-dot" aria-hidden="true" />
+                <span class="hud-label">{t(locale, stage.label)}</span>
+              </a>
             </li>
           ))
         }
-      </ul>
+      </ol>
+    </nav>
+
+    <!-- 0 · Intro: DNA and a field of cells -->
+    <section id="ch-start" class="chapter chapter-intro" data-chapter="0" aria-labelledby="home-title">
+      <div class="chapter-stick container-page">
+        <p class="journey-pill rise">{t(locale, 'home.eyebrow')}</p>
+        <h1 id="home-title" class="journey-title rise rise-d1">{t(locale, 'site.name')}</h1>
+        <p class="journey-lead rise rise-d2">{t(locale, 'home.intro')}</p>
+        <div class="rise rise-d2 mt-8 flex flex-col gap-3 sm:flex-row">
+          <a href="#ch-about" class="j-btn j-btn-solid">
+            {t(locale, 'journey.start')}
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+              ></path>
+            </svg>
+          </a>
+          <a href={`/${locale}/programs/`} class="j-btn j-btn-ghost">{t(locale, 'nav.programs')}</a>
+        </div>
+        <p class="scroll-cue journey-cue" aria-hidden="true">{t(locale, 'home.scroll')}</p>
+      </div>
     </section>
 
-    <section aria-labelledby="latest-news" class="mt-12">
-      <div class="flex flex-wrap items-baseline justify-between gap-3">
-        <h2 id="latest-news" class="text-xl font-bold md:text-2xl">{t(locale, 'home.latestNews')}</h2>
-        <a href={`/${locale}/news/`}>{t(locale, 'home.allNews')}</a>
-      </div>
-      <div class="mt-5">
-        <EntryList locale={locale} items={news} section="news" emptyMessage={t(locale, 'news.empty')} level={3} />
+    <!-- 1 · Blood vessel: about -->
+    <section id="ch-about" class="chapter chapter-vessel" data-chapter="1" aria-labelledby="ch-about-title">
+      <div class="chapter-stick container-page">
+        <article class="chapter-card">
+          <p class="chapter-num" aria-hidden="true">01</p>
+          <h2 id="ch-about-title" class="chapter-title">{t(locale, 'journey.vessel.title')}</h2>
+          <p class="chapter-text">{t(locale, 'journey.vessel.text')}</p>
+          <a class="chapter-link" href={`/${locale}/about/`}>
+            {t(locale, 'nav.about')}<span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </article>
       </div>
     </section>
 
-    <section aria-labelledby="latest-activities" class="mt-12">
-      <div class="flex flex-wrap items-baseline justify-between gap-3">
-        <h2 id="latest-activities" class="text-xl font-bold md:text-2xl">{t(locale, 'home.latestActivities')}</h2>
-        <a href={`/${locale}/activities/`}>{t(locale, 'home.allActivities')}</a>
+    <!-- 2 · Heart: programs -->
+    <section id="ch-programs" class="chapter chapter-heart" data-chapter="2" aria-labelledby="ch-programs-title">
+      <div class="chapter-stick container-page">
+        <article class="chapter-card">
+          <p class="chapter-num" aria-hidden="true">02</p>
+          <h2 id="ch-programs-title" class="chapter-title">{t(locale, 'nav.programs')}</h2>
+          <p class="chapter-text">{t(locale, 'home.quick.programs')}</p>
+          <div class="bpm needs-journey" aria-hidden="true">
+            <svg class="bpm-heart" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 20.5s-7.6-4.6-9.5-9.3C1 7.7 3.2 4 6.9 4c2.1 0 3.6 1.2 5.1 3 1.5-1.8 3-3 5.1-3 3.7 0 5.9 3.7 4.4 7.2-1.9 4.7-9.5 9.3-9.5 9.3Z"
+              ></path>
+            </svg>
+            <span class="bpm-value" data-bpm>70</span>
+            <span class="bpm-unit">{t(locale, 'journey.bpm')}</span>
+          </div>
+          <p class="chapter-hint needs-journey">{t(locale, 'journey.heart.hint')}</p>
+          <button type="button" class="j-chip needs-journey" data-pump>{t(locale, 'journey.pump')}</button>
+          <a class="chapter-link" href={`/${locale}/programs/`}>
+            {t(locale, 'nav.programs')}<span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </article>
       </div>
-      <div class="mt-5">
-        <EntryList
-          locale={locale}
-          items={activities}
-          section="activities"
-          emptyMessage={t(locale, 'activities.empty')}
-          level={3}
-        />
+    </section>
+
+    <!-- 3 · Lungs: admissions -->
+    <section id="ch-admissions" class="chapter chapter-lungs" data-chapter="3" aria-labelledby="ch-admissions-title">
+      <div class="chapter-stick container-page">
+        <article class="chapter-card">
+          <p class="chapter-num" aria-hidden="true">03</p>
+          <h2 id="ch-admissions-title" class="chapter-title">{t(locale, 'nav.admissions')}</h2>
+          <p class="chapter-text">{t(locale, 'home.quick.admissions')}</p>
+          <p class="chapter-hint needs-journey">{t(locale, 'journey.lungs.hint')}</p>
+          <button type="button" class="breathe-btn needs-journey" data-breathe data-o2 aria-pressed="false">
+            <span class="breathe-label">{t(locale, 'journey.breathe')}</span>
+            <span class="breathe-o2" aria-hidden="true">O₂</span>
+          </button>
+          <a class="chapter-link" href={`/${locale}/admissions/`}>
+            {t(locale, 'nav.admissions')}<span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </article>
+      </div>
+    </section>
+
+    <!-- 4 · Brain: news -->
+    <section id="ch-news" class="chapter chapter-brain" data-chapter="4" aria-labelledby="ch-news-title">
+      <div class="chapter-stick container-page">
+        <article class="chapter-card">
+          <p class="chapter-num" aria-hidden="true">04</p>
+          <h2 id="ch-news-title" class="chapter-title">{t(locale, 'home.latestNews')}</h2>
+          {
+            news.length > 0 ? (
+              <ul class="chapter-news" role="list">
+                {news.map((item) => (
+                  <li>
+                    <a
+                      href={`/${locale}/news/${item.slug}/`}
+                      {...(item.isFallback ? { lang: item.contentLocale, dir: getDir(item.contentLocale) } : {})}
+                    >
+                      <span class="news-meta" lang={locale} dir={getDir(locale)}>
+                        {formatDate(item.entry.data.date, locale)}
+                      </span>
+                      {item.entry.data.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p class="chapter-text">{t(locale, 'news.empty')}</p>
+            )
+          }
+          <p class="chapter-hint needs-journey">{t(locale, 'journey.brain.hint')}</p>
+          <button type="button" class="j-chip needs-journey" data-fire>{t(locale, 'journey.fire')}</button>
+          <div class="flex flex-wrap gap-x-6">
+            <a class="chapter-link" href={`/${locale}/news/`}>
+              {t(locale, 'home.allNews')}<span class="arrow" aria-hidden="true">→</span>
+            </a>
+            <a class="chapter-link" href={`/${locale}/activities/`}>
+              {t(locale, 'home.allActivities')}<span class="arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- 5 · Pull back: contact -->
+    <section id="ch-contact" class="chapter chapter-contact" data-chapter="5" aria-labelledby="ch-contact-title">
+      <div class="chapter-stick container-page">
+        <article class="chapter-card">
+          <p class="chapter-num" aria-hidden="true">05</p>
+          <h2 id="ch-contact-title" class="chapter-title">{t(locale, 'nav.contact')}</h2>
+          <p class="chapter-text">{t(locale, 'contact.lead')}</p>
+          <p class="mt-4">
+            <a href={`mailto:${site.email}`} dir="ltr" class="ltr-inline chapter-email">{site.email}</a>
+          </p>
+          <a class="chapter-link" href={`/${locale}/contact/`}>
+            {t(locale, 'nav.contact')}<span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </article>
       </div>
     </section>
   </div>

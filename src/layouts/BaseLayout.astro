@@ -26,9 +26,22 @@ interface Props {
   switchTargets?: Partial<Record<Locale, string>> | undefined;
   /** Exclude from search engines (404, utility pages). Also drops canonical and hreflang. */
   noindex?: boolean;
+  /** "journey": the home page (scroll-driven journey through the body instead of a section backdrop). */
+  variant?: 'journey';
 }
 
-const { locale, title, description, alternates, switchTargets: switchOverrides, noindex = false } = Astro.props;
+const {
+  locale,
+  title,
+  description,
+  alternates,
+  switchTargets: switchOverrides,
+  noindex = false,
+  variant,
+} = Astro.props;
+// Living 3D backdrop of inner pages = first path segment after the language (/ar/programs/… → programs).
+// The home page has its own journey instead.
+const backdrop = variant === 'journey' ? undefined : (Astro.url.pathname.split('/').filter(Boolean)[1] ?? 'default');
 const dir = getDir(locale);
 const siteName = t(locale, 'site.name');
 const fullTitle = `${title} | ${siteName}`;
@@ -54,14 +67,15 @@ const xDefault = xDefaultPath ? new URL(xDefaultPath, site).href : undefined;
 ---
 
 <!doctype html>
-<html lang={locale} dir={dir}>
+<html lang={locale} dir={dir} class="journey-page" data-backdrop={backdrop}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <!-- TODO(content): theme colour from the official logo palette (placeholder = primary token). -->
-    <meta name="theme-color" content="#0a5a78" />
+    <meta name="theme-color" content="#1b4a70" />
+    <!-- Sets the theme and the "js" class before the first paint (same-origin script, allowed by the CSP). -->
+    <script is:inline src="/theme-init.js"></script>
     <meta name="description" content={description} />
     {
       noindex ? (
@@ -93,12 +107,23 @@ const xDefault = xDefaultPath ? new URL(xDefaultPath, site).href : undefined;
       )
     }
   </head>
-  <body class="bg-surface text-text antialiased">
+  <body class="text-text antialiased">
+    <div class="scroll-progress" aria-hidden="true"></div>
     <a href="#main" class="skip-link">{t(locale, 'a11y.skipToContent')}</a>
     <SiteHeader locale={locale} alternates={switchTargets} />
     <main id="main" tabindex="-1" class="flex-1 focus:outline-none">
       <slot />
     </main>
     <SiteFooter locale={locale} />
+    <a href={`/${locale}/contact/`} class="fab-contact" title={t(locale, 'nav.contact')}>
+      <span class="sr-only">{t(locale, 'nav.contact')}</span>
+      <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M4 6h16v12H4zM4 7l8 6 8-6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path>
+      </svg>
+    </a>
+    <script>
+      import '~/scripts/interactions';
+      import '~/scripts/journey/loader';
+    </script>
   </body>
 </html>

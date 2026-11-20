@@ -1,0 +1,162 @@
+{
+  "site": {
+    "name": "National Institute of Higher Training in Paramedical Sciences, Tébessa",
+    "shortName": "INFSPM Tébessa"
+  },
+  "a11y": {
+    "skipToContent": "Skip to main content",
+    "external": "(opens an external site)"
+  },
+  "nav": {
+    "label": "Main menu",
+    "menu": "Menu",
+    "home": "Home",
+    "about": "About",
+    "programs": "Programs",
+    "admissions": "Admissions",
+    "activities": "Activities",
+    "news": "News",
+    "gallery": "Gallery",
+    "contact": "Contact",
+    "privacy": "Privacy"
+  },
+  "lang": {
+    "switchLabel": "Choose language",
+    "current": "(current language)"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "We could not find this page. The content may still be in preparation.",
+    "home": "Back to the home page"
+  },
+  "home": {
+    "title": "Home",
+    "description": "Official website of the National Institute of Higher Training in Paramedical Sciences, Tébessa.",
+    "intro": "Welcome to the institute's official website. Find information about training programs, admissions, news and activities.",
+    "quickLinks": "Quick links",
+    "quick": {
+      "programs": "Explore the training programs offered by the institute.",
+      "admissions": "Admission requirements and registration steps.",
+      "news": "Latest news and official announcements.",
+      "contact": "How to contact the institute."
+    },
+    "latestNews": "Latest news",
+    "allNews": "All news",
+    "latestActivities": "Latest activities",
+    "allActivities": "All activities",
+    "scroll": "Scroll down",
+    "eyebrow": "Higher paramedical training · Tébessa",
+    "discover": "Discover the institute"
+  },
+  "footer": {
+    "email": "Email",
+    "contactHeading": "Contact us",
+    "linksHeading": "Links",
+    "rights": "All rights reserved."
+  },
+  "common": {
+    "readMore": "Read more",
+    "example": "Sample content",
+    "toBeConfirmed": "To be confirmed"
+  },
+  "breadcrumb": {
+    "label": "Breadcrumb"
+  },
+  "content": {
+    "onlyInArabic": "This content is only available in Arabic for now.",
+    "onlyInArabicShort": "Arabic only",
+    "inPreparation": "This page is in preparation. Its content will be published once validated by the institute's administration."
+  },
+  "news": {
+    "title": "News",
+    "description": "News and announcements from the National Institute of Higher Training in Paramedical Sciences, Tébessa.",
+    "lead": "The institute's news and official announcements.",
+    "empty": "No news has been published yet.",
+    "viewOnFacebook": "View the original post on Facebook"
+  },
+  "activities": {
+    "title": "Activities",
+    "description": "Scientific and educational activities of the National Institute of Higher Training in Paramedical Sciences, Tébessa.",
+    "lead": "Activities and events organized by the institute or with its participation.",
+    "empty": "No activities have been published yet.",
+    "location": "Location"
+  },
+  "programs": {
+    "title": "Programs",
+    "description": "Training programs at the National Institute of Higher Training in Paramedical Sciences, Tébessa: duration, admission and diploma.",
+    "lead": "The specialties offered by the institute, with duration, admission requirements and diploma.",
+    "empty": "The list of specialties will be published once validated by the administration.",
+    "keyFacts": "Key facts",
+    "duration": "Duration",
+    "diploma": "Diploma",
+    "admission": "Admission requirements",
+    "seeAdmissions": "Admissions"
+  },
+  "gallery": {
+    "title": "Gallery",
+    "description": "Photos from the news and activities of the National Institute of Higher Training in Paramedical Sciences, Tébessa.",
+    "lead": "Photos from the institute's news and activities.",
+    "empty": "No photos have been published yet."
+  },
+  "contact": {
+    "title": "Contact",
+    "description": "Contact details of the National Institute of Higher Training in Paramedical Sciences, Tébessa.",
+    "lead": "For any question, write to the institute's official email address.",
+    "detailsHeading": "Contact details",
+    "address": "Address",
+    "phone": "Phone",
+    "hours": "Opening hours",
+    "map": "Map",
+    "formHeading": "Send a message",
+    "formUnavailable": "The contact form is not available yet. Please write to us by email.",
+    "form": {
+      "required": "Fields marked * are required.",
+      "name": "Full name",
+      "email": "Email address",
+      "emailHint": "We will reply to this address.",
+      "subject": "Subject",
+      "message": "Message",
+      "privacy": "Your message is sent to the institute’s email address and is not stored on the website.",
+      "send": "Send message"
+    },
+    "sent": {
+      "title": "Message sent",
+      "body": "Thank you. Your message has reached the institute. You will receive a reply by email."
+    },
+    "notSent": {
+      "title": "Message not sent",
+      "body": "Your message could not be sent. Check the fields and try again later, or write to us directly by email.",
+      "keepText": "Your browser’s Back button may still have your text.",
+      "invalid": "Some fields are not valid: check the name, the email address, and that the message has at least 10 characters.",
+      "busy": "Too many messages were sent in a short time. Please try again in a few minutes.",
+      "check": "The anti-bot check failed or expired. Please try again.",
+      "unavailable": "Sending is not available right now. Please write to us directly by email."
+    },
+    "back": "Back to the contact page"
+  },
+  "motion": {
+    "pause": "Pause animations"
+  },
+  "journey": {
+    "start": "Start the journey",
+    "chapters": "Journey stages",
+    "intro": "Start",
+    "vessel": {
+      "title": "A journey inside the human body",
+      "text": "Scroll to travel through the bloodstream and discover the institute along the way. Click anywhere to speed up the flow."
+    },
+    "heart": {
+      "hint": "Click the heart to speed up its beat."
+    },
+    "pump": "Speed up the heart",
+    "bpm": "beats per minute",
+    "lungs": {
+      "hint": "Press and hold to fill the lungs with oxygen."
+    },
+    "breathe": "Hold to breathe in",
+    "brain": {
+      "hint": "Click inside the brain to fire a nerve signal."
+    },
+    "fire": "Fire a signal"
+  }
+}
