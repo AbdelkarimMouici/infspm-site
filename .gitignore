@@ -9,3 +9,6 @@ secrets/
 *.log
 .wrangler/
 .claude/settings.local.json
+
+# Wrangler local secrets (Pages Functions / Workers)
+.dev.vars*

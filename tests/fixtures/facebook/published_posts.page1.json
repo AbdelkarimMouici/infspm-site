@@ -1,0 +1,31 @@
+{
+  "data": [
+    {
+      "id": "100000000000001_200000000000003",
+      "message": "إعلان تجريبي للاختبار\nهذا نص اختباري لمنشور يحتوي على صورة واحدة.",
+      "created_time": "2026-11-18T09:30:00+0000",
+      "permalink_url": "https://www.facebook.com/100000000000001/posts/200000000000003",
+      "full_picture": "https://scontent.xx.fbcdn.net/v/t39/fixture-3.jpg",
+      "attachments": {
+        "data": [
+          {
+            "media_type": "photo",
+            "type": "photo",
+            "url": "https://www.facebook.com/photo/?fbid=300000000000003",
+            "media": { "image": { "src": "https://scontent.xx.fbcdn.net/v/t39/fixture-3.jpg", "width": 960, "height": 720 } }
+          }
+        ]
+      }
+    },
+    {
+      "id": "100000000000001_200000000000002",
+      "message": "إنا لله وإنا إليه راجعون. نص اختباري لمنشور تعزية.",
+      "created_time": "2026-11-16T08:00:00+0000",
+      "permalink_url": "https://www.facebook.com/100000000000001/posts/200000000000002"
+    }
+  ],
+  "paging": {
+    "cursors": { "before": "QVFIUjEx", "after": "QVFIUjEy" },
+    "next": "https://graph.facebook.com/v27.0/100000000000001/published_posts?fields=id&limit=2&after=QVFIUjEy&access_token=FIXTURE_TOKEN"
+  }
+}

@@ -1,0 +1,117 @@
+name: Facebook sync
+
+# New Facebook posts → draft news in ONE rolling pull request (branch facebook-sync/pending).
+# Setup and token renewal: docs/FACEBOOK-SYNC.md. Until vars.FB_PAGE_ID is set, runs exit early with a notice.
+
+on:
+  schedule:
+    - cron: '17,47 * * * *' # every 30 minutes
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: facebook-sync
+  cancel-in-progress: false
+
+env:
+  BRANCH: facebook-sync/pending
+  ASTRO_TELEMETRY_DISABLED: '1'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write # push (and reset) the facebook-sync/pending branch
+      pull-requests: write # open the review pull request
+    steps:
+      - name: Not configured yet
+        if: ${{ vars.FB_PAGE_ID == '' }}
+        run: echo "::notice::Facebook sync is not configured (vars.FB_PAGE_ID is empty). See docs/FACEBOOK-SYNC.md."
+
+      - name: Checkout
+        if: ${{ vars.FB_PAGE_ID != '' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          # The write token is NOT stored in .git/config, so npm install scripts and the build cannot read it.
+          persist-credentials: false
+
+      - name: Choose the branch
+        if: ${{ vars.FB_PAGE_ID != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          open_pr="$(gh pr list --head "$BRANCH" --state open --json number -q '.[0].number')"
+          if [ -n "$open_pr" ]; then
+            # An open review PR exists: add to it (keeps earlier unreviewed drafts, no duplicates).
+            git switch --track "origin/$BRANCH"
+            git merge --no-edit origin/main
+            echo "Adding to open pull request #$open_pr"
+          else
+            # No open PR (merged, closed or never created): start fresh from main, so drafts that were
+            # rejected or edited on main never come back. Posts not yet imported are fetched again.
+            git switch -C "$BRANCH" origin/main
+            echo "RESET_BRANCH=1" >> "$GITHUB_ENV"
+          fi
+
+      - name: Set up Node.js
+        if: ${{ vars.FB_PAGE_ID != '' }}
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        if: ${{ vars.FB_PAGE_ID != '' }}
+        run: npm ci
+
+      - name: Fetch new posts
+        id: sync
+        if: ${{ vars.FB_PAGE_ID != '' }}
+        env:
+          FB_PAGE_ID: ${{ vars.FB_PAGE_ID }}
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+          FB_APP_SECRET: ${{ secrets.FB_APP_SECRET }}
+          FB_AUTO_PUBLISH_HASHTAG: ${{ vars.FB_AUTO_PUBLISH_HASHTAG }}
+        run: node scripts/facebook-sync.ts
+
+      - name: Check the site still builds with the new drafts
+        if: ${{ steps.sync.outputs.created != '' && steps.sync.outputs.created != '0' }}
+        run: npm run build
+
+      - name: Commit, push and open the pull request
+        if: ${{ steps.sync.outputs.created != '' && steps.sync.outputs.created != '0' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CREATED: ${{ steps.sync.outputs.created }}
+          FLAGGED: ${{ steps.sync.outputs.flagged }}
+        run: |
+          # src/assets/uploads always exists (.gitkeep); a run without images must not fail here.
+          # The PR may have been merged or closed while this job ran: never push to a stale branch.
+          if [ "${RESET_BRANCH:-0}" != "1" ] && [ -z "$(gh pr list --head "$BRANCH" --state open --json number -q '.[0].number')" ]; then
+            echo "::notice::The review PR closed during this run. Nothing pushed; the next run starts from main."
+            exit 0
+          fi
+          git add -- src/content/news src/assets/uploads
+          git commit -m "Facebook sync: ${CREATED} new draft(s)"
+          # Credentials only for this push (not persisted in .git/config).
+          gh auth setup-git
+          if [ "${RESET_BRANCH:-0}" = "1" ]; then
+            git push --force-with-lease origin "$BRANCH"
+          else
+            git push origin "$BRANCH"
+          fi
+          if [ -z "$(gh pr list --head "$BRANCH" --state open --json number -q '.[0].number')" ]; then
+            gh pr create --base main --head "$BRANCH" \
+              --title "Facebook posts to review" \
+              --body "New Facebook posts imported as **draft** news (${CREATED} in this run, ${FLAGGED} flagged).
+
+          Before merging: check text, photos (consent for identifiable students/patients), care flags and alt text.
+          Set \`status: published\` only on items to publish. To reject a post for good, delete its file and add its id to \`src/content/news/facebook-ignored.txt\`.
+          Guide: docs/FACEBOOK-SYNC.md. CI does not start automatically on bot PRs: close and reopen this PR to run it."
+          fi

@@ -39,11 +39,27 @@ const base = {
   example: z.boolean().default(false),
 };
 
+/**
+ * Unpublished entries (drafts, Facebook imports awaiting the consent check) never resolve their images:
+ * Astro would otherwise copy the files into the build and deploy them, even though the page is not published.
+ */
+export function withoutUnpublishedImages(data: unknown): unknown {
+  if (data && typeof data === 'object' && (data as { status?: unknown }).status !== 'published') {
+    const copy = { ...(data as Record<string, unknown>) };
+    delete copy['images'];
+    delete copy['image'];
+    return copy;
+  }
+  return data;
+}
+
 /** Reasons a Facebook post needs a human decision before it can be published (CLAUDE.md, step 5). */
 export const careFlags = z.enum(['memorial', 'identifiable-people', 'personal', 'other']);
 
 export const newsSchema = <T extends ImageSchema>(image: T) =>
-  z
+  z.preprocess(
+    withoutUnpublishedImages,
+    z
     .object({
       ...base,
       date: z.coerce.date(),
@@ -65,10 +81,13 @@ export const newsSchema = <T extends ImageSchema>(image: T) =>
     .refine((d) => !(d.status === 'published' && d.careFlags.length > 0), {
       message: 'Remove careFlags (after a human decision) before publishing',
       path: ['careFlags'],
-    });
+    }),
+  );
 
 export const activitySchema = <T extends ImageSchema>(image: T) =>
-  z
+  z.preprocess(
+    withoutUnpublishedImages,
+    z
     .object({
       ...base,
       date: z.coerce.date(),
@@ -79,10 +98,13 @@ export const activitySchema = <T extends ImageSchema>(image: T) =>
     .refine((d) => !d.endDate || d.endDate >= d.date, {
       message: 'endDate must be on or after date',
       path: ['endDate'],
-    });
+    }),
+  );
 
 export const programSchema = <T extends ImageSchema>(image: T) =>
-  z.object({
+  z.preprocess(
+    withoutUnpublishedImages,
+    z.object({
     ...base,
     /** Display order in the programs list (ascending). */
     order: z.number().int().min(0).default(100),
@@ -91,7 +113,8 @@ export const programSchema = <T extends ImageSchema>(image: T) =>
     diploma: z.string().trim().max(200).optional(),
     admission: z.string().trim().max(600).optional(),
     image: imageWithAlt(image).optional(),
-  });
+  }),
+  );
 
 /** Free-text institutional pages (About, Admissions, Privacy…). */
 export const pageSchema = z.object({

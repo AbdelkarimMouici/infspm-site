@@ -1,0 +1,26 @@
+---
+// schema.org EducationalOrganization (JSON-LD), confirmed facts only (docs/CONTENT.md).
+// A JSON-LD block is data, not code: browsers never execute it, so the strict CSP is unaffected
+// (tests-dist allows only type="application/ld+json" inline scripts, and checks they are valid JSON).
+// TODO(content): add address, telephone, logo, sameAs (Facebook URL) and the French/English names
+// (alternateName) once confirmed by the administration.
+import { t } from '~/i18n/utils';
+import { site as facts } from '~/config/site';
+
+// Same entity on every page and language: no props.
+const base = Astro.site ?? new URL('https://example.invalid');
+const data = {
+  '@context': 'https://schema.org',
+  '@type': 'EducationalOrganization',
+  '@id': new URL('/#organization', base).href,
+  name: t('ar', 'site.name'),
+  // One stable entity on every page (Arabic home is the canonical home of the institute).
+  url: new URL('/ar/', base).href,
+  email: facts.email,
+  knowsLanguage: ['ar', 'fr', 'en'],
+};
+// Escape "<" so the JSON can never close the script element.
+const json = JSON.stringify(data).replace(/</g, '\\u003c');
+---
+
+<script type="application/ld+json" set:html={json} />

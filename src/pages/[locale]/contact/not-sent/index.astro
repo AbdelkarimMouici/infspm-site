@@ -1,0 +1,13 @@
+---
+// Generic "not sent" page (the Pages Function normally redirects to a page with a reason). Not indexed.
+import ContactNotSent from '~/components/ContactNotSent.astro';
+import { locales, type Locale } from '~/i18n/config';
+
+export function getStaticPaths() {
+  return locales.map((locale) => ({ params: { locale } }));
+}
+
+const locale = Astro.params.locale as Locale;
+---
+
+<ContactNotSent locale={locale} />
