@@ -324,11 +324,16 @@ describe('public/_headers', () => {
     expect(contact).not.toMatch(/unsafe-/);
     expect(headersFor(rules, '/ar/contact/sent/').get('content-security-policy')).not.toContain('challenges.cloudflare.com');
 
+    // Admin panel: same-origin only, no unsafe-*, no third party; blob: only for image previews.
     const admin = headersFor(rules, '/admin/');
-    expect(admin.get('content-security-policy')).toContain("'unsafe-eval'");
-    // The CMS sign-in popup must keep its opener.
-    expect(admin.get('cross-origin-opener-policy')).toBe('same-origin-allow-popups');
+    const adminPolicy = csp(admin.get('content-security-policy') ?? '');
+    expect(admin.get('content-security-policy')).not.toMatch(/unsafe-|https?:/);
+    expect(adminPolicy.get('script-src')).toEqual(["'self'"]);
+    expect(adminPolicy.get('connect-src')).toEqual(["'self'"]);
+    expect(adminPolicy.get('img-src')).toEqual(["'self'", 'blob:']);
+    expect(admin.get('cross-origin-opener-policy')).toBe('same-origin');
     expect(admin.get('x-robots-tag')).toContain('noindex');
+    expect(admin.get('cache-control')).toBe('no-store');
 
     for (const path of ['/', '/ar/', '/en/programs/x/', '/fr/contact/', '/_astro/a.js', '/ar/contact/not-sent/busy/']) {
       expect(headersFor(rules, path).get('content-security-policy') ?? '', path).not.toMatch(/unsafe-/);

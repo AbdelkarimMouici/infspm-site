@@ -1,0 +1,144 @@
+/** @jsxImportSource preact */
+import { useEffect, useMemo, useState } from 'preact/hooks';
+import type { Collection, EntrySummary } from './api';
+import { COLLECTION_META } from './Dashboard';
+import { errorText } from './Login';
+import { formatDate, Icon, LangDots, Spinner, StatusChip, useApp } from './ui';
+
+type Filter = 'all' | 'published' | 'draft' | 'missing';
+
+export function ContentList({ collection }: { collection: Collection }) {
+  const { api, t, lang, navigate } = useApp();
+  const [entries, setEntries] = useState<EntrySummary[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState<Filter>('all');
+  const meta = COLLECTION_META[collection];
+  const canCreate = collection !== 'pages';
+
+  useEffect(() => {
+    setEntries(null);
+    setError(null);
+    api
+      .list(collection)
+      .then(setEntries)
+      .catch((err: unknown) => setError(errorText(t, err).text));
+  }, [collection]);
+
+  const shown = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return (entries ?? []).filter((entry) => {
+      const main = entry.locales.ar ?? entry.locales.fr ?? entry.locales.en;
+      if (filter === 'published' && main?.status !== 'published') return false;
+      if (filter === 'draft' && main?.status === 'published') return false;
+      if (filter === 'missing' && entry.locales.ar && entry.locales.fr && entry.locales.en) return false;
+      if (!q) return true;
+      return Object.values(entry.locales).some((l) => `${l?.title ?? ''} ${l?.summary ?? ''}`.toLowerCase().includes(q)) || entry.slug.includes(q);
+    });
+  }, [entries, query, filter]);
+
+  const filters: [Filter, string][] = [
+    ['all', t('filterAll')],
+    ['published', t('filterPublished')],
+    ['draft', t('filterDraft')],
+    ['missing', t('filterMissing')],
+  ];
+
+  return (
+    <div class="page">
+      <header class="page-head">
+        <div class="page-head-title">
+          <span class="head-icon">
+            <Icon name={meta.icon} size={22} />
+          </span>
+          <div>
+            <h1 class="page-title">{t(meta.label)}</h1>
+            {entries && (
+              <p class="muted small">
+                {entries.length} {t('items')}
+              </p>
+            )}
+          </div>
+        </div>
+        {canCreate && (
+          <button type="button" class="btn btn-primary" onClick={() => navigate(`#/c/${collection}/new`)}>
+            <Icon name="plus" size={18} />
+            {t(meta.newLabel ?? 'add')}
+          </button>
+        )}
+      </header>
+
+      <div class="toolbar">
+        <label class="search">
+          <Icon name="search" size={18} />
+          <span class="sr-only">{t('search')}</span>
+          <input type="search" class="search-input" placeholder={t('search')} value={query} onInput={(e) => setQuery((e.target as HTMLInputElement).value)} />
+        </label>
+        <div class="filters" role="group">
+          {filters.map(([value, label]) => (
+            <button type="button" key={value} class="filter" aria-pressed={filter === value} onClick={() => setFilter(value)}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {error && <p class="notice notice-error">{error}</p>}
+      {!entries && !error && (
+        <div class="cards">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <div class="card skeleton" key={i} aria-hidden="true" />
+          ))}
+          <span class="sr-only">
+            <Spinner label={t('loading')} />
+          </span>
+        </div>
+      )}
+      {entries && shown.length === 0 && (
+        <div class="empty">
+          <Icon name={meta.icon} size={40} />
+          <p>{entries.length === 0 ? t('emptyList') : t('noResults')}</p>
+          {entries.length === 0 && canCreate && (
+            <button type="button" class="btn btn-primary" onClick={() => navigate(`#/c/${collection}/new`)}>
+              <Icon name="plus" size={18} />
+              {t(meta.newLabel ?? 'add')}
+            </button>
+          )}
+        </div>
+      )}
+      {entries && shown.length > 0 && (
+        <ul class="cards" role="list">
+          {shown.map((entry) => {
+            const main = entry.locales[lang === 'fr' ? 'fr' : 'ar'] ?? entry.locales.ar ?? entry.locales.fr ?? entry.locales.en;
+            return (
+              <li key={entry.slug}>
+                <a class="card" href={`#/c/${collection}/${entry.slug}`}>
+                  <span class="card-media">
+                    {main?.thumb ? (
+                      <img src={api.imageUrl(main.thumb)} alt="" loading="lazy" />
+                    ) : (
+                      <span class="card-placeholder">
+                        <Icon name={meta.icon} size={34} />
+                      </span>
+                    )}
+                    <span class="card-status">
+                      <StatusChip status={main?.status ?? 'draft'} />
+                    </span>
+                  </span>
+                  <span class="card-body">
+                    <span class="card-title">{main?.title}</span>
+                    {main?.summary && <span class="card-summary">{main.summary}</span>}
+                    <span class="card-foot">
+                      <span class="muted small">{formatDate(main?.date, lang) || ' '}</span>
+                      <LangDots has={entry.locales} />
+                    </span>
+                  </span>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}

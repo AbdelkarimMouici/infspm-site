@@ -18,13 +18,11 @@
   ! Content-Security-Policy
   Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; frame-src https://challenges.cloudflare.com; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests
 
-# Decap CMS admin: needs 'unsafe-eval' (config validation) and inline styles (CSS-in-JS), GitHub API and avatars.
-# Scoped to /admin/* only. The page opens a sign-in popup, so it must keep popups' opener.
+# Admin panel (src/admin-app): same-origin script, styles and API only (/api/admin/*, never GitHub directly).
+# Image previews before upload use blob: URLs. Stricter than the public pages' needs elsewhere: no third party.
 /admin/*
   ! Content-Security-Policy
-  ! Cross-Origin-Opener-Policy
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://avatars.githubusercontent.com; font-src 'self' data:; connect-src 'self' https://api.github.com; form-action 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'
-  Cross-Origin-Opener-Policy: same-origin-allow-popups
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-src 'none'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'
   X-Robots-Tag: noindex, nofollow
   Cache-Control: no-store
 
