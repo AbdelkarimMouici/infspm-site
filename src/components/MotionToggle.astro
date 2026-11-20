@@ -1,0 +1,27 @@
+---
+// Pause/resume all decorative animation (WCAG 2.2.2). Works with JavaScript (src/scripts/interactions.ts).
+import type { Locale } from '~/i18n/config';
+import { t } from '~/i18n/utils';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+---
+
+<button
+  type="button"
+  data-motion-toggle
+  aria-pressed="false"
+  title={t(locale, 'motion.pause')}
+  class="motion-toggle size-11 shrink-0 cursor-pointer place-items-center rounded-full border border-border text-text transition-colors hover:bg-surface-alt"
+>
+  <span class="sr-only">{t(locale, 'motion.pause')}</span>
+  <svg class="icon-pause" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none">
+    <path d="M8 5v14M16 5v14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path>
+  </svg>
+  <svg class="icon-play" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none">
+    <path d="M7 5l12 7-12 7V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path>
+  </svg>
+</button>

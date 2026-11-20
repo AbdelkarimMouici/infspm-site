@@ -1,6 +1,6 @@
 /**
  * Progressive enhancements for every page (the site works fully without them):
- * - theme toggle (light/dark, remembered);
+ * - theme toggle (light/dark, remembered) and pause-animations toggle;
  * - scroll reveal (elements with .reveal fade in when they enter the viewport);
  * - 3D tilt with a moving light on .tilt cards (mouse and pen only, not touch, not reduced motion).
  */
@@ -21,6 +21,25 @@ function setupThemeToggle(): void {
       } catch {
         /* storage blocked: the choice lasts for this page only */
       }
+      sync();
+    });
+  }
+}
+
+/** "Pause animations" (WCAG 2.2.2): stops CSS animations and the 3D layer, remembered. */
+function setupMotionToggle(): void {
+  const root = document.documentElement;
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-motion-toggle]')) {
+    const sync = () => button.setAttribute('aria-pressed', String(root.classList.contains('motion-paused')));
+    sync();
+    button.addEventListener('click', () => {
+      const paused = root.classList.toggle('motion-paused');
+      try {
+        localStorage.setItem('motion', paused ? 'paused' : 'on');
+      } catch {
+        /* storage blocked: the choice lasts for this page only */
+      }
+      window.dispatchEvent(new CustomEvent('infspm:motion', { detail: { paused } }));
       sync();
     });
   }
@@ -116,6 +135,7 @@ function setupMagnetic(): void {
 }
 
 setupThemeToggle();
+setupMotionToggle();
 setupReveal();
 setupTilt();
 setupCursorGlow();

@@ -1,7 +1,9 @@
 ---
-// Page title block: the single <h1> of a page plus an optional lead paragraph, on the animated brand band.
+// Page title block: the single <h1> of a page plus an optional lead paragraph, on the animated brand band,
+// with an interactive 3D scene that matches the section (src/scripts/three/recipes.ts).
 import type { Locale } from '~/i18n/config';
 import { getDir } from '~/i18n/utils';
+import Scene3D from './Scene3D.astro';
 
 interface Props {
   title: string;
@@ -12,19 +14,24 @@ interface Props {
 
 const { title, lead, titleLang } = Astro.props;
 const titleAttrs = titleLang ? { lang: titleLang, dir: getDir(titleLang) } : {};
+// Section name = first path segment after the language: /ar/programs/... → "programs".
+const scene = Astro.url.pathname.split('/').filter(Boolean)[1] ?? 'default';
 ---
 
 <div class="on-inverse brand-band">
   <div class="brand-grid" aria-hidden="true"></div>
-  <div class="container-page py-12 md:py-16">
-    <slot name="before" />
-    <h1 class="rise max-w-4xl text-3xl font-extrabold tracking-tight md:text-5xl" {...titleAttrs}>{title}</h1>
-    {
-      lead && (
-        <p class="rise rise-d1 mt-4 max-w-2xl text-lg md:text-xl">
-          {lead}
-        </p>
-      )
-    }
+  <div class="container-page grid grid-cols-[1fr_6.5rem] items-center gap-4 py-10 sm:grid-cols-[1fr_10rem] md:grid-cols-[1fr_17rem] md:py-14">
+    <div class="min-w-0">
+      <slot name="before" />
+      <h1 class="rise max-w-4xl text-3xl font-extrabold tracking-tight md:text-5xl" {...titleAttrs}>{title}</h1>
+      {
+        lead && (
+          <p class="rise rise-d1 mt-4 max-w-2xl text-lg md:text-xl">
+            {lead}
+          </p>
+        )
+      }
+    </div>
+    <Scene3D scene={scene} class="aspect-square w-full" />
   </div>
 </div>

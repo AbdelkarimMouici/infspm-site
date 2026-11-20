@@ -1,12 +1,8 @@
 /**
- * Decides whether to load the 3D hero (src/scripts/hero-3d.ts, ~150 KB with Three.js) and loads it after the
- * page has displayed. Skipped for: reduced motion, data saver, very weak devices, no WebGL.
- * Without it, the animated CSS logo stays: the page is complete either way.
+ * Decides whether to load the site-wide 3D layer (src/scripts/three/stage.ts, ~150 KB gzip with Three.js) and
+ * loads it after the page has displayed. Skipped for: reduced motion, data saver, very weak devices, no WebGL.
+ * Without it, each 3D spot shows its static illustration: the page is complete either way.
  */
-const container = document.querySelector<HTMLElement>('[data-hero-3d]');
-const canvas = container?.querySelector<HTMLCanvasElement>('canvas');
-const logoUrl = container?.dataset['logo'];
-
 type NetworkInformation = { saveData?: boolean; effectiveType?: string };
 
 function worthLoading(): boolean {
@@ -29,13 +25,15 @@ function whenIdle(callback: () => void): void {
   else window.setTimeout(callback, 1200);
 }
 
-if (container && canvas && logoUrl && worthLoading()) {
+const spots = [...document.querySelectorAll<HTMLElement>('[data-3d]')];
+
+if (spots.length > 0 && worthLoading()) {
   const start = () =>
     whenIdle(() => {
-      import('./hero-3d')
-        .then(({ startHero }) => startHero(container, canvas, logoUrl))
+      import('./three/stage')
+        .then(({ startStage }) => startStage(spots))
         .catch(() => {
-          /* keep the CSS version */
+          /* keep the static illustrations */
         });
     });
   if (document.readyState === 'complete') start();

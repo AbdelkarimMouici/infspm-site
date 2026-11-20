@@ -519,33 +519,149 @@
 /* ---------- Stage 2: life and interaction ---------- */
 
 @layer components {
-  /* 3D hero: the canvas fades in over the CSS version once the scene is ready. */
-  .hero-canvas {
-    position: absolute;
-    inset: -12%;
-    inline-size: 124%;
-    block-size: 124%;
-    opacity: 0;
-    transition: opacity 1.2s var(--ease-out);
-    cursor: grab;
-    touch-action: pan-y;
-  }
-
-  .hero-canvas:active {
-    cursor: grabbing;
-  }
-
-  .hero-fallback {
-    transition: opacity 1s var(--ease-out);
-  }
-
-  .is-ready .hero-canvas {
-    opacity: 1;
-  }
-
-  .is-ready .hero-fallback {
-    opacity: 0;
+  /* Site-wide 3D layer (src/scripts/three/stage.ts): over the content, under the header, never blocks clicks. */
+  .stage-canvas {
+    position: fixed;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    z-index: 35;
     pointer-events: none;
+    animation: stage-in 1.2s var(--ease-out) both;
+  }
+
+  @keyframes stage-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  html.is-3d-hover,
+  html.is-3d-hover body * {
+    cursor: grab;
+  }
+
+  html.is-3d-hover :is(a, button, input, textarea, select, label, summary) {
+    cursor: pointer;
+  }
+
+  html.is-3d-grabbing,
+  html.is-3d-grabbing body * {
+    cursor: grabbing !important;
+    user-select: none;
+  }
+
+  /* 3D spots: a static illustration until (or instead of) the 3D layer. */
+  .scene-3d {
+    position: relative;
+    display: grid;
+    place-items: center;
+  }
+
+  .scene-fallback {
+    display: grid;
+    place-items: center;
+    inline-size: 62%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    color: var(--color-sky);
+    background: radial-gradient(circle, rgb(53 166 221 / 0.22), transparent 70%);
+    transition: opacity 0.8s var(--ease-out);
+  }
+
+  .scene-fallback svg {
+    inline-size: 80%;
+    block-size: 80%;
+  }
+
+  .scene-fallback.is-large {
+    inline-size: 78%;
+    color: #8fd3f5;
+  }
+
+  .scene-pulse {
+    stroke-dasharray: 1 0;
+  }
+
+  .has-3d .scene-fallback {
+    opacity: 0;
+  }
+
+  /* Content that only makes sense with the 3D layer running. */
+  .needs-3d {
+    display: none;
+  }
+
+  .has-3d .needs-3d {
+    display: block;
+  }
+
+  .play-hint {
+    margin-block-start: 0.5rem;
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+    opacity: 0.9;
+  }
+
+  .lab-band {
+    isolation: isolate;
+  }
+
+  /* Heart-monitor divider: the line draws itself again and again. */
+  .ecg-divider {
+    color: var(--color-sky);
+  }
+
+  .ecg-divider svg {
+    display: block;
+    inline-size: 100%;
+    block-size: 3.5rem;
+  }
+
+  .ecg-divider path {
+    stroke-dasharray: 0.25 1;
+    animation: ecg-run 2.8s linear infinite;
+  }
+
+  @keyframes ecg-run {
+    from {
+      stroke-dashoffset: 1.25;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* Pause animations button. */
+  .motion-toggle {
+    display: none;
+  }
+
+  .js .motion-toggle {
+    display: inline-grid;
+  }
+
+  .motion-toggle .icon-play,
+  .motion-paused .motion-toggle .icon-pause {
+    display: none;
+  }
+
+  .motion-paused .motion-toggle .icon-play {
+    display: block;
+  }
+
+  .motion-paused *,
+  .motion-paused *::before,
+  .motion-paused *::after {
+    animation-play-state: paused !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ecg-divider path {
+      animation: none;
+      stroke-dasharray: none;
+    }
   }
 
   /* Shimmering headline on brand bands (white → light sky; both far above AA on navy). */

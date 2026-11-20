@@ -2,14 +2,12 @@
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import Card from '~/components/Card.astro';
 import EntryList from '~/components/EntryList.astro';
-import Logo from '~/components/Logo.astro';
 import NeedsReviewNotice from '~/components/NeedsReviewNotice.astro';
+import Scene3D from '~/components/Scene3D.astro';
 import { locales, type Locale } from '~/i18n/config';
 import { t } from '~/i18n/utils';
 import type { UIKey } from '~/i18n/ui';
 import { getLocalizedEntries } from '~/lib/localized';
-import { getLogo } from '~/lib/logo';
-import { getImage } from 'astro:assets';
 
 export function getStaticPaths() {
   return locales.map((locale) => ({ params: { locale } }));
@@ -27,9 +25,6 @@ const quickLinks: { title: UIKey; text: UIKey; slug: string; icon: 'book' | 'reg
   { title: 'nav.news', text: 'home.quick.news', slug: 'news', icon: 'news' },
   { title: 'nav.contact', text: 'home.quick.contact', slug: 'contact', icon: 'contact' },
 ];
-// Logo texture for the 3D medallion (same-origin, optimised WebP).
-const logo = getLogo();
-const logoTextureUrl = logo ? (await getImage({ src: logo, width: 1024, height: 1024, format: 'webp' })).src : undefined;
 
 const btn =
   'inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 font-bold no-underline transition-all duration-300 hover:-translate-y-0.5';
@@ -63,25 +58,10 @@ const btn =
         </div>
       </div>
 
-      <!--
-        Hero visual: an interactive 3D scene (logo medallion, DNA helix, particles) loaded after the page displays.
-        The CSS version below (logo in orbit) shows first and stays when 3D is skipped (reduced motion, data saver…).
-      -->
-      <div
-        class="hero-visual relative mx-auto grid aspect-square w-full max-w-lg place-items-center"
-        aria-hidden="true"
-        data-hero-3d
-        data-logo={logoTextureUrl}
-      >
-        <canvas class="hero-canvas"></canvas>
-        <div class="hero-fallback absolute inset-0 grid place-items-center">
-          <span class="orbit orbit-1"></span>
-          <span class="orbit orbit-2"></span>
-          <span class="orbit orbit-3"></span>
-          <span class="medallion float size-56 md:size-72">
-            <Logo size={288} alt="" eager />
-          </span>
-        </div>
+      <!-- Interactive 3D scene (beating heart, ECG, DNA, pills, blood cells…); static illustration without it. -->
+      <div class="relative">
+        <Scene3D scene="hero" fallback="large" class="relative mx-auto aspect-square w-full max-w-lg" />
+        <p class="needs-3d play-hint">{t(locale, 'home.play.hint')}</p>
       </div>
     </div>
   </section>
@@ -90,11 +70,16 @@ const btn =
     <NeedsReviewNotice locale={locale} />
 
     <section aria-labelledby="quick-links" class="mt-8">
-      <p class="eyebrow reveal">{t(locale, 'home.eyebrow')}</p>
-      <h2 id="quick-links" class="reveal reveal-d1 mt-2 text-2xl font-extrabold md:text-4xl">
-        <span class="text-gradient">{t(locale, 'home.quickLinks')}</span>
-      </h2>
-      <ul class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4" role="list">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <p class="eyebrow reveal">{t(locale, 'home.eyebrow')}</p>
+          <h2 id="quick-links" class="reveal reveal-d1 mt-2 text-2xl font-extrabold md:text-4xl">
+            <span class="text-gradient">{t(locale, 'home.quickLinks')}</span>
+          </h2>
+        </div>
+        <Scene3D scene="quick" class="size-28 shrink-0 md:size-44" />
+      </div>
+      <ul class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4" role="list">
         {
           quickLinks.map((link, index) => (
             <li class:list={[`reveal-d${index + 1}`]}>
@@ -107,24 +92,45 @@ const btn =
       </ul>
     </section>
 
-    <section aria-labelledby="latest-news" class="mt-20">
-      <div class="reveal flex flex-wrap items-end justify-between gap-3">
-        <h2 id="latest-news" class="text-2xl font-extrabold md:text-4xl">
-          <span class="text-gradient">{t(locale, 'home.latestNews')}</span>
-        </h2>
-        <a href={`/${locale}/news/`} class="font-bold">{t(locale, 'home.allNews')}</a>
+    <section aria-labelledby="play-title" class="needs-3d on-inverse brand-band lab-band mt-20 overflow-hidden rounded-xl">
+      <div class="relative px-6 pt-8 text-center md:px-10 md:pt-10">
+        <h2 id="play-title" class="text-2xl font-extrabold md:text-4xl">{t(locale, 'home.play.title')}</h2>
+        <p class="mx-auto mt-3 max-w-2xl text-lg">{t(locale, 'home.play.text')}</p>
+      </div>
+      <Scene3D scene="lab" class="h-[34rem] w-full md:h-[28rem]" />
+    </section>
+
+    <div class="ecg-divider mt-16" aria-hidden="true">
+      <svg viewBox="0 0 600 60" preserveAspectRatio="none">
+        <path d="M0 30h220l12-18 14 40 16-58 16 62 12-26h310" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round" pathLength="1"></path>
+      </svg>
+    </div>
+
+    <section aria-labelledby="latest-news" class="mt-16">
+      <div class="reveal flex items-center justify-between gap-3">
+        <div class="flex flex-wrap items-end gap-x-6 gap-y-2">
+          <h2 id="latest-news" class="text-2xl font-extrabold md:text-4xl">
+            <span class="text-gradient">{t(locale, 'home.latestNews')}</span>
+          </h2>
+          <a href={`/${locale}/news/`} class="font-bold">{t(locale, 'home.allNews')}</a>
+        </div>
+        <Scene3D scene="home-news" class="size-24 shrink-0 md:size-36" />
       </div>
       <div class="mt-8">
         <EntryList locale={locale} items={news} section="news" emptyMessage={t(locale, 'news.empty')} level={3} />
       </div>
     </section>
 
-    <section aria-labelledby="latest-activities" class="mt-20">
-      <div class="reveal flex flex-wrap items-end justify-between gap-3">
-        <h2 id="latest-activities" class="text-2xl font-extrabold md:text-4xl">
-          <span class="text-gradient">{t(locale, 'home.latestActivities')}</span>
-        </h2>
-        <a href={`/${locale}/activities/`} class="font-bold">{t(locale, 'home.allActivities')}</a>
+    <section aria-labelledby="latest-activities" class="mt-16">
+      <div class="reveal flex items-center justify-between gap-3">
+        <div class="flex flex-wrap items-end gap-x-6 gap-y-2">
+          <h2 id="latest-activities" class="text-2xl font-extrabold md:text-4xl">
+            <span class="text-gradient">{t(locale, 'home.latestActivities')}</span>
+          </h2>
+          <a href={`/${locale}/activities/`} class="font-bold">{t(locale, 'home.allActivities')}</a>
+        </div>
+        <Scene3D scene="home-activities" class="size-24 shrink-0 md:size-36" />
       </div>
       <div class="mt-8">
         <EntryList
@@ -138,7 +144,3 @@ const btn =
     </section>
   </div>
 </BaseLayout>
-
-<script>
-  import '~/scripts/hero-loader';
-</script>
