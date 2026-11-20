@@ -16,7 +16,11 @@ export interface RateLimiterOptions {
 
 export class RateLimiter {
   private readonly hits = new Map<string, number[]>();
-  private readonly salt = crypto.getRandomValues(new Uint8Array(16));
+  /**
+   * Created on first use, inside a request: the Cloudflare Workers runtime forbids generating random values
+   * in global scope, and this class is instantiated at module load (src/server/contact.ts).
+   */
+  private salt: Uint8Array | undefined;
   private readonly limit: number;
   private readonly windowMs: number;
   private readonly now: () => number;
@@ -28,6 +32,7 @@ export class RateLimiter {
   }
 
   private async key(value: string): Promise<string> {
+    this.salt ??= crypto.getRandomValues(new Uint8Array(16));
     const data = new Uint8Array([...this.salt, ...new TextEncoder().encode(value)]);
     const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', data));
     return Array.from(digest.subarray(0, 12), (b) => b.toString(16).padStart(2, '0')).join('');
