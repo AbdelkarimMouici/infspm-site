@@ -100,4 +100,7 @@ export const en: UIStrings = {
   'contact.notSent.busy': 'Too many messages were sent in a short time. Please try again in a few minutes.',
   'contact.notSent.check': 'The anti-bot check failed or expired. Please try again.',
   'contact.notSent.unavailable': 'Sending is not available right now. Please write to us directly by email.',
+  'theme.dark': 'Toggle dark mode',
+  'home.eyebrow': 'Higher paramedical training · Tébessa',
+  'home.discover': 'Discover the institute',
 };

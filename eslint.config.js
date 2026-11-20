@@ -37,6 +37,11 @@ export default defineConfig(
     },
   },
   {
+    // Plain browser scripts served as-is (e.g. public/theme-init.js).
+    files: ['public/**/*.js'],
+    languageOptions: { globals: { ...globals.browser } },
+  },
+  {
     // Tests index into known fixture data.
     files: ['tests/**/*.ts'],
     rules: { '@typescript-eslint/no-non-null-assertion': 'off' },

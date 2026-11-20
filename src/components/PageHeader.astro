@@ -1,5 +1,5 @@
 ---
-// Page title block: the single <h1> of a page plus an optional lead paragraph.
+// Page title block: the single <h1> of a page plus an optional lead paragraph, on the animated brand band.
 import type { Locale } from '~/i18n/config';
 import { getDir } from '~/i18n/utils';
 
@@ -14,10 +14,17 @@ const { title, lead, titleLang } = Astro.props;
 const titleAttrs = titleLang ? { lang: titleLang, dir: getDir(titleLang) } : {};
 ---
 
-<div class="border-b border-border bg-primary-soft">
-  <div class="container-page py-8 md:py-10">
+<div class="on-inverse brand-band">
+  <div class="brand-grid" aria-hidden="true"></div>
+  <div class="container-page py-12 md:py-16">
     <slot name="before" />
-    <h1 class="text-2xl font-bold md:text-3xl" {...titleAttrs}>{title}</h1>
-    {lead && <p class="mt-3 max-w-prose text-lg text-muted">{lead}</p>}
+    <h1 class="rise max-w-4xl text-3xl font-extrabold tracking-tight md:text-5xl" {...titleAttrs}>{title}</h1>
+    {
+      lead && (
+        <p class="rise rise-d1 mt-4 max-w-2xl text-lg md:text-xl">
+          {lead}
+        </p>
+      )
+    }
   </div>
 </div>

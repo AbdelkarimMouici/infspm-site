@@ -60,8 +60,9 @@ const xDefault = xDefaultPath ? new URL(xDefaultPath, site).href : undefined;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <!-- TODO(content): theme colour from the official logo palette (placeholder = primary token). -->
-    <meta name="theme-color" content="#0a5a78" />
+    <meta name="theme-color" content="#1b4a70" />
+    <!-- Sets the theme and the "js" class before the first paint (same-origin script, allowed by the CSP). -->
+    <script is:inline src="/theme-init.js"></script>
     <meta name="description" content={description} />
     {
       noindex ? (
@@ -100,5 +101,8 @@ const xDefault = xDefaultPath ? new URL(xDefaultPath, site).href : undefined;
       <slot />
     </main>
     <SiteFooter locale={locale} />
+    <script>
+      import '~/scripts/interactions';
+    </script>
   </body>
 </html>

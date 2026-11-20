@@ -60,11 +60,21 @@ function contrast(a: string, b: string): number {
 
 describe('design tokens contrast (WCAG 2.2 AA)', () => {
   const css = readFileSync('src/styles/tokens.css', 'utf8');
+  // Light theme = the @theme block; dark theme = the [data-theme='dark'] block (same token names).
+  const block = (start: string) => {
+    const from = css.indexOf(start);
+    if (from < 0) throw new Error(`block ${start} not found`);
+    return css.slice(from, css.indexOf('}', from));
+  };
+  const themes = { light: block('@theme'), dark: block(":root[data-theme='dark']") } as const;
+  let current: keyof typeof themes = 'light';
   const token = (name: string): string => {
-    const value = css.match(new RegExp(`--color-${name}:\\s*(#[0-9a-fA-F]{6})`))?.[1];
-    if (!value) throw new Error(`token --color-${name} not found`);
+    const value = themes[current].match(new RegExp(`--color-${name}:\\s*(#[0-9a-fA-F]{6})`))?.[1];
+    if (!value) throw new Error(`token --color-${name} not found in the ${current} theme`);
     return value;
   };
+  const inBothThemes = <T extends unknown[]>(cases: T[]) =>
+    (['light', 'dark'] as const).flatMap((theme) => cases.map((c) => [theme, ...c] as [typeof theme, ...T]));
 
   // Every text/background pair used by components.
   const textPairs: [string, string][] = [
@@ -91,17 +101,22 @@ describe('design tokens contrast (WCAG 2.2 AA)', () => {
     ['on-notice', 'notice-soft'],
   ];
 
-  it.each(textPairs)('%s on %s is at least 4.5:1', (fg, bg) => {
+  it.each(inBothThemes(textPairs))('%s theme: %s on %s is at least 4.5:1', (theme, fg, bg) => {
+    current = theme;
     expect(contrast(token(fg), token(bg))).toBeGreaterThanOrEqual(4.5);
   });
 
   // Non-text contrast (WCAG 1.4.11): focus rings and input borders.
-  it.each([
-    ['focus', 'surface'],
-    ['focus', 'surface-alt'],
-    ['focus', 'primary-soft'],
-    ['focus-inverse', 'inverse'],
-  ])('%s ring on %s is at least 3:1', (fg, bg) => {
+  it.each(
+    inBothThemes([
+      ['focus', 'surface'],
+      ['focus', 'surface-alt'],
+      ['focus', 'primary-soft'],
+      ['focus-inverse', 'inverse'],
+      ['muted', 'surface'], // input borders use the muted colour
+    ]),
+  )('%s theme: %s on %s is at least 3:1', (theme, fg, bg) => {
+    current = theme;
     expect(contrast(token(fg), token(bg))).toBeGreaterThanOrEqual(3);
   });
 

@@ -1,0 +1,40 @@
+---
+// The institute's logo, from src/assets/brand/logo.(png|jpg|jpeg|webp|svg).
+// Optimised at build time (resized, WebP, metadata stripped). Until the file exists, a neutral icon is shown.
+// Stage 3 of the redesign makes the logo replaceable from the admin panel.
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  /** Rendered size in CSS pixels (square). */
+  size: number;
+  alt: string;
+  class?: string;
+  /** Load early (header/hero) instead of lazily. */
+  eager?: boolean;
+}
+
+const { size, alt, class: className, eager = false } = Astro.props;
+const files = import.meta.glob<{ default: ImageMetadata }>('/src/assets/brand/logo.{png,jpg,jpeg,webp,svg}', {
+  eager: true,
+});
+const logo = Object.values(files)[0]?.default;
+---
+
+{
+  logo ? (
+    <Image
+      src={logo}
+      alt={alt}
+      width={size}
+      height={size}
+      densities={[1, 2]}
+      format="webp"
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+      class:list={['rounded-full object-contain', className]}
+    />
+  ) : (
+    <img src="/favicon.svg" alt={alt} width={size} height={size} class:list={['rounded-full', className]} />
+  )
+}

@@ -99,4 +99,7 @@ export const fr: UIStrings = {
   'contact.notSent.busy': 'Trop de messages ont été envoyés en peu de temps. Merci de réessayer dans quelques minutes.',
   'contact.notSent.check': 'La vérification anti-robots a échoué ou a expiré. Merci de réessayer.',
   'contact.notSent.unavailable': 'L’envoi n’est pas disponible pour le moment. Merci de nous écrire directement par courriel.',
+  'theme.dark': 'Basculer le mode sombre',
+  'home.eyebrow': 'Formation supérieure paramédicale · Tébessa',
+  'home.discover': "Découvrir l'institut",
 };
