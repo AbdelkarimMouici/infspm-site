@@ -1755,3 +1755,48 @@ select.input {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Stage 2: pending changes, label rows */
+.label-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.label-row .label {
+  flex: 1;
+}
+
+.notice-info {
+  border-color: rgb(124 200 240 / 0.4);
+  background: rgb(124 200 240 / 0.1);
+  color: #cdeefc;
+}
+
+.card-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.pending-cards {
+  margin-block-end: 1rem;
+}
+
+.card-pending {
+  border-style: dashed;
+  opacity: 0.85;
+}
+
+.card-pending .card-media {
+  aspect-ratio: 16 / 6;
+}
+
+a.change-title {
+  color: #fff;
+  text-decoration: none;
+}
+
+a.change-title:hover {
+  text-decoration: underline;
+}

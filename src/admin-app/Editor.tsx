@@ -5,6 +5,7 @@ import { COLLECTION_META } from './Dashboard';
 import type { AdminKey } from './i18n';
 import { prepareImage, type PreparedImage } from './image';
 import { errorText } from './Login';
+import { changeTarget } from './pending';
 import { renderMarkdown } from './markdown';
 import { formatDate, Icon, Spinner, useApp, useConfirm, type IconName } from './ui';
 
@@ -390,6 +391,7 @@ export function Editor({ collection, slug }: { collection: Collection; slug: str
   const [saving, setSaving] = useState(false);
   const [dirty, setDirtyState] = useState(false);
   const [published, setPublished] = useState<string | null>(null);
+  const [pendingElsewhere, setPendingElsewhere] = useState(false);
   const [confirm, confirmElement] = useConfirm();
 
   const setDirty = (value: boolean) => {
@@ -399,6 +401,10 @@ export function Editor({ collection, slug }: { collection: Collection; slug: str
 
   useEffect(() => {
     if (!slug) return;
+    api
+      .changes()
+      .then((open) => setPendingElsewhere(open.some((c) => changeTarget(c)?.collection === collection && changeTarget(c)?.slug === slug)))
+      .catch(() => undefined);
     api
       .load(collection, slug)
       .then((docs) => {
@@ -471,6 +477,7 @@ export function Editor({ collection, slug }: { collection: Collection; slug: str
       }
     }
     if (images.some((image) => !(image.alts.ar ?? '').trim())) problems.push(t('errAlt'));
+    if (shared['endDate'] && shared['date'] && shared['endDate'] < shared['date']) problems.push(t('errEndDate'));
     return problems;
   };
 
@@ -581,6 +588,12 @@ export function Editor({ collection, slug }: { collection: Collection; slug: str
         </button>
       </header>
 
+      {pendingElsewhere && !published && (
+        <p class="notice notice-warn editor-notice">
+          <Icon name="clock" size={18} />
+          {t('pendingEditor')}
+        </p>
+      )}
       {published && (
         <p class="notice notice-ok editor-notice">
           <Icon name="clock" size={18} />
@@ -592,27 +605,31 @@ export function Editor({ collection, slug }: { collection: Collection; slug: str
         <section class="editor-form" aria-label={t('edit')}>
           <div class="panel">
             <div class="row">
-              <label class="field grow">
-                <span class="label">{t('status')}</span>
-                <select class="input" value={shared['status']} onChange={(e) => updateShared('status', (e.target as HTMLSelectElement).value)}>
+              <div class="field grow">
+                <label class="label" for="shared-status">
+                  {t('status')}
+                </label>
+                <select id="shared-status" class="input" value={shared['status']} onChange={(e) => updateShared('status', (e.target as HTMLSelectElement).value)}>
                   <option value="draft">{t('statusDraft')}</option>
                   <option value="published">{t('statusPublished')}</option>
                 </select>
-              </label>
+              </div>
               {config.shared.map((field) => (
-                <label class="field grow" key={field.name}>
-                  <span class="label">
+                <div class="field grow" key={field.name}>
+                  <label class="label" for={`shared-${field.name}`}>
                     {t(field.label)}
-                    {field.required && <span class="req"> *</span>}
-                  </span>
+                    {field.required && <span class="req" aria-hidden="true"> *</span>}
+                  </label>
                   <input
+                    id={`shared-${field.name}`}
                     class="input"
                     type={field.kind === 'date' ? 'date' : field.kind === 'number' ? 'number' : 'text'}
                     value={shared[field.name] ?? ''}
                     onInput={(e) => updateShared(field.name, (e.target as HTMLInputElement).value)}
+                    required={field.required}
                     dir="ltr"
                   />
-                </label>
+                </div>
               ))}
             </div>
             {publishing && user.role !== 'admin' && <p class="hint">{t('editorCannotPublish')}</p>}
@@ -651,18 +668,22 @@ export function Editor({ collection, slug }: { collection: Collection; slug: str
             ) : (
               <>
                 {config.local.map((field) => (
-                  <label class="field" key={`${active}-${field.name}`}>
-                    <span class="label">
-                      {t(field.label)}
-                      {field.required && <span class="req"> *</span>}
+                  <div class="field" key={`${active}-${field.name}`}>
+                    <div class="label-row">
+                      <label class="label" for={`f-${active}-${field.name}`}>
+                        {t(field.label)}
+                        {field.required && <span class="req" aria-hidden="true"> *</span>}
+                      </label>
                       {field.max && (
-                        <span class="counter">
+                        <span class="counter" aria-hidden="true">
                           {(current.fields[field.name] ?? '').length}/{field.max}
                         </span>
                       )}
-                    </span>
+                    </div>
                     {field.kind === 'textarea' ? (
                       <textarea
+                        id={`f-${active}-${field.name}`}
+                        required={field.required}
                         class="input"
                         rows={3}
                         maxLength={field.max}
@@ -671,13 +692,15 @@ export function Editor({ collection, slug }: { collection: Collection; slug: str
                       />
                     ) : (
                       <input
+                        id={`f-${active}-${field.name}`}
+                        required={field.required}
                         class={`input ${field.name === 'title' ? 'input-lg' : ''}`}
                         maxLength={field.max}
                         value={current.fields[field.name] ?? ''}
                         onInput={(e) => updateField(field.name, (e.target as HTMLInputElement).value)}
                       />
                     )}
-                  </label>
+                  </div>
                 ))}
                 <div class="field">
                   <label class="label" for={`body-${active}`}>

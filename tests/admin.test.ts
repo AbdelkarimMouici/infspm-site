@@ -277,3 +277,34 @@ describe('admin GitHub client on Cloudflare Workers', () => {
     }
   });
 });
+
+describe('admin pending changes', () => {
+  const change = (branch: string, title = 'تعديل · news: عنوان') =>
+    ({ number: 1, title, branch, author: '', createdAt: '', url: '', autoMerge: true, checks: 'pending', awaitingApproval: false }) as const;
+
+  it('finds the item a change belongs to, even when slugs contain dashes', async () => {
+    const { changeTarget, changeTitle } = await import('~/admin-app/pending');
+    expect(changeTarget(change('cms/news-2026-12-01-open-day-mf3k2a'))).toEqual({ collection: 'news', slug: '2026-12-01-open-day', deleting: false });
+    expect(changeTarget(change('cms/programs-example-nursing-delete-mf3k2a'))).toEqual({ collection: 'programs', slug: 'example-nursing', deleting: true });
+    expect(changeTarget(change('dependabot/npm/x'))).toBeNull();
+    expect(changeTitle(change('cms/news-a-b'))).toBe('عنوان');
+  });
+
+  it('sorts programs by display order', async () => {
+    const files: Record<string, string> = {
+      'src/content/programs/ar/b.md': '---\ntitle: "B"\norder: 20\nstatus: "published"\n---\n',
+      'src/content/programs/ar/a.md': '---\ntitle: "A"\norder: 10\nduration: "3 سنوات"\nstatus: "published"\n---\n',
+    };
+    const github = {
+      async readFolders(folders: string[]) {
+        return Object.entries(files)
+          .filter(([path]) => folders.some((f) => path.startsWith(`${f}/`)))
+          .map(([path, text]) => ({ path, sha: 'x', text }));
+      },
+    } as unknown as GitHub;
+    const { listEntries } = await import('~/server/admin/content');
+    const list = await listEntries(github, 'programs');
+    expect(list.map((e) => e.slug)).toEqual(['a', 'b']);
+    expect(list[0]?.locales.ar).toMatchObject({ order: 10, duration: '3 سنوات' });
+  });
+});

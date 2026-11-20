@@ -75,6 +75,9 @@ export interface LocaleSummary {
   date?: string;
   summary?: string;
   thumb?: string;
+  /** Programs: display order and duration (shown on the cards). */
+  order?: number;
+  duration?: string;
   example: boolean;
   needsReview: boolean;
 }
@@ -163,9 +166,15 @@ export async function listEntries(github: GitHub, name: string): Promise<EntrySu
       if (text) summary.summary = text;
       const thumb = firstImage(doc.data);
       if (thumb) summary.thumb = thumb;
+      if (typeof doc.data['order'] === 'number') summary.order = doc.data['order'];
+      const duration = asString(doc.data['duration']);
+      if (duration) summary.duration = duration;
       locales[locale] = summary;
     }
     list.push({ slug, locales });
+  }
+  if (def.name === 'programs') {
+    return list.sort((a, b) => (a.locales.ar?.order ?? 100) - (b.locales.ar?.order ?? 100) || a.slug.localeCompare(b.slug));
   }
   return list.sort((a, b) => {
     const da = a.locales.ar?.date ?? a.locales.fr?.date ?? '';

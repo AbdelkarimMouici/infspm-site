@@ -1,8 +1,9 @@
 /** @jsxImportSource preact */
 import { useEffect, useMemo, useState } from 'preact/hooks';
-import type { Collection, EntrySummary } from './api';
+import type { Collection, EntrySummary, PullRequestInfo } from './api';
 import { COLLECTION_META } from './Dashboard';
 import { errorText } from './Login';
+import { changeTarget, changeTitle } from './pending';
 import { formatDate, Icon, LangDots, Spinner, StatusChip, useApp } from './ui';
 
 type Filter = 'all' | 'published' | 'draft' | 'missing';
@@ -13,17 +14,35 @@ export function ContentList({ collection }: { collection: Collection }) {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
+  const [changes, setChanges] = useState<PullRequestInfo[]>([]);
   const meta = COLLECTION_META[collection];
   const canCreate = collection !== 'pages';
+
+  const load = () =>
+    Promise.all([api.list(collection), api.changes().catch(() => [] as PullRequestInfo[])])
+      .then(([list, open]) => {
+        setEntries(list);
+        setChanges(open);
+      })
+      .catch((err: unknown) => setError(errorText(t, err).text));
 
   useEffect(() => {
     setEntries(null);
     setError(null);
-    api
-      .list(collection)
-      .then(setEntries)
-      .catch((err: unknown) => setError(errorText(t, err).text));
+    void load();
   }, [collection]);
+
+  // Changes of this section waiting to be published (pull requests not merged yet).
+  const mine = changes.map((change) => ({ change, target: changeTarget(change) })).filter((c) => c.target?.collection === collection);
+  const pendingSlugs = new Set(mine.map((c) => c.target?.slug));
+  const newItems = mine.filter((c) => c.target && !c.target.deleting && !(entries ?? []).some((e) => e.slug === c.target?.slug));
+
+  // While something is being published, refresh every 20 seconds.
+  useEffect(() => {
+    if (mine.length === 0) return;
+    const timer = window.setInterval(() => void load(), 20_000);
+    return () => window.clearInterval(timer);
+  }, [mine.length, collection]);
 
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -84,6 +103,31 @@ export function ContentList({ collection }: { collection: Collection }) {
       </div>
 
       {error && <p class="notice notice-error">{error}</p>}
+      {mine.length > 0 && (
+        <p class="notice notice-info">
+          <Icon name="clock" size={18} />
+          {t('pendingList')}
+        </p>
+      )}
+      {newItems.length > 0 && (
+        <ul class="cards pending-cards" role="list">
+          {newItems.map(({ change }) => (
+            <li key={change.number}>
+              <div class="card card-pending">
+                <span class="card-media">
+                  <span class="card-placeholder">
+                    <Spinner />
+                  </span>
+                </span>
+                <span class="card-body">
+                  <span class="chip chip-info">{t('pendingNew')}</span>
+                  <span class="card-title">{changeTitle(change)}</span>
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
       {!entries && !error && (
         <div class="cards">
           {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -123,13 +167,23 @@ export function ContentList({ collection }: { collection: Collection }) {
                     )}
                     <span class="card-status">
                       <StatusChip status={main?.status ?? 'draft'} />
+                      {pendingSlugs.has(entry.slug) && (
+                        <span class="chip chip-info">
+                          <Icon name="clock" size={13} />
+                          {t('pendingBadge')}
+                        </span>
+                      )}
                     </span>
                   </span>
                   <span class="card-body">
                     <span class="card-title">{main?.title}</span>
                     {main?.summary && <span class="card-summary">{main.summary}</span>}
                     <span class="card-foot">
-                      <span class="muted small">{formatDate(main?.date, lang) || ' '}</span>
+                      <span class="muted small">
+                        {collection === 'programs'
+                          ? [main?.duration, main?.order !== undefined ? `${t('orderLabel')} ${main.order}` : ''].filter(Boolean).join(' · ') || ' '
+                          : formatDate(main?.date, lang) || ' '}
+                      </span>
                       <LangDots has={entry.locales} />
                     </span>
                   </span>

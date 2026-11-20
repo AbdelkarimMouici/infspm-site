@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { Collection, Dashboard as DashboardData, PullRequestInfo } from './api';
 import { errorText } from './Login';
+import { changeTarget } from './pending';
 import { formatDate, Icon, LangDots, Spinner, StatusChip, useApp, type IconName } from './ui';
 import type { AdminKey } from './i18n';
 
@@ -41,7 +42,16 @@ function ChangeRow({ change, onAction }: { change: PullRequestInfo; onAction: ()
         {state.text}
       </span>
       <div class="change-main">
-        <p class="change-title">{change.title}</p>
+        {(() => {
+          const target = changeTarget(change);
+          return target && !target.deleting ? (
+            <a class="change-title" href={`#/c/${target.collection}/${target.slug}`}>
+              {change.title}
+            </a>
+          ) : (
+            <p class="change-title">{change.title}</p>
+          );
+        })()}
         <p class="muted small">
           {change.author && `${t('by')} ${change.author} · `}
           {formatDate(change.createdAt, 'ar')}
