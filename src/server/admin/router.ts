@@ -180,6 +180,36 @@ export async function handleAdmin(request: Request, env: AdminEnv, deps: AdminDe
       ...(deps.fetch ? { fetch: deps.fetch } : {}),
     });
 
+    // Administrators only: facts about the configured GitHub key, never the key itself.
+    if (path === 'diagnostics' && method === 'GET') {
+      requireRole(user, 'admin');
+      const token = env.GITHUB_CMS_TOKEN;
+      const repo = env.GITHUB_REPO ?? 'AbdelkarimMouici/infspm-site';
+      const probe = await (deps.fetch ?? ((input: RequestInfo | URL, init?: RequestInit) => fetch(input, init)))(
+        `https://api.github.com/repos/${repo}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token.trim()}`,
+            Accept: 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28',
+            'User-Agent': 'infspm-admin',
+          },
+        },
+      ).catch(() => null);
+      return json(200, {
+        token: {
+          length: token.length,
+          trimmedLength: token.trim().length,
+          looksFineGrained: token.trim().startsWith('github_pat_'),
+          looksClassic: token.trim().startsWith('ghp_'),
+          hasInnerWhitespace: /\s/.test(token.trim()),
+          hasOuterWhitespace: token !== token.trim(),
+        },
+        repo,
+        githubRepoStatus: probe?.status ?? null,
+      });
+    }
+
     if (path === 'dashboard' && method === 'GET') {
       const [lists, changes, live] = await Promise.all([
         Promise.all((Object.keys(COLLECTIONS) as (keyof typeof COLLECTIONS)[]).map(async (name) => [name, await listEntries(github, name)] as const)),
