@@ -102,6 +102,12 @@ const xDefault = xDefaultPath ? new URL(xDefaultPath, site).href : undefined;
       <slot />
     </main>
     <SiteFooter locale={locale} />
+    <a href={`/${locale}/contact/`} class="fab-contact" title={t(locale, 'nav.contact')}>
+      <span class="sr-only">{t(locale, 'nav.contact')}</span>
+      <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M4 6h16v12H4zM4 7l8 6 8-6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path>
+      </svg>
+    </a>
     <script>
       import '~/scripts/interactions';
       import '~/scripts/stage-loader';

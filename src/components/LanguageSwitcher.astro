@@ -1,4 +1,5 @@
 ---
+// Language switch as a compact pill (ع · FR · EN). The full language name is read by screen readers.
 import { localeMeta, locales, type Locale } from '~/i18n/config';
 import { localizedPath, t } from '~/i18n/utils';
 
@@ -10,30 +11,29 @@ interface Props {
 
 const { locale, alternates = {} } = Astro.props;
 const pathname = Astro.url.pathname;
+const short: Record<Locale, string> = { ar: 'ع', fr: 'FR', en: 'EN' };
+const item = 'grid size-10 place-items-center rounded-full text-sm font-bold no-underline transition-colors duration-300';
 ---
 
-<nav aria-label={t(locale, 'lang.switchLabel')}>
-  <ul class="flex items-center gap-1 whitespace-nowrap text-sm" role="list">
+<nav aria-label={t(locale, 'lang.switchLabel')} class="lang-pill">
+  <ul class="flex items-center gap-0.5 rounded-full p-1" role="list">
     {
       locales.map((code) => (
         <li>
           {code === locale ? (
-            <span
-              aria-current="true"
-              class="inline-block rounded-md bg-primary-soft px-2.5 py-1 font-semibold text-primary"
-              lang={code}
-            >
-              {localeMeta[code].label}
-              <span class="sr-only" lang={locale}>{` ${t(locale, 'lang.current')}`}</span>
+            <span aria-current="true" class:list={[item, 'lang-current']} lang={code}>
+              <span aria-hidden="true">{short[code]}</span>
+              <span class="sr-only">{`${localeMeta[code].label} ${t(locale, 'lang.current')}`}</span>
             </span>
           ) : (
             <a
               href={alternates[code] ?? localizedPath(pathname, code)}
               hreflang={localeMeta[code].hreflang}
               lang={code}
-              class="inline-block rounded-md px-2.5 py-1 text-text no-underline hover:bg-surface-alt hover:text-primary"
+              class:list={[item, 'lang-link']}
             >
-              {localeMeta[code].label}
+              {short[code]}
+              <span class="sr-only">{` ${localeMeta[code].label}`}</span>
             </a>
           )}
         </li>

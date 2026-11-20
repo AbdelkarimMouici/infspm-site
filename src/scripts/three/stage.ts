@@ -35,6 +35,7 @@ import {
   Vector2,
   Vector3,
   WebGLRenderer,
+  type Mesh,
   type Object3D,
 } from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -52,6 +53,17 @@ interface Anchor {
   visible: boolean;
   ax: number;
   ay: number;
+  /** "rotate": dragging turns the object in place (anatomy explorer). */
+  rotate: boolean;
+}
+
+/** A piece of a model that flies into place when the scene first appears. */
+interface Part {
+  obj: Object3D;
+  pos: Vector3;
+  scale: Vector3;
+  from: Vector3;
+  settled: boolean;
 }
 
 interface Thing {
@@ -71,7 +83,14 @@ interface Thing {
   hover: number;
   bounce: number;
   grabbed: boolean;
+  /** Seconds since the scene became visible (negative = waiting for its turn). */
+  intro: number;
+  parts: Part[];
 }
+
+const easeOutBack = (t: number) => 1 + 2.4 * (t - 1) ** 3 + 1.4 * (t - 1) ** 2;
+const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
+const clamp01 = (t: number) => Math.min(Math.max(t, 0), 1);
 
 function dotTexture(): CanvasTexture {
   const size = 64;
@@ -98,7 +117,12 @@ export function startStage(elements: HTMLElement[]): () => void {
   canvas.setAttribute('aria-hidden', 'true');
   document.body.append(canvas);
 
-  const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: !coarse, powerPreference: 'default' });
+  const renderer = new WebGLRenderer({
+    canvas,
+    alpha: true,
+    antialias: !coarse,
+    powerPreference: 'default',
+  });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, coarse ? 1.25 : 1.5));
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = ACESFilmicToneMapping;
@@ -120,40 +144,84 @@ export function startStage(elements: HTMLElement[]): () => void {
   scene.add(rim);
 
   // ---------- Scenes ----------
-  const anchors: Anchor[] = elements.map((el) => {
-    const group = new Group();
-    scene.add(group);
-    const anchor: Anchor = { el, root: group, things: [], visible: false, ax: 1, ay: 1 };
-    const specs = recipes[el.dataset['3d'] ?? ''] ?? recipes['default'] ?? [];
-    for (const spec of specs) {
+  function populate(anchor: Anchor, name: string): void {
+    for (const thing of anchor.things) {
+      anchor.root.remove(thing.holder);
+      thing.holder.traverse((node) => (node as Partial<Mesh>).geometry?.dispose());
+    }
+    anchor.things = [];
+    const specs = recipes[name] ?? recipes['default'] ?? [];
+    specs.forEach((spec, index) => {
       const model = buildModel(spec.m);
       const holder = new Group();
       holder.add(model.group);
-      group.add(holder);
+      anchor.root.add(holder);
       const base = new Vector3(spec.rx ?? 0, 0, spec.rz ?? 0);
+      // Pieces that assemble themselves: the model's own list, or its direct children.
+      const pieces = model.parts ?? (model.group.children.length > 2 ? model.group.children : []);
+      const parts: Part[] = pieces.map((obj, i) => {
+        const angle = i * 2.4;
+        return {
+          obj,
+          pos: obj.position.clone(),
+          scale: obj.scale.clone(),
+          from: new Vector3(Math.cos(angle) * 2.2, 1.6 + (i % 3) * 0.6, Math.sin(angle) * 1.5),
+          settled: false,
+        };
+      });
       const thing: Thing = {
         anchor,
         spec,
         model,
         holder,
-        pos: new Vector3(spec.x, spec.y - 0.6, spec.z ?? 0), // rises into place
+        pos: new Vector3(spec.x, spec.y, spec.z ?? 0),
         vel: new Vector3(),
         home: new Vector3(),
-        ang: base.clone(),
+        ang: base.clone().add(new Vector3(0, -1.2, 0)),
         angVel: new Vector3(),
         base,
-        idleSpin: (Math.random() * 0.5 + 0.25) * (Math.random() < 0.5 ? -1 : 1),
+        idleSpin: anchor.rotate ? 0.25 : (Math.random() * 0.5 + 0.25) * (Math.random() < 0.5 ? -1 : 1),
         phase: Math.random() * Math.PI * 2,
         energy: 0,
         hover: 0,
         bounce: 0,
         grabbed: false,
+        intro: -index * 0.12,
+        parts,
       };
       holder.userData['thing'] = thing;
       anchor.things.push(thing);
-    }
+    });
+  }
+
+  const anchors: Anchor[] = elements.map((el) => {
+    const group = new Group();
+    scene.add(group);
+    const anchor: Anchor = {
+      el,
+      root: group,
+      things: [],
+      visible: false,
+      ax: 1,
+      ay: 1,
+      rotate: el.dataset['3dMode'] === 'rotate',
+    };
+    populate(anchor, el.dataset['3d'] ?? '');
     return anchor;
   });
+
+  // Anatomy explorer: buttons swap the model shown in the scene of the same section.
+  const explorerButtons = [...document.querySelectorAll<HTMLButtonElement>('[data-explore]')];
+  const onExplore = (event: Event) => {
+    const button = event.currentTarget as HTMLButtonElement;
+    const section = button.closest('[data-explorer]');
+    const anchor = anchors.find((item) => section?.contains(item.el));
+    if (!anchor || button.getAttribute('aria-pressed') === 'true') return;
+    for (const other of explorerButtons) other.setAttribute('aria-pressed', String(other === button));
+    populate(anchor, button.dataset['explore'] ?? '');
+    wake();
+  };
+  for (const button of explorerButtons) button.addEventListener('click', onExplore);
 
   // ---------- Particles: ambient dust + click bursts ----------
   const sprite = dotTexture();
@@ -168,7 +236,15 @@ export function startStage(elements: HTMLElement[]): () => void {
   dustGeo.setAttribute('position', new BufferAttribute(new Float32Array(DUST * 3), 3));
   const dust = new Points(
     dustGeo,
-    new PointsMaterial({ size: 0.07, map: sprite, color: 0x6cc4ef, transparent: true, opacity: 0.55, depthWrite: false, blending: AdditiveBlending }),
+    new PointsMaterial({
+      size: 0.07,
+      map: sprite,
+      color: 0x6cc4ef,
+      transparent: true,
+      opacity: 0.55,
+      depthWrite: false,
+      blending: AdditiveBlending,
+    }),
   );
   dust.renderOrder = 2;
   scene.add(dust);
@@ -184,7 +260,14 @@ export function startStage(elements: HTMLElement[]): () => void {
   burstGeo.setAttribute('color', new BufferAttribute(burstCol, 3));
   const bursts = new Points(
     burstGeo,
-    new PointsMaterial({ size: 0.14, map: sprite, vertexColors: true, transparent: true, depthWrite: false, blending: AdditiveBlending }),
+    new PointsMaterial({
+      size: 0.14,
+      map: sprite,
+      vertexColors: true,
+      transparent: true,
+      depthWrite: false,
+      blending: AdditiveBlending,
+    }),
   );
   bursts.renderOrder = 3;
   scene.add(bursts);
@@ -245,6 +328,7 @@ export function startStage(elements: HTMLElement[]): () => void {
   let grabbed: Thing | null = null;
   let down: { x: number; y: number; thing: Thing } | null = null;
   const dragTarget = new Vector3();
+  const lastClient = { x: 0, y: 0 };
   const lastDrag = new Vector3();
   let lastDragTime = 0;
 
@@ -275,7 +359,11 @@ export function startStage(elements: HTMLElement[]): () => void {
     thing.energy = 1;
     thing.bounce = 1;
     thing.vel.add(new Vector3((Math.random() - 0.5) * 2, 2.2, 1.2));
-    thing.angVel.set((Math.random() - 0.5) * 14, (Math.random() < 0.5 ? -1 : 1) * (8 + Math.random() * 6), (Math.random() - 0.5) * 14);
+    thing.angVel.set(
+      (Math.random() - 0.5) * 14,
+      (Math.random() < 0.5 ? -1 : 1) * (8 + Math.random() * 6),
+      (Math.random() - 0.5) * 14,
+    );
     thing.model.poke?.();
     const at = (thing.model.burstAt ?? new Vector3()).clone();
     thing.model.group.localToWorld(at);
@@ -286,7 +374,17 @@ export function startStage(elements: HTMLElement[]): () => void {
   const onPointerMove = (event: PointerEvent) => {
     setNdc(event);
     needsPick = event.pointerType !== 'touch';
-    if (grabbed) {
+    if (grabbed?.anchor.rotate) {
+      // Turn the object: horizontal drag spins, vertical drag tilts.
+      const dx = event.clientX - lastClient.x;
+      const dy = event.clientY - lastClient.y;
+      lastClient.x = event.clientX;
+      lastClient.y = event.clientY;
+      grabbed.ang.y += dx * 0.012;
+      grabbed.ang.x += dy * 0.008;
+      grabbed.angVel.y = dx * 0.5;
+      wake();
+    } else if (grabbed) {
       pointerToLocal(grabbed, dragTarget);
       wake();
     }
@@ -298,7 +396,9 @@ export function startStage(elements: HTMLElement[]): () => void {
     const thing = pick();
     if (!thing) return;
     down = { x: event.clientX, y: event.clientY, thing };
-    if (event.pointerType !== 'touch') {
+    lastClient.x = event.clientX;
+    lastClient.y = event.clientY;
+    if (event.pointerType !== 'touch' || thing.anchor.rotate) {
       event.preventDefault(); // no text selection while dragging an object
       grabbed = thing;
       thing.grabbed = true;
@@ -315,6 +415,7 @@ export function startStage(elements: HTMLElement[]): () => void {
     }
     if (grabbed) {
       grabbed.grabbed = false;
+      if (grabbed.anchor.rotate) grabbed.vel.set(0, 0, 0);
       grabbed.vel.clampLength(0, 12);
       grabbed.angVel.y += grabbed.vel.x * 2;
     }
@@ -365,7 +466,7 @@ export function startStage(elements: HTMLElement[]): () => void {
     }
 
     // Grabbed object: follow the pointer, remember the throw speed.
-    if (grabbed) {
+    if (grabbed && !grabbed.anchor.rotate) {
       const now = performance.now();
       const elapsed = Math.max((now - lastDragTime) / 1000, 1 / 240);
       grabbed.vel.copy(dragTarget).sub(lastDrag).divideScalar(elapsed).multiplyScalar(0.6);
@@ -382,7 +483,7 @@ export function startStage(elements: HTMLElement[]): () => void {
         const [hx, hy] = wide && spec.w ? spec.w : [spec.x, spec.y];
         thing.home.set(hx * anchor.ax, hy * anchor.ay + Math.sin(time * 0.9 + thing.phase) * 0.05, spec.z ?? 0);
 
-        if (!thing.grabbed) {
+        if (!thing.grabbed || anchor.rotate) {
           // Spring back home (bouncy), with a kick from scrolling.
           thing.vel.addScaledVector(tmp.copy(thing.home).sub(thing.pos), 7 * dt);
           thing.vel.y -= scrollKick * 0.0009;
@@ -407,7 +508,17 @@ export function startStage(elements: HTMLElement[]): () => void {
 
         thing.bounce = Math.max(0, thing.bounce - dt * 1.6);
         const wobble = Math.sin((1 - thing.bounce) * Math.PI * 5) * thing.bounce * 0.22;
-        thing.holder.scale.setScalar(spec.s * (1 + thing.hover * 0.14 + wobble));
+        // Entrance: the object (or each of its pieces) flies in and settles, as if being assembled.
+        thing.intro += dt;
+        const appear = thing.parts.length > 0 ? clamp01(thing.intro / 0.35) : easeOutBack(clamp01(thing.intro / 0.9));
+        thing.holder.scale.setScalar(Math.max(spec.s * (1 + thing.hover * 0.14 + wobble) * appear, 0.0001));
+        thing.parts.forEach((part, i) => {
+          if (part.settled) return;
+          const t = clamp01((thing.intro - i * 0.09) / 0.8);
+          part.obj.position.copy(part.pos).addScaledVector(part.from, 1 - easeOutCubic(t));
+          part.obj.scale.copy(part.scale).multiplyScalar(Math.max(easeOutBack(t), 0.0001));
+          part.settled = t >= 1;
+        });
 
         thing.energy = Math.max(0, thing.energy - dt * 0.45);
         thing.model.update?.(time, dt, thing.energy);
@@ -422,7 +533,8 @@ export function startStage(elements: HTMLElement[]): () => void {
       const z = dustBase[i * 3 + 2] ?? 0;
       const depth = (CAMERA_Z - z) / CAMERA_Z;
       const span = 2 * halfH * depth + 1;
-      const y = ((((dustBase[i * 3 + 1] ?? 0) * span + time * 0.12 + window.scrollY * unitsPerPx * 0.35) % span) + span) % span;
+      const y =
+        ((((dustBase[i * 3 + 1] ?? 0) * span + time * 0.12 + window.scrollY * unitsPerPx * 0.35) % span) + span) % span;
       dustPos.setXYZ(i, ((dustBase[i * 3] ?? 0) - 0.5) * 2 * halfW * depth * 1.1, y - span / 2, z);
     }
     dustPos.needsUpdate = true;

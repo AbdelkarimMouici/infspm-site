@@ -96,26 +96,74 @@ function setupTilt(): void {
   }
 }
 
-/** A soft light that follows the pointer (mouse/pen only). */
-function setupCursorGlow(): void {
+/** Cursor ring (follows with a little lag) and dot (exact). Mouse and pen only. */
+function setupCursor(): void {
   if (reducedMotion.matches || !finePointer.matches) return;
-  const glow = document.createElement('div');
-  glow.className = 'cursor-glow';
-  glow.setAttribute('aria-hidden', 'true');
-  document.body.append(glow);
+  const ring = document.createElement('div');
+  const dot = document.createElement('div');
+  ring.className = 'cursor-ring';
+  dot.className = 'cursor-dot';
+  for (const el of [ring, dot]) {
+    el.setAttribute('aria-hidden', 'true');
+    document.body.append(el);
+  }
+  const target = { x: -100, y: -100 };
+  const pos = { x: -100, y: -100 };
+  let scale = 1;
+  let goal = 1;
   let frame = 0;
+  const tick = () => {
+    pos.x += (target.x - pos.x) * 0.2;
+    pos.y += (target.y - pos.y) * 0.2;
+    scale += (goal - scale) * 0.2;
+    ring.style.transform = `translate3d(${pos.x}px, ${pos.y}px, 0) scale(${scale})`;
+    dot.style.transform = `translate3d(${target.x}px, ${target.y}px, 0)`;
+    const moving = Math.abs(target.x - pos.x) + Math.abs(target.y - pos.y) + Math.abs(goal - scale) > 0.1;
+    frame = moving ? requestAnimationFrame(tick) : 0;
+  };
+  const kick = () => {
+    if (!frame) frame = requestAnimationFrame(tick);
+  };
   window.addEventListener(
     'pointermove',
     (event) => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        glow.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
-        glow.classList.add('is-active');
-      });
+      if (event.pointerType === 'touch') return;
+      target.x = event.clientX;
+      target.y = event.clientY;
+      const overLink = (event.target as Element | null)?.closest?.('a, button, summary, label, input, select, textarea');
+      const grab = document.documentElement.classList.contains('is-3d-hover');
+      goal = overLink ? 1.6 : grab ? 1.35 : 1;
+      ring.classList.toggle('is-link', Boolean(overLink) || grab);
+      ring.classList.add('is-active');
+      dot.classList.add('is-active');
+      kick();
     },
     { passive: true },
   );
-  document.documentElement.addEventListener('pointerleave', () => glow.classList.remove('is-active'));
+  window.addEventListener('pointerdown', () => {
+    goal = 0.8;
+    kick();
+  });
+  window.addEventListener('pointerup', () => {
+    goal = 1;
+    kick();
+  });
+  document.documentElement.addEventListener('pointerleave', () => {
+    ring.classList.remove('is-active');
+    dot.classList.remove('is-active');
+  });
+}
+
+/** Full-screen menu: Escape closes it and returns focus to the menu button. */
+function setupMenu(): void {
+  const menu = document.querySelector<HTMLDetailsElement>('[data-site-menu]');
+  if (!menu) return;
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && menu.open) {
+      menu.open = false;
+      menu.querySelector('summary')?.focus();
+    }
+  });
 }
 
 /** Buttons drawn slightly towards the pointer. */
@@ -138,5 +186,6 @@ setupThemeToggle();
 setupMotionToggle();
 setupReveal();
 setupTilt();
-setupCursorGlow();
+setupCursor();
+setupMenu();
 setupMagnetic();

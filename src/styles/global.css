@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import './tokens.css';
+@import './experience.css';
 
 @layer base {
   html {
@@ -708,29 +709,7 @@
     }
   }
 
-  /* Cursor glow (pointer devices; position set by src/scripts/interactions.ts). */
-  .cursor-glow {
-    position: fixed;
-    inset-block-start: 0;
-    inset-inline-start: 0;
-    z-index: 30;
-    inline-size: 26rem;
-    block-size: 26rem;
-    margin-block-start: -13rem;
-    margin-inline-start: -13rem;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgb(53 166 221 / 0.16), transparent 65%);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    mix-blend-mode: plus-lighter;
-  }
-
-  .cursor-glow.is-active {
-    opacity: 1;
-  }
-
-  /* Scroll progress bar (CSS scroll-driven animation; ignored by browsers without support). */
+/* Scroll progress bar (CSS scroll-driven animation; ignored by browsers without support). */
   .scroll-progress {
     position: fixed;
     inset-block-start: 0;
@@ -771,10 +750,6 @@
     .glow-border:focus-within,
     .scroll-progress {
       animation: none;
-    }
-
-    .cursor-glow {
-      display: none;
     }
   }
 }

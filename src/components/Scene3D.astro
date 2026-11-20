@@ -8,12 +8,14 @@ interface Props {
   class?: string;
   /** Size of the static illustration. */
   fallback?: 'large' | 'small';
+  /** "rotate": dragging turns the object instead of moving it (explorer). */
+  mode?: 'rotate';
 }
 
-const { scene, class: className, fallback = 'small' } = Astro.props;
+const { scene, class: className, fallback = 'small', mode } = Astro.props;
 ---
 
-<div data-3d={scene} class:list={['scene-3d', className]} aria-hidden="true">
+<div data-3d={scene} data-3d-mode={mode} class:list={['scene-3d', className]} aria-hidden="true">
   <span class:list={['scene-fallback', fallback === 'large' ? 'is-large' : 'is-small']}>
     <svg viewBox="0 0 24 24" fill="none">
       <path

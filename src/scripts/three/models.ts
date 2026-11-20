@@ -28,6 +28,7 @@ import {
   Vector3,
   type BufferAttribute,
   type Material,
+  type Object3D,
 } from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
@@ -41,6 +42,8 @@ export interface Model {
   burstAt?: Vector3;
   /** Burst colour. */
   burstColor?: number;
+  /** Pieces that assemble themselves when the object first appears (default: the group's children). */
+  parts?: Object3D[];
 }
 
 export type ModelName =
@@ -63,7 +66,14 @@ export type ModelName =
 
 // ---------- Materials ----------
 const glossy = (color: number, extra: Partial<MeshPhysicalMaterial> = {}) =>
-  new MeshPhysicalMaterial({ color, roughness: 0.3, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.18, ...extra });
+  new MeshPhysicalMaterial({
+    color,
+    roughness: 0.3,
+    metalness: 0,
+    clearcoat: 1,
+    clearcoatRoughness: 0.18,
+    ...extra,
+  });
 const metal = (color = 0xe3e8ee) => new MeshStandardMaterial({ color, metalness: 1, roughness: 0.2 });
 const glass = () =>
   new MeshPhysicalMaterial({
@@ -113,7 +123,8 @@ function deform(geometry: BufferGeometry, fn: (p: Vector3) => void): BufferGeome
   return geometry;
 }
 
-const curve = (points: [number, number, number][]) => new CatmullRomCurve3(points.map(([x, y, z]) => new Vector3(x, y, z)));
+const curve = (points: [number, number, number][]) =>
+  new CatmullRomCurve3(points.map(([x, y, z]) => new Vector3(x, y, z)));
 const tube = (points: [number, number, number][], radius: number, material: Material, segments = 48) =>
   new Mesh(new TubeGeometry(curve(points), segments, radius, 12, false), material);
 
@@ -136,7 +147,11 @@ function heartbeat(phase: number): number {
 function heart(): Model {
   const group = new Group();
   const inner = new Group();
-  const muscle = glossy(0xc42a3c, { roughness: 0.35, emissive: new Color(0x5a0010), emissiveIntensity: 0.15 });
+  const muscle = glossy(0xc42a3c, {
+    roughness: 0.35,
+    emissive: new Color(0x5a0010),
+    emissiveIntensity: 0.15,
+  });
   const artery = glossy(0xd8394b, { roughness: 0.3 });
   const vein = glossy(0x3f6fd1, { roughness: 0.3 });
   const vessel = glossy(0x8e1626, { roughness: 0.4 });
@@ -155,14 +170,86 @@ function heart(): Model {
   );
   inner.add(body);
   // Aorta arch with three branches, pulmonary trunk, vena cava, coronary vessels.
-  inner.add(tube([[0.05, 0.4, 0], [0.06, 0.85, 0], [-0.12, 1.08, 0], [-0.4, 1.02, -0.05], [-0.52, 0.7, -0.1]], 0.13, artery));
-  for (const [x, top] of [[0.0, 1.32], [-0.17, 1.36], [-0.33, 1.28]] as const) {
-    inner.add(tube([[x, 1.0, 0], [x + 0.01, top - 0.12, 0.01], [x + 0.03, top, 0.02]], 0.045, artery, 16));
+  inner.add(
+    tube(
+      [
+        [0.05, 0.4, 0],
+        [0.06, 0.85, 0],
+        [-0.12, 1.08, 0],
+        [-0.4, 1.02, -0.05],
+        [-0.52, 0.7, -0.1],
+      ],
+      0.13,
+      artery,
+    ),
+  );
+  for (const [x, top] of [
+    [0.0, 1.32],
+    [-0.17, 1.36],
+    [-0.33, 1.28],
+  ] as const) {
+    inner.add(
+      tube(
+        [
+          [x, 1.0, 0],
+          [x + 0.01, top - 0.12, 0.01],
+          [x + 0.03, top, 0.02],
+        ],
+        0.045,
+        artery,
+        16,
+      ),
+    );
   }
-  inner.add(tube([[0.2, 0.35, 0.28], [0.26, 0.78, 0.26], [0.5, 0.92, 0.12], [0.66, 0.88, 0]], 0.11, vein));
-  inner.add(tube([[-0.42, 0.15, -0.25], [-0.46, 0.6, -0.27], [-0.48, 1.05, -0.28]], 0.09, vein, 24));
-  inner.add(tube([[0.12, 0.42, 0.52], [0.05, 0.05, 0.6], [-0.08, -0.3, 0.5], [-0.12, -0.58, 0.28]], 0.022, vessel, 32));
-  inner.add(tube([[0.3, 0.3, 0.45], [0.42, 0.0, 0.42], [0.36, -0.3, 0.3]], 0.018, vessel, 24));
+  inner.add(
+    tube(
+      [
+        [0.2, 0.35, 0.28],
+        [0.26, 0.78, 0.26],
+        [0.5, 0.92, 0.12],
+        [0.66, 0.88, 0],
+      ],
+      0.11,
+      vein,
+    ),
+  );
+  inner.add(
+    tube(
+      [
+        [-0.42, 0.15, -0.25],
+        [-0.46, 0.6, -0.27],
+        [-0.48, 1.05, -0.28],
+      ],
+      0.09,
+      vein,
+      24,
+    ),
+  );
+  inner.add(
+    tube(
+      [
+        [0.12, 0.42, 0.52],
+        [0.05, 0.05, 0.6],
+        [-0.08, -0.3, 0.5],
+        [-0.12, -0.58, 0.28],
+      ],
+      0.022,
+      vessel,
+      32,
+    ),
+  );
+  inner.add(
+    tube(
+      [
+        [0.3, 0.3, 0.45],
+        [0.42, 0.0, 0.42],
+        [0.36, -0.3, 0.3],
+      ],
+      0.018,
+      vessel,
+      24,
+    ),
+  );
   inner.position.y = -0.28;
   inner.scale.setScalar(0.78);
   group.add(inner);
@@ -171,6 +258,7 @@ function heart(): Model {
   let phase = 0;
   return {
     group,
+    parts: [...inner.children],
     burstColor: 0xff6b7d,
     update(_t, dt, energy) {
       phase += dt * (1.1 + energy * 1.8);
@@ -201,9 +289,31 @@ function lungs(): Model {
     lobe.position.set(side * 0.42, -0.12, 0);
     lobes.push(lobe);
     group.add(lobe);
-    group.add(tube([[0, 0.38, 0], [side * 0.18, 0.28, 0.02], [side * 0.36, 0.1, 0.05]], 0.055, cartilage, 16));
+    group.add(
+      tube(
+        [
+          [0, 0.38, 0],
+          [side * 0.18, 0.28, 0.02],
+          [side * 0.36, 0.1, 0.05],
+        ],
+        0.055,
+        cartilage,
+        16,
+      ),
+    );
   }
-  group.add(tube([[0, 0.95, 0], [0, 0.6, 0.01], [0, 0.38, 0]], 0.085, cartilage, 16));
+  group.add(
+    tube(
+      [
+        [0, 0.95, 0],
+        [0, 0.6, 0.01],
+        [0, 0.38, 0],
+      ],
+      0.085,
+      cartilage,
+      16,
+    ),
+  );
   for (let i = 0; i < 5; i++) {
     const ring = new Mesh(new TorusGeometry(0.09, 0.018, 8, 24), cartilage);
     ring.rotation.x = Math.PI / 2;
@@ -223,7 +333,12 @@ function lungs(): Model {
 
 function brain(): Model {
   const group = new Group();
-  const tissue = glossy(0xe58a9b, { roughness: 0.5, clearcoat: 0.35, emissive: new Color(0x7a2a5a), emissiveIntensity: 0.05 });
+  const tissue = glossy(0xe58a9b, {
+    roughness: 0.5,
+    clearcoat: 0.35,
+    emissive: new Color(0x7a2a5a),
+    emissiveIntensity: 0.05,
+  });
   for (const side of [-1, 1]) {
     const half = new Mesh(
       deform(new SphereGeometry(0.5, 110, 84), (p) => {
@@ -250,7 +365,18 @@ function brain(): Model {
   );
   cerebellum.position.set(0, -0.36, -0.36);
   group.add(cerebellum);
-  group.add(tube([[0, -0.2, -0.15], [0, -0.5, -0.2], [0, -0.8, -0.18]], 0.09, tissue, 16));
+  group.add(
+    tube(
+      [
+        [0, -0.2, -0.15],
+        [0, -0.5, -0.2],
+        [0, -0.8, -0.18],
+      ],
+      0.09,
+      tissue,
+      16,
+    ),
+  );
   group.position.y = 0.12;
   return {
     group,
@@ -266,7 +392,11 @@ function dna(): Model {
   const group = new Group();
   const STEPS = 18;
   const beads = new InstancedMesh(new SphereGeometry(0.075, 14, 12), glossy(0xffffff), STEPS * 2);
-  const rungs = new InstancedMesh(new CylinderGeometry(0.025, 0.025, 1, 8), glossy(0xffffff, { roughness: 0.4 }), STEPS);
+  const rungs = new InstancedMesh(
+    new CylinderGeometry(0.025, 0.025, 1, 8),
+    glossy(0xffffff, { roughness: 0.4 }),
+    STEPS,
+  );
   const strand = [new Color(0x35a6dd), new Color(0x8fd3f5)];
   const bases = [new Color(0xf25c6a), new Color(0xf5b83d), new Color(0x2bb673), new Color(0x7b6cf6)];
   const m = new Matrix4();
@@ -300,12 +430,9 @@ function molecule(): Model {
   const centre = new Mesh(new SphereGeometry(0.26, 32, 24), glossy(0x35a6dd));
   group.add(centre);
   const bond = glossy(0xdfe6ee, { roughness: 0.4 });
-  const dirs = [
-    new Vector3(1, 1, 1),
-    new Vector3(-1, -1, 1),
-    new Vector3(-1, 1, -1),
-    new Vector3(1, -1, -1),
-  ].map((d) => d.normalize());
+  const dirs = [new Vector3(1, 1, 1), new Vector3(-1, -1, 1), new Vector3(-1, 1, -1), new Vector3(1, -1, -1)].map((d) =>
+    d.normalize(),
+  );
   const colours = [0xffffff, 0xf25c6a, 0xffffff, 0xf5b83d];
   dirs.forEach((d, i) => {
     const end = d.clone().multiplyScalar(0.68);
@@ -413,7 +540,12 @@ function syringe(): Model {
   const group = new Group();
   const white = glossy(0xf4f7fa, { roughness: 0.35 });
   const barrel = new Mesh(new CylinderGeometry(0.16, 0.16, 1.1, 32, 1, true), glass());
-  const liquidMat = glossy(0x35a6dd, { transparent: true, opacity: 0.85, emissive: new Color(0x0b6fa6), emissiveIntensity: 0.3 });
+  const liquidMat = glossy(0x35a6dd, {
+    transparent: true,
+    opacity: 0.85,
+    emissive: new Color(0x0b6fa6),
+    emissiveIntensity: 0.3,
+  });
   const liquid = new Mesh(new CylinderGeometry(0.14, 0.14, 1, 28), liquidMat);
   const plunger = new Group();
   plunger.add(new Mesh(new CylinderGeometry(0.04, 0.04, 1.0, 12), white));
@@ -459,8 +591,32 @@ function stethoscope(): Model {
   const group = new Group();
   const steel = metal();
   const rubber = glossy(0x1b4a70, { roughness: 0.35 });
-  group.add(tube([[-0.42, 0.95, 0.05], [-0.38, 0.65, 0], [-0.2, 0.38, 0], [0, 0.24, 0]], 0.026, steel, 32));
-  group.add(tube([[0.42, 0.95, 0.05], [0.38, 0.65, 0], [0.2, 0.38, 0], [0, 0.24, 0]], 0.026, steel, 32));
+  group.add(
+    tube(
+      [
+        [-0.42, 0.95, 0.05],
+        [-0.38, 0.65, 0],
+        [-0.2, 0.38, 0],
+        [0, 0.24, 0],
+      ],
+      0.026,
+      steel,
+      32,
+    ),
+  );
+  group.add(
+    tube(
+      [
+        [0.42, 0.95, 0.05],
+        [0.38, 0.65, 0],
+        [0.2, 0.38, 0],
+        [0, 0.24, 0],
+      ],
+      0.026,
+      steel,
+      32,
+    ),
+  );
   for (const x of [-0.42, 0.42]) {
     const tip = new Mesh(new SphereGeometry(0.055, 16, 12), matte(0x22313f));
     tip.position.set(x * 1.02, 0.98, 0.07);
@@ -505,7 +661,10 @@ function stethoscope(): Model {
 
 function thermometer(): Model {
   const group = new Group();
-  const red = glossy(0xe03547, { emissive: new Color(0x7a0010), emissiveIntensity: 0.3 });
+  const red = glossy(0xe03547, {
+    emissive: new Color(0x7a0010),
+    emissiveIntensity: 0.3,
+  });
   const shell = new Mesh(new CapsuleGeometry(0.1, 1.3, 8, 24), glass());
   const bulb = new Mesh(new SphereGeometry(0.13, 24, 18), red);
   bulb.position.y = -0.7;
@@ -555,7 +714,10 @@ function bandage(): Model {
 
 function cross(): Model {
   const group = new Group();
-  const material = glossy(0x35a6dd, { emissive: new Color(0x0b6fa6), emissiveIntensity: 0.35 });
+  const material = glossy(0x35a6dd, {
+    emissive: new Color(0x0b6fa6),
+    emissiveIntensity: 0.35,
+  });
   group.add(new Mesh(new RoundedBoxGeometry(1.2, 0.4, 0.28, 3, 0.08), material));
   group.add(new Mesh(new RoundedBoxGeometry(0.4, 1.2, 0.28, 3, 0.08), material));
   return {
@@ -575,7 +737,19 @@ function microscope(): Model {
   const base = new Mesh(new RoundedBoxGeometry(0.9, 0.12, 0.6, 3, 0.05), navy);
   base.position.y = -0.8;
   group.add(base);
-  group.add(tube([[0.22, -0.74, -0.12], [0.34, -0.3, -0.12], [0.3, 0.2, -0.1], [0.1, 0.5, -0.05]], 0.08, white, 32));
+  group.add(
+    tube(
+      [
+        [0.22, -0.74, -0.12],
+        [0.34, -0.3, -0.12],
+        [0.3, 0.2, -0.1],
+        [0.1, 0.5, -0.05],
+      ],
+      0.08,
+      white,
+      32,
+    ),
+  );
   const stage = new Mesh(new RoundedBoxGeometry(0.62, 0.05, 0.5, 2, 0.02), navy);
   stage.position.set(-0.05, -0.25, 0);
   group.add(stage);
@@ -605,7 +779,10 @@ function microscope(): Model {
   knob.rotation.x = Math.PI / 2;
   knob.position.set(0.34, -0.35, 0.02);
   group.add(knob);
-  const light = new Mesh(new SphereGeometry(0.06, 16, 12), glossy(0xfff4c2, { emissive: new Color(0xffe27a), emissiveIntensity: 1 }));
+  const light = new Mesh(
+    new SphereGeometry(0.06, 16, 12),
+    glossy(0xfff4c2, { emissive: new Color(0xffe27a), emissiveIntensity: 1 }),
+  );
   light.position.set(-0.05, -0.66, 0);
   group.add(light);
   return {
@@ -635,9 +812,21 @@ function clipboard(): Model {
     group.add(line);
   }
   const ticks: Mesh[] = [];
-  const green = glossy(0x2bb673, { emissive: new Color(0x0e5a35), emissiveIntensity: 0.3 });
+  const green = glossy(0x2bb673, {
+    emissive: new Color(0x0e5a35),
+    emissiveIntensity: 0.3,
+  });
   for (let i = 0; i < 5; i++) {
-    const tick = tube([[-0.3, 0.3 - i * 0.17, 0.05], [-0.26, 0.26 - i * 0.17, 0.05], [-0.18, 0.36 - i * 0.17, 0.05]], 0.014, green, 8);
+    const tick = tube(
+      [
+        [-0.3, 0.3 - i * 0.17, 0.05],
+        [-0.26, 0.26 - i * 0.17, 0.05],
+        [-0.18, 0.36 - i * 0.17, 0.05],
+      ],
+      0.014,
+      green,
+      8,
+    );
     tick.visible = i < 3;
     ticks.push(tick);
     group.add(tick);
@@ -658,7 +847,11 @@ function ecg(): Model {
   const positions = new Float32Array(COUNT * 3);
   const geometry = new BufferGeometry();
   geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
-  const material = new LineBasicMaterial({ color: 0x8fd3f5, transparent: true, opacity: 0.9 });
+  const material = new LineBasicMaterial({
+    color: 0x8fd3f5,
+    transparent: true,
+    opacity: 0.9,
+  });
   group.add(new Line(geometry, material));
   const shape = (x: number) => {
     const p = ((x % 1) + 1) % 1;
