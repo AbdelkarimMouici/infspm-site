@@ -1,0 +1,563 @@
+/*
+ * Home-page journey through the body (src/pages/[locale]/index.astro + src/scripts/journey/).
+ * Dark cinematic page: the 3D world is a fixed canvas behind glass chapter cards.
+ * Long, sticky chapters only when JavaScript runs and motion is welcome; otherwise compact, readable
+ * sections on illustrated backgrounds. Logical properties only (RTL).
+ */
+
+@layer components {
+  .journey-page {
+    color-scheme: dark;
+  }
+
+  .journey-page body {
+    background-color: #02050c;
+    color: #e8f1f8;
+  }
+
+  /* Header floats over the world. */
+  .journey-page .site-header {
+    position: fixed;
+    inset-inline: 0;
+    inset-block-start: 0;
+    background: linear-gradient(rgb(2 5 12 / 0.85), rgb(2 5 12 / 0));
+    border-color: transparent;
+  }
+
+  .journey-page :is(.header-brand, .header-sub) {
+    color: #ffffff;
+  }
+
+  .journey-page .lang-pill ul {
+    background: rgb(255 255 255 / 0.08);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.2);
+  }
+
+  .journey-page .lang-link {
+    color: #c3d5e4;
+  }
+
+  .journey-page .lang-link:hover {
+    color: #ffffff;
+    background: rgb(255 255 255 / 0.1);
+  }
+
+  .journey-page :is(.lang-current, .menu-button) {
+    background: #ffffff;
+    color: #0b2238;
+  }
+
+  .journey-page .site-header :focus-visible,
+  .journey :focus-visible {
+    outline-color: #fdba74;
+  }
+
+  .journey {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .journey-canvas {
+    position: fixed;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    z-index: -1;
+    pointer-events: none;
+    animation: journey-in 1.4s ease both;
+  }
+
+  @keyframes journey-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  /* ---------- Chapters ---------- */
+  .chapter {
+    position: relative;
+  }
+
+  .chapter-stick {
+    display: flex;
+    min-block-size: 80svh;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: 7rem 4rem;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .js .chapter-intro {
+      min-block-size: 170svh;
+    }
+    .js .chapter-vessel {
+      min-block-size: 260svh;
+    }
+    .js :is(.chapter-heart, .chapter-lungs, .chapter-brain) {
+      min-block-size: 230svh;
+    }
+    .js .chapter-contact {
+      min-block-size: 150svh;
+    }
+    .js .chapter-stick {
+      position: sticky;
+      inset-block-start: 0;
+      min-block-size: 100svh;
+    }
+  }
+
+  /* Illustrated backgrounds until (or instead of) the 3D world. */
+  .journey-page:not(.has-journey) .chapter-intro {
+    background: radial-gradient(55% 45% at 75% 45%, rgb(53 166 221 / 0.28), transparent 70%);
+  }
+  .journey-page:not(.has-journey) .chapter-vessel {
+    background: radial-gradient(60% 50% at 30% 50%, rgb(200 20 50 / 0.35), transparent 70%);
+  }
+  .journey-page:not(.has-journey) .chapter-heart {
+    background: radial-gradient(50% 50% at 70% 50%, rgb(255 60 90 / 0.3), transparent 70%);
+  }
+  .journey-page:not(.has-journey) .chapter-lungs {
+    background: radial-gradient(55% 50% at 30% 50%, rgb(255 111 149 / 0.25), rgb(95 208 255 / 0.08) 60%, transparent 75%);
+  }
+  .journey-page:not(.has-journey) .chapter-brain {
+    background: radial-gradient(55% 50% at 70% 50%, rgb(122 92 255 / 0.3), transparent 70%);
+  }
+  .journey-page:not(.has-journey) .chapter-contact {
+    background: radial-gradient(55% 50% at 50% 50%, rgb(53 166 221 / 0.22), transparent 70%);
+  }
+
+  /* ---------- Intro ---------- */
+  .journey-pill {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.08);
+    border: 1px solid rgb(255 255 255 / 0.16);
+    color: #bfe8ff;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .journey-pill::before {
+    content: '';
+    flex: none;
+    inline-size: 0.55rem;
+    block-size: 0.55rem;
+    border-radius: 50%;
+    background: #5fd0ff;
+    animation: ping 2s ease-out infinite;
+  }
+
+  .journey-title {
+    margin-block-start: 1.5rem;
+    max-inline-size: 15ch;
+    font-size: clamp(2.4rem, 6.6vw, 5.6rem);
+    font-weight: 800;
+    line-height: 1.12;
+    text-wrap: balance;
+    background: linear-gradient(115deg, #ffffff 35%, #8fd3f5 60%, #ff8fab 85%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .journey-lead {
+    margin-block-start: 1.5rem;
+    max-inline-size: 36rem;
+    color: #c3d5e4;
+    font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+  }
+
+  .journey-cue {
+    margin-block-start: 3rem;
+    color: #9fb6c9;
+  }
+
+  .j-btn {
+    display: inline-flex;
+    min-block-size: 3.5rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding-inline: 2rem;
+    border-radius: 999px;
+    font-weight: 700;
+    text-decoration: none;
+    transition:
+      transform 0.35s var(--ease-out),
+      box-shadow 0.35s ease,
+      background-color 0.3s ease;
+  }
+
+  .j-btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .j-btn-solid,
+  .j-btn-solid:hover {
+    background: linear-gradient(120deg, #0b6fa6, #c2185b);
+    color: #ffffff;
+    box-shadow: 0 12px 40px -12px rgb(194 24 91 / 0.7);
+  }
+
+  .j-btn-ghost,
+  .j-btn-ghost:hover {
+    border: 1.5px solid rgb(255 255 255 / 0.32);
+    color: #ffffff;
+  }
+
+  .j-btn-ghost:hover {
+    background: rgb(255 255 255 / 0.08);
+  }
+
+  /* ---------- Glass chapter cards ---------- */
+  .chapter-card {
+    inline-size: 100%;
+    max-inline-size: 27rem;
+    padding: 1.75rem;
+    border-radius: 1.5rem;
+    background: rgb(6 14 28 / 0.58);
+    border: 1px solid rgb(255 255 255 / 0.13);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    backdrop-filter: blur(14px) saturate(1.4);
+    box-shadow: 0 30px 80px -30px rgb(0 0 0 / 0.85);
+    color: #e8f1f8;
+  }
+
+  .chapter:nth-of-type(odd) .chapter-card {
+    margin-inline-start: auto;
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .chapter-card {
+        animation: card-in linear both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 60%;
+      }
+    }
+  }
+
+  @keyframes card-in {
+    from {
+      opacity: 0;
+      transform: translateY(4rem) scale(0.94);
+    }
+  }
+
+  .chapter-num {
+    color: #8fd3f5;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  .chapter-title {
+    margin-block-start: 0.4rem;
+    color: #ffffff;
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+    font-weight: 800;
+    line-height: 1.2;
+  }
+
+  .chapter-text {
+    margin-block-start: 0.75rem;
+    color: #c3d5e4;
+    font-size: 1.05rem;
+  }
+
+  .chapter-hint {
+    margin-block-start: 1rem;
+    color: #ffc2d1;
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+
+  .journey a.chapter-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-block-start: 1.25rem;
+    color: #8fd3f5;
+    font-weight: 700;
+  }
+
+  .journey a.chapter-link:hover {
+    color: #ffffff;
+  }
+
+  .chapter-link .arrow {
+    display: inline-block;
+    transition: transform 0.3s var(--ease-out);
+  }
+
+  [dir='rtl'] .chapter-link .arrow {
+    transform: scaleX(-1);
+  }
+
+  .chapter-link:hover .arrow {
+    transform: translateX(0.3rem);
+  }
+
+  [dir='rtl'] .chapter-link:hover .arrow {
+    transform: scaleX(-1) translateX(0.3rem);
+  }
+
+  .journey a.chapter-email {
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  /* Only meaningful with the 3D world running. */
+  .needs-journey {
+    display: none !important;
+  }
+
+  .has-journey .needs-journey {
+    display: flex !important;
+  }
+
+  .j-chip {
+    margin-block-start: 0.9rem;
+    align-self: flex-start;
+    padding: 0.6rem 1.1rem;
+    border-radius: 999px;
+    border: 1px solid rgb(255 255 255 / 0.22);
+    background: rgb(255 255 255 / 0.08);
+    color: #ffffff;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+      background-color 0.25s ease,
+      transform 0.2s ease;
+  }
+
+  .j-chip:hover {
+    background: rgb(255 255 255 / 0.16);
+  }
+
+  .j-chip:active {
+    transform: scale(0.95);
+  }
+
+  /* Live heart rate. */
+  .bpm {
+    --beat: 0.86s;
+    margin-block-start: 1.25rem;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+
+  .bpm-heart {
+    inline-size: 1.7rem;
+    block-size: 1.7rem;
+    align-self: center;
+    color: #ff4d6d;
+    filter: drop-shadow(0 0 10px #ff4d6d);
+    animation: beat var(--beat) ease-out infinite;
+  }
+
+  @keyframes beat {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    12% {
+      transform: scale(1.3);
+    }
+    24% {
+      transform: scale(1.05);
+    }
+    36% {
+      transform: scale(1.2);
+    }
+  }
+
+  .bpm-value {
+    color: #ffffff;
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bpm-unit {
+    color: #c3d5e4;
+    font-size: 0.85rem;
+  }
+
+  /* Hold-to-breathe button doubles as the oxygen meter. */
+  .breathe-btn {
+    --fill: 0.2;
+    position: relative;
+    margin-block-start: 1rem;
+    inline-size: 100%;
+    min-block-size: 3.5rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-inline: 1.25rem;
+    border-radius: 999px;
+    border: 1.5px solid rgb(143 211 245 / 0.5);
+    background: linear-gradient(90deg, rgb(53 166 221 / 0.5) calc(var(--fill) * 100%), rgb(255 255 255 / 0.06) 0);
+    color: #ffffff;
+    font-weight: 700;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    transition:
+      transform 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  [dir='rtl'] .breathe-btn {
+    background: linear-gradient(270deg, rgb(53 166 221 / 0.5) calc(var(--fill) * 100%), rgb(255 255 255 / 0.06) 0);
+  }
+
+  .breathe-btn.is-holding {
+    transform: scale(0.98);
+    border-color: #8fd3f5;
+    box-shadow: 0 0 30px -6px #5fd0ff;
+  }
+
+  .breathe-o2 {
+    font-weight: 800;
+    color: #bfe8ff;
+  }
+
+  /* Latest news inside the brain chapter. */
+  .chapter-news {
+    display: grid;
+    gap: 0.5rem;
+    margin-block-start: 1rem;
+  }
+
+  .journey .chapter-news a {
+    display: block;
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    background: rgb(255 255 255 / 0.06);
+    color: #ffffff;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.25s ease;
+  }
+
+  .journey .chapter-news a:hover {
+    background: rgb(255 255 255 / 0.13);
+  }
+
+  .news-meta {
+    display: block;
+    color: #9fb6c9;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  /* ---------- Journey progress (side dots) ---------- */
+  .journey-hud {
+    position: fixed;
+    inset-inline-end: 1rem;
+    inset-block-start: 50%;
+    z-index: 30;
+    transform: translateY(-50%);
+  }
+
+  .journey-hud ol {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .journey-hud a {
+    display: flex;
+    min-block-size: 1.75rem;
+    min-inline-size: 1.75rem;
+    flex-direction: row-reverse;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.7rem;
+    color: #c3d5e4;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .hud-dot {
+    flex: none;
+    inline-size: 0.6rem;
+    block-size: 0.6rem;
+    margin-inline: 0.55rem;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.32);
+    transition:
+      transform 0.3s var(--ease-out),
+      background-color 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .journey-hud a[aria-current] .hud-dot {
+    background: #8fd3f5;
+    box-shadow:
+      0 0 0 4px rgb(143 211 245 / 0.22),
+      0 0 14px #8fd3f5;
+    transform: scale(1.3);
+  }
+
+  .hud-label {
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    background: rgb(6 14 28 / 0.7);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .journey-hud a:hover .hud-label,
+  .journey-hud a:focus-visible .hud-label {
+    opacity: 1;
+  }
+
+  @media (max-width: 47.99rem) {
+    .hud-label {
+      display: none;
+    }
+
+    .journey-hud {
+      inset-inline-end: 0.15rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .journey-pill::before,
+    .bpm-heart,
+    .journey-canvas {
+      animation: none;
+    }
+  }
+}
+
+@layer components {
+  /* Phones: dock the card at the bottom so the organ stays visible above it. */
+  @media (max-width: 47.99rem) {
+    .js .chapter:not(.chapter-intro) .chapter-stick {
+      justify-content: flex-end;
+      padding-block-end: 1.25rem;
+    }
+
+    .chapter-card {
+      padding: 1.25rem;
+      background: rgb(6 14 28 / 0.74);
+    }
+
+    .chapter-title {
+      font-size: 1.5rem;
+    }
+
+    .chapter-text {
+      font-size: 1rem;
+    }
+  }
+}

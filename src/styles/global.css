@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import './tokens.css';
 @import './experience.css';
+@import './journey.css';
 
 @layer base {
   html {

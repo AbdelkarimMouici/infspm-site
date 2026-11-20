@@ -26,9 +26,19 @@ interface Props {
   switchTargets?: Partial<Record<Locale, string>> | undefined;
   /** Exclude from search engines (404, utility pages). Also drops canonical and hreflang. */
   noindex?: boolean;
+  /** "journey": the immersive dark home page (floating header, 3D world behind the content). */
+  variant?: 'journey';
 }
 
-const { locale, title, description, alternates, switchTargets: switchOverrides, noindex = false } = Astro.props;
+const {
+  locale,
+  title,
+  description,
+  alternates,
+  switchTargets: switchOverrides,
+  noindex = false,
+  variant,
+} = Astro.props;
 const dir = getDir(locale);
 const siteName = t(locale, 'site.name');
 const fullTitle = `${title} | ${siteName}`;
@@ -54,7 +64,7 @@ const xDefault = xDefaultPath ? new URL(xDefaultPath, site).href : undefined;
 ---
 
 <!doctype html>
-<html lang={locale} dir={dir}>
+<html lang={locale} dir={dir} class:list={[variant === 'journey' && 'journey-page']}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

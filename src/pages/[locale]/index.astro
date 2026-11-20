@@ -1,152 +1,190 @@
 ---
+// Home page: a scroll-driven journey through the human body (src/scripts/journey/).
+// Each chapter is a real, readable section with links; the 3D world behind it is decoration and play.
 import BaseLayout from '~/layouts/BaseLayout.astro';
-import Card from '~/components/Card.astro';
-import EntryList from '~/components/EntryList.astro';
 import NeedsReviewNotice from '~/components/NeedsReviewNotice.astro';
-import Scene3D from '~/components/Scene3D.astro';
 import { locales, type Locale } from '~/i18n/config';
-import { t } from '~/i18n/utils';
+import { getDir, t } from '~/i18n/utils';
 import type { UIKey } from '~/i18n/ui';
+import { formatDate } from '~/lib/format';
 import { getLocalizedEntries } from '~/lib/localized';
+import { site } from '~/config/site';
 
 export function getStaticPaths() {
   return locales.map((locale) => ({ params: { locale } }));
 }
 
 const locale = Astro.params.locale as Locale;
-const newest = <T extends { entry: { data: { date: Date } } }>(items: T[]) =>
-  items.sort((a, b) => b.entry.data.date.getTime() - a.entry.data.date.getTime()).slice(0, 3);
-const news = newest(await getLocalizedEntries('news', locale));
-const activities = newest(await getLocalizedEntries('activities', locale));
+const news = (await getLocalizedEntries('news', locale))
+  .sort((a, b) => b.entry.data.date.getTime() - a.entry.data.date.getTime())
+  .slice(0, 3);
 
-const quickLinks: { title: UIKey; text: UIKey; slug: string; icon: 'book' | 'register' | 'news' | 'contact' }[] = [
-  { title: 'nav.programs', text: 'home.quick.programs', slug: 'programs', icon: 'book' },
-  { title: 'nav.admissions', text: 'home.quick.admissions', slug: 'admissions', icon: 'register' },
-  { title: 'nav.news', text: 'home.quick.news', slug: 'news', icon: 'news' },
-  { title: 'nav.contact', text: 'home.quick.contact', slug: 'contact', icon: 'contact' },
-];
-
-const organs: { scene: string; label: UIKey }[] = [
-  { scene: 'explore-heart', label: 'explore.heart' },
-  { scene: 'explore-lungs', label: 'explore.lungs' },
-  { scene: 'explore-brain', label: 'explore.brain' },
-  { scene: 'explore-dna', label: 'explore.dna' },
+const stages: { id: string; label: UIKey }[] = [
+  { id: 'ch-start', label: 'journey.intro' },
+  { id: 'ch-about', label: 'nav.about' },
+  { id: 'ch-programs', label: 'nav.programs' },
+  { id: 'ch-admissions', label: 'nav.admissions' },
+  { id: 'ch-news', label: 'nav.news' },
+  { id: 'ch-contact', label: 'nav.contact' },
 ];
 ---
 
-<BaseLayout locale={locale} title={t(locale, 'home.title')} description={t(locale, 'home.description')}>
-  <section class="hero" aria-labelledby="home-title">
-    <div class="container-page grid items-center gap-4 pb-14 pt-4 md:pt-8 lg:grid-cols-[1.1fr_1fr] lg:gap-10 lg:pb-20">
-      <!-- Interactive 3D heart that assembles itself, then beats; static illustration without it. -->
-      <div class="relative lg:order-2">
-        <Scene3D scene="hero" fallback="large" class="mx-auto aspect-square w-full max-w-sm sm:max-w-md lg:max-w-xl" />
-        <p class="needs-3d play-hint text-muted">{t(locale, 'home.play.hint')}</p>
-      </div>
-      <div class="lg:order-1">
-        <p class="hero-pill rise">{t(locale, 'home.eyebrow')}</p>
-        <h1 id="home-title" class="hero-title rise rise-d1 mt-6">{t(locale, 'site.name')}</h1>
-        <p class="rise rise-d2 mt-6 max-w-xl text-lg leading-relaxed text-muted md:text-xl">{t(locale, 'home.intro')}</p>
-        <div class="rise rise-d2 mt-8 flex flex-col gap-3 sm:flex-row">
-          <a data-magnetic href={`/${locale}/programs/`} class="btn-solid">
-            {t(locale, 'nav.programs')}
-            <svg class="rtl:-scale-x-100" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
-              ></path>
-            </svg>
-          </a>
-          <a data-magnetic href={`/${locale}/about/`} class="btn-line">{t(locale, 'home.discover')}</a>
-        </div>
-        <p class="scroll-cue mt-12 hidden lg:inline-flex" aria-hidden="true">{t(locale, 'home.scroll')}</p>
-      </div>
-    </div>
-  </section>
-
-  <div class="container-page py-14">
-    <NeedsReviewNotice locale={locale} />
-
-    <section aria-labelledby="quick-links" class="mt-8">
-      <div class="flex items-center justify-between gap-4">
-        <div>
-          <p class="eyebrow reveal">{t(locale, 'home.eyebrow')}</p>
-          <h2 id="quick-links" class="reveal reveal-d1 mt-2 text-2xl font-extrabold md:text-4xl">
-            <span class="text-gradient">{t(locale, 'home.quickLinks')}</span>
-          </h2>
-        </div>
-        <Scene3D scene="quick" class="size-28 shrink-0 md:size-44" />
-      </div>
-      <ul class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4" role="list">
+<BaseLayout locale={locale} title={t(locale, 'home.title')} description={t(locale, 'home.description')} variant="journey">
+  <div class="journey" data-journey>
+    <nav class="journey-hud" data-hud aria-label={t(locale, 'journey.chapters')}>
+      <ol role="list">
         {
-          quickLinks.map((link, index) => (
-            <li class:list={[`reveal-d${index + 1}`]}>
-              <Card title={t(locale, link.title)} href={`/${locale}/${link.slug}/`} icon={link.icon}>
-                <p>{t(locale, link.text)}</p>
-              </Card>
+          stages.map((stage, index) => (
+            <li>
+              <a href={`#${stage.id}`} aria-current={index === 0 ? 'step' : undefined}>
+                <span class="hud-dot" aria-hidden="true" />
+                <span class="hud-label">{t(locale, stage.label)}</span>
+              </a>
             </li>
           ))
         }
-      </ul>
+      </ol>
+    </nav>
+
+    <!-- 0 · Intro: DNA and a field of cells -->
+    <section id="ch-start" class="chapter chapter-intro" data-chapter="0" aria-labelledby="home-title">
+      <div class="chapter-stick container-page">
+        <p class="journey-pill rise">{t(locale, 'home.eyebrow')}</p>
+        <h1 id="home-title" class="journey-title rise rise-d1">{t(locale, 'site.name')}</h1>
+        <p class="journey-lead rise rise-d2">{t(locale, 'home.intro')}</p>
+        <div class="rise rise-d2 mt-8 flex flex-col gap-3 sm:flex-row">
+          <a href="#ch-about" class="j-btn j-btn-solid">
+            {t(locale, 'journey.start')}
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+              ></path>
+            </svg>
+          </a>
+          <a href={`/${locale}/programs/`} class="j-btn j-btn-ghost">{t(locale, 'nav.programs')}</a>
+        </div>
+        <div class="mt-8 max-w-xl"><NeedsReviewNotice locale={locale} /></div>
+        <p class="scroll-cue journey-cue" aria-hidden="true">{t(locale, 'home.scroll')}</p>
+      </div>
     </section>
 
-  </div>
+    <!-- 1 · Blood vessel: about -->
+    <section id="ch-about" class="chapter chapter-vessel" data-chapter="1" aria-labelledby="ch-about-title">
+      <div class="chapter-stick container-page">
+        <article class="chapter-card">
+          <p class="chapter-num" aria-hidden="true">01</p>
+          <h2 id="ch-about-title" class="chapter-title">{t(locale, 'journey.vessel.title')}</h2>
+          <p class="chapter-text">{t(locale, 'journey.vessel.text')}</p>
+          <a class="chapter-link" href={`/${locale}/about/`}>
+            {t(locale, 'nav.about')}<span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </article>
+      </div>
+    </section>
 
-  <section aria-labelledby="explore-title" class="needs-3d slant-band mt-20" data-explorer>
-    <div class="container-page grid items-center gap-8 lg:grid-cols-[1fr_1.35fr]">
-      <div>
-        <p class="eyebrow">{t(locale, 'home.eyebrow')}</p>
-        <h2 id="explore-title" class="mt-3 text-3xl font-extrabold md:text-5xl">{t(locale, 'home.play.title')}</h2>
-        <p class="mt-4 max-w-md text-lg text-on-inverse-muted">{t(locale, 'home.play.text')}</p>
-        <ul class="mt-6 flex flex-wrap gap-2 lg:mt-8 lg:grid lg:gap-3" role="list">
+    <!-- 2 · Heart: programs -->
+    <section id="ch-programs" class="chapter chapter-heart" data-chapter="2" aria-labelledby="ch-programs-title">
+      <div class="chapter-stick container-page">
+        <article class="chapter-card">
+          <p class="chapter-num" aria-hidden="true">02</p>
+          <h2 id="ch-programs-title" class="chapter-title">{t(locale, 'nav.programs')}</h2>
+          <p class="chapter-text">{t(locale, 'home.quick.programs')}</p>
+          <div class="bpm needs-journey" aria-hidden="true">
+            <svg class="bpm-heart" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 20.5s-7.6-4.6-9.5-9.3C1 7.7 3.2 4 6.9 4c2.1 0 3.6 1.2 5.1 3 1.5-1.8 3-3 5.1-3 3.7 0 5.9 3.7 4.4 7.2-1.9 4.7-9.5 9.3-9.5 9.3Z"
+              ></path>
+            </svg>
+            <span class="bpm-value" data-bpm>70</span>
+            <span class="bpm-unit">{t(locale, 'journey.bpm')}</span>
+          </div>
+          <p class="chapter-hint needs-journey">{t(locale, 'journey.heart.hint')}</p>
+          <button type="button" class="j-chip needs-journey" data-pump>{t(locale, 'journey.pump')}</button>
+          <a class="chapter-link" href={`/${locale}/programs/`}>
+            {t(locale, 'nav.programs')}<span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </article>
+      </div>
+    </section>
+
+    <!-- 3 · Lungs: admissions -->
+    <section id="ch-admissions" class="chapter chapter-lungs" data-chapter="3" aria-labelledby="ch-admissions-title">
+      <div class="chapter-stick container-page">
+        <article class="chapter-card">
+          <p class="chapter-num" aria-hidden="true">03</p>
+          <h2 id="ch-admissions-title" class="chapter-title">{t(locale, 'nav.admissions')}</h2>
+          <p class="chapter-text">{t(locale, 'home.quick.admissions')}</p>
+          <p class="chapter-hint needs-journey">{t(locale, 'journey.lungs.hint')}</p>
+          <button type="button" class="breathe-btn needs-journey" data-breathe data-o2 aria-pressed="false">
+            <span class="breathe-label">{t(locale, 'journey.breathe')}</span>
+            <span class="breathe-o2" aria-hidden="true">O₂</span>
+          </button>
+          <a class="chapter-link" href={`/${locale}/admissions/`}>
+            {t(locale, 'nav.admissions')}<span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </article>
+      </div>
+    </section>
+
+    <!-- 4 · Brain: news -->
+    <section id="ch-news" class="chapter chapter-brain" data-chapter="4" aria-labelledby="ch-news-title">
+      <div class="chapter-stick container-page">
+        <article class="chapter-card">
+          <p class="chapter-num" aria-hidden="true">04</p>
+          <h2 id="ch-news-title" class="chapter-title">{t(locale, 'home.latestNews')}</h2>
           {
-            organs.map((organ, index) => (
-              <li>
-                <button type="button" class="explore-option" data-explore={organ.scene} aria-pressed={index === 0 ? 'true' : 'false'}>
-                  <span class="num" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
-                  {t(locale, organ.label)}
-                </button>
-              </li>
-            ))
+            news.length > 0 ? (
+              <ul class="chapter-news" role="list">
+                {news.map((item) => (
+                  <li>
+                    <a
+                      href={`/${locale}/news/${item.slug}/`}
+                      {...(item.isFallback ? { lang: item.contentLocale, dir: getDir(item.contentLocale) } : {})}
+                    >
+                      <span class="news-meta" lang={locale} dir={getDir(locale)}>
+                        {formatDate(item.entry.data.date, locale)}
+                      </span>
+                      {item.entry.data.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p class="chapter-text">{t(locale, 'news.empty')}</p>
+            )
           }
-        </ul>
-      </div>
-      <Scene3D scene="explore-heart" mode="rotate" class="h-[24rem] w-full md:h-[32rem]" />
-    </div>
-  </section>
-
-  <div class="container-page pb-14">
-    <section aria-labelledby="latest-news" class="mt-12">
-      <div class="reveal flex items-center justify-between gap-3">
-        <div class="flex flex-wrap items-end gap-x-6 gap-y-2">
-          <h2 id="latest-news" class="text-2xl font-extrabold md:text-4xl">
-            <span class="text-gradient">{t(locale, 'home.latestNews')}</span>
-          </h2>
-          <a href={`/${locale}/news/`} class="font-bold">{t(locale, 'home.allNews')}</a>
-        </div>
-        <Scene3D scene="home-news" class="size-24 shrink-0 md:size-36" />
-      </div>
-      <div class="mt-8">
-        <EntryList locale={locale} items={news} section="news" emptyMessage={t(locale, 'news.empty')} level={3} />
+          <p class="chapter-hint needs-journey">{t(locale, 'journey.brain.hint')}</p>
+          <button type="button" class="j-chip needs-journey" data-fire>{t(locale, 'journey.fire')}</button>
+          <div class="flex flex-wrap gap-x-6">
+            <a class="chapter-link" href={`/${locale}/news/`}>
+              {t(locale, 'home.allNews')}<span class="arrow" aria-hidden="true">→</span>
+            </a>
+            <a class="chapter-link" href={`/${locale}/activities/`}>
+              {t(locale, 'home.allActivities')}<span class="arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
+        </article>
       </div>
     </section>
 
-    <section aria-labelledby="latest-activities" class="mt-16">
-      <div class="reveal flex items-center justify-between gap-3">
-        <div class="flex flex-wrap items-end gap-x-6 gap-y-2">
-          <h2 id="latest-activities" class="text-2xl font-extrabold md:text-4xl">
-            <span class="text-gradient">{t(locale, 'home.latestActivities')}</span>
-          </h2>
-          <a href={`/${locale}/activities/`} class="font-bold">{t(locale, 'home.allActivities')}</a>
-        </div>
-        <Scene3D scene="home-activities" class="size-24 shrink-0 md:size-36" />
-      </div>
-      <div class="mt-8">
-        <EntryList
-          locale={locale}
-          items={activities}
-          section="activities"
-          emptyMessage={t(locale, 'activities.empty')}
-          level={3}
-        />
+    <!-- 5 · Pull back: contact -->
+    <section id="ch-contact" class="chapter chapter-contact" data-chapter="5" aria-labelledby="ch-contact-title">
+      <div class="chapter-stick container-page">
+        <article class="chapter-card">
+          <p class="chapter-num" aria-hidden="true">05</p>
+          <h2 id="ch-contact-title" class="chapter-title">{t(locale, 'nav.contact')}</h2>
+          <p class="chapter-text">{t(locale, 'contact.lead')}</p>
+          <p class="mt-4">
+            <a href={`mailto:${site.email}`} dir="ltr" class="ltr-inline chapter-email">{site.email}</a>
+          </p>
+          <a class="chapter-link" href={`/${locale}/contact/`}>
+            {t(locale, 'nav.contact')}<span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </article>
       </div>
     </section>
   </div>
 </BaseLayout>
+
+<script>
+  import '~/scripts/journey/loader';
+</script>

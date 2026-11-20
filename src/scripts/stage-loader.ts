@@ -39,3 +39,5 @@ if (spots.length > 0 && worthLoading()) {
   if (document.readyState === 'complete') start();
   else window.addEventListener('load', start, { once: true });
 }
+
+export {};
