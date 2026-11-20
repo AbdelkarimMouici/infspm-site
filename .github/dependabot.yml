@@ -8,6 +8,11 @@ updates:
     cooldown:
       default-days: 7
     open-pull-requests-limit: 5
+    ignore:
+      # Node.js types must match the Node version the site runs on (.nvmrc = 24).
+      # Upgrade them together with .nvmrc and the CI Node version, not on their own.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
     groups:
       astro-and-tooling:
         patterns: ['astro', '@astrojs/*', 'tailwindcss', '@tailwindcss/*', 'vitest']
