@@ -16,7 +16,7 @@ export const site = {
   phone: orNull(settings.phone),
   facebookUrl: orNull(settings.facebookUrl),
   mapUrl: orNull(settings.mapUrl),
-  /** Show the demo entries (`example: true`) until the official content is published. */
+  /** Show the demo entries (`example: true`) on preview links; never on the live site (src/lib/content.ts). */
   showExamples: settings.showExamples,
   /** Logo path relative to src/content/settings/ (resolved in src/lib/logo.ts). */
   logo: settings.logo,

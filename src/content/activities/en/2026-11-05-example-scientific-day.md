@@ -1,8 +1,8 @@
 ---
-title: "Example: Scientific day on prevention"
-summary: "Demo activity: talks and workshops on health prevention."
+title: "Scientific day on prevention"
+summary: "Talks and workshops on health prevention."
 date: 2026-11-05
-location: "Institute lecture hall (example)"
+location: "Institute lecture hall"
 status: "published"
 example: true
 needs-review: false
@@ -11,4 +11,4 @@ images:
     alt: "Illustration of a DNA double helix"
 ---
 
-This is **demo content** showing how the site looks. The administration will replace it with official information from the admin panel.
+This section gives an overview of the topic, with the organisation, the participants and the highlights.

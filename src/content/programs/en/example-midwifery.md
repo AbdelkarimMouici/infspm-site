@@ -1,10 +1,10 @@
 ---
-title: "Example: Midwifery"
-summary: "Example programme card: caring for mother and child."
+title: "Midwifery"
+summary: "Caring for mother and child."
 order: 20
-duration: "3 years (example)"
-diploma: "Diploma (example)"
-admission: "Admission requirements set by the administration (example)."
+duration: "3 years"
+diploma: "Diploma"
+admission: "Admission requirements set by the administration."
 status: "published"
 example: true
 needs-review: false
@@ -13,6 +13,6 @@ image:
   alt: "Illustration of a heart with an ECG line"
 ---
 
-This is **demo content** showing how the site looks. The administration will replace it with official information from the admin panel.
+This section gives an overview of the topic, with the organisation, the participants and the highlights.
 
-Demo text for the midwifery programme.
+Text for the midwifery programme.

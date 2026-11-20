@@ -140,7 +140,7 @@ const emptyOr = <T extends z.ZodType>(schema: T) => z.union([z.literal(''), sche
 export const settingsSchema = z.object({
   /** Path from src/content/settings/ to a logo inside src/assets/brand/. */
   logo: z.string().regex(/^\.\.\/\.\.\/assets\/brand\/[\w.-]+\.(png|jpe?g|webp|svg)$/i, 'The logo must be in src/assets/brand/'),
-  /** Show demo entries (example: true) on the public site until the official content is in. */
+  /** Show demo entries (example: true) on preview links only; the live site never shows them. */
   showExamples: z.boolean().default(false),
   email: z.email(),
   phone: z.string().trim().max(40).default(''),

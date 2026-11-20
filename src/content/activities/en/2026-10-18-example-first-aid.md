@@ -1,8 +1,8 @@
 ---
-title: "Example: First aid workshop"
-summary: "Demo activity: hands-on first aid training."
+title: "First aid workshop"
+summary: "Hands-on first aid training."
 date: 2026-10-18
-location: "Simulation room (example)"
+location: "Simulation room"
 status: "published"
 example: true
 needs-review: false
@@ -11,4 +11,4 @@ images:
     alt: "Illustration of a heart with an ECG line"
 ---
 
-This is **demo content** showing how the site looks. The administration will replace it with official information from the admin panel.
+This section gives an overview of the topic, with the organisation, the participants and the highlights.

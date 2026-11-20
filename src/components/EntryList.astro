@@ -6,7 +6,6 @@ import { formatDate } from '~/lib/format';
 import type { LocalizedEntry } from '~/lib/localized';
 import Card from './Card.astro';
 import EmptyState from './EmptyState.astro';
-import ExampleBadge from './ExampleBadge.astro';
 
 type Item = LocalizedEntry<'news'> | LocalizedEntry<'activities'> | LocalizedEntry<'programs'>;
 
@@ -44,7 +43,6 @@ function metaFor(item: Item): string | undefined {
             meta={metaFor(item)}
             contentLang={item.isFallback ? item.contentLocale : undefined}
           >
-            <ExampleBadge slot="badge" locale={locale} show={item.entry.data.example} />
             {item.entry.data.summary && <p>{item.entry.data.summary}</p>}
           </Card>
         </li>

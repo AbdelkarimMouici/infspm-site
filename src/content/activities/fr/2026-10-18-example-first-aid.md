@@ -1,8 +1,8 @@
 ---
-title: "Exemple : Atelier premiers secours"
-summary: "Activité de démonstration : entraînement pratique aux premiers secours."
+title: "Atelier premiers secours"
+summary: "Entraînement pratique aux premiers secours."
 date: 2026-10-18
-location: "Salle de simulation (exemple)"
+location: "Salle de simulation"
 status: "published"
 example: true
 needs-review: false
@@ -11,4 +11,4 @@ images:
     alt: "Illustration d'un cœur avec un tracé ECG"
 ---
 
-Ceci est un **contenu de démonstration** pour montrer l'apparence du site. L'administration le remplacera par les informations officielles depuis l'espace d'administration.
+Cette section présente le sujet dans ses grandes lignes, avec l'organisation, les participants et les temps forts.

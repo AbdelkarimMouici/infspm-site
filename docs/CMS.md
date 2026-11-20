@@ -60,14 +60,16 @@ Validation rules are in `src/content/schemas.ts`. An invalid entry fails the bui
 
 ## Demo (example) content
 
-Entries with `example: true` (titles start with "مثال:" / "Exemple :" / "Example:", and a "demo content" badge
-is shown) fill the site until the official content is ready: 4 programs, 4 news items and 3 activities, with
-abstract illustrations (`src/assets/uploads/examples/`, no photos of people). Their details (durations,
-places, dates) are **not facts**.
+Entries with `example: true` (files named `*example*`) fill the design for review: 4 programs, 4 news items and
+3 activities, with abstract illustrations (`src/assets/uploads/examples/`, no photos of people). They carry no
+visible label (maintainer's choice, 2026-11-20), and their details (durations, dates, places) are **not facts**,
+so they are **never shown on the live site** (production branch `main`). They appear only:
 
-They are shown when **Settings → Show demo content** is on (currently on, at the maintainer's request), in
-development, and in builds with `SHOW_EXAMPLE_CONTENT=true`. **Turn the setting off before the public launch**,
-then delete the example files once the real entries are published.
+- on Cloudflare preview links (other branches) while **Settings → Show demo content on preview links** is on;
+- in development, and in builds with `SHOW_EXAMPLE_CONTENT=true`.
+
+On the live site, sections without real entries show their "nothing published yet" message. Delete the example
+files once the real entries are published.
 
 ## Setup (maintainer, once)
 

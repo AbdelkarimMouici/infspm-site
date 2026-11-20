@@ -1,6 +1,6 @@
 ---
-title: "Example: Registration opens"
-summary: "Demo news item: registration dates and required documents."
+title: "Registration opens"
+summary: "Registration dates and required documents."
 date: 2026-10-28
 status: "published"
 source: "manual"
@@ -11,4 +11,4 @@ images:
     alt: "Illustration of a stethoscope"
 ---
 
-This is **demo content** showing how the site looks. The administration will replace it with official information from the admin panel.
+This section gives an overview of the topic, with the organisation, the participants and the highlights.
