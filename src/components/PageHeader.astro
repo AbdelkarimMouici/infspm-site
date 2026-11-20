@@ -1,9 +1,8 @@
 ---
-// Page title block: the single <h1> of a page plus an optional lead paragraph, on a light canvas,
-// with an interactive 3D scene that matches the section (src/scripts/three/recipes.ts).
+// Page title block: the single <h1> of a page plus an optional lead paragraph. Tall and airy so the section's
+// living 3D backdrop (src/scripts/journey/backdrop.ts) shows beside the title.
 import type { Locale } from '~/i18n/config';
 import { getDir } from '~/i18n/utils';
-import Scene3D from './Scene3D.astro';
 
 interface Props {
   title: string;
@@ -14,23 +13,12 @@ interface Props {
 
 const { title, lead, titleLang } = Astro.props;
 const titleAttrs = titleLang ? { lang: titleLang, dir: getDir(titleLang) } : {};
-// Section name = first path segment after the language: /ar/programs/... → "programs".
-const scene = Astro.url.pathname.split('/').filter(Boolean)[1] ?? 'default';
 ---
 
 <div class="page-hero">
-  <div class="container-page grid grid-cols-[1fr_6.5rem] items-center gap-4 py-8 sm:grid-cols-[1fr_10rem] md:grid-cols-[1fr_16rem] md:py-12">
-    <div class="min-w-0">
-      <slot name="before" />
-      <h1 class="page-title rise max-w-4xl" {...titleAttrs}>{title}</h1>
-      {
-        lead && (
-          <p class="rise rise-d1 mt-4 max-w-2xl text-lg text-muted md:text-xl">
-            {lead}
-          </p>
-        )
-      }
-    </div>
-    <Scene3D scene={scene} class="aspect-square w-full" />
+  <div class="container-page">
+    <slot name="before" />
+    <h1 class="page-title rise" {...titleAttrs}>{title}</h1>
+    {lead && <p class="page-lead rise rise-d1">{lead}</p>}
   </div>
 </div>

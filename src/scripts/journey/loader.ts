@@ -1,7 +1,8 @@
 /**
- * Loads the home-page journey (journey.ts, Three.js + bloom) after the page has displayed, only when it is
- * worth it: no reduced motion, no data saver, a capable device and WebGL 2. Otherwise the chapters stay as
- * readable cards on illustrated backgrounds: the page is complete either way.
+ * Loads the 3D world after the page has displayed, only when it is worth it: no reduced motion, no data
+ * saver, a capable device and WebGL 2. Otherwise pages stay complete and readable on their dark backgrounds.
+ * - home page ([data-journey]): the scroll-driven journey through the body (journey.ts);
+ * - other pages (<html data-backdrop="section">): the section's living backdrop (backdrop.ts).
  */
 type NetworkInformation = { saveData?: boolean; effectiveType?: string };
 
@@ -24,17 +25,22 @@ function whenIdle(callback: () => void): void {
   else window.setTimeout(callback, 800);
 }
 
-const root = document.querySelector<HTMLElement>('[data-journey]');
-
-if (root && worthLoading()) {
-  const start = () =>
-    whenIdle(() => {
-      import('./journey')
-        .then(({ startJourney }) => startJourney(root))
-        .catch(() => {
-          /* keep the static chapters */
-        });
+function start(): void {
+  const journey = document.querySelector<HTMLElement>('[data-journey]');
+  const backdrop = document.documentElement.dataset['backdrop'];
+  whenIdle(() => {
+    const loading = journey
+      ? import('./journey').then(({ startJourney }) => startJourney(journey))
+      : backdrop
+        ? import('./backdrop').then(({ startBackdrop }) => startBackdrop(backdrop))
+        : Promise.resolve();
+    loading.catch(() => {
+      /* keep the static page */
     });
+  });
+}
+
+if (worthLoading()) {
   if (document.readyState === 'complete') start();
   else window.addEventListener('load', start, { once: true });
 }

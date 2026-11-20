@@ -191,7 +191,10 @@ export function buildDust(q: Quality): { points: Points; update: (time: number) 
 }
 
 // ---------- Intro: giant glowing DNA ----------
-export function buildIntro(side: number): {
+export function buildIntro(
+  side: number,
+  withRing = true,
+): {
   group: Group;
   update: (time: number, dt: number) => void;
   poke: () => void;
@@ -236,6 +239,7 @@ export function buildIntro(side: number): {
     new MeshBasicMaterial({ color: 0xff3a5c, transparent: true, opacity: 0.9, blending: AdditiveBlending }),
   );
   ring.position.z = -10;
+  ring.visible = withRing;
   group.add(ring);
 
   let spin = 0;
@@ -785,6 +789,74 @@ export function buildBrain(q: Quality): {
       }
       (nodePoints.geometry.getAttribute('color') as BufferAttribute).needsUpdate = true;
       group.rotation.y = Math.sin(time * 0.12) * 0.4;
+    },
+  };
+}
+
+// ---------- Free-floating blood cells (backdrops) ----------
+export function buildCells(q: Quality): {
+  group: Group;
+  update: (time: number, dt: number) => void;
+  burst: () => void;
+} {
+  const group = new Group();
+  const profile = [
+    [0, -0.07],
+    [0.22, -0.1],
+    [0.42, -0.18],
+    [0.56, -0.16],
+    [0.64, -0.08],
+    [0.66, 0],
+    [0.64, 0.08],
+    [0.56, 0.16],
+    [0.42, 0.18],
+    [0.22, 0.1],
+    [0, 0.07],
+  ].map(([x, y]) => new Vector2(x, y));
+  const COUNT = q.low ? 90 : 170;
+  const mesh = new InstancedMesh(
+    new LatheGeometry(profile, 28),
+    new MeshStandardMaterial({ color: 0xc8173a, roughness: 0.35, emissive: 0x4a000c, emissiveIntensity: 0.5 }),
+    COUNT,
+  );
+  group.add(mesh);
+  const rand = rng(41);
+  const cells = Array.from({ length: COUNT }, () => {
+    const home = new Vector3(rand() - 0.5, rand() - 0.5, rand() - 0.5).normalize().multiplyScalar(4 + rand() * 12);
+    return {
+      home,
+      pos: home.clone(),
+      vel: new Vector3(),
+      rot: new Vector3(rand() * 6, rand() * 6, rand() * 6),
+      spin: new Vector3(rand() - 0.5, rand() - 0.5, rand() - 0.5).multiplyScalar(1.6),
+      scale: 1.1 + rand() * 0.9,
+      phase: rand() * Math.PI * 2,
+    };
+  });
+  const m = new Matrix4();
+  const quat = new Quaternion();
+  const euler = new Euler();
+  const scale = new Vector3();
+  const goal = new Vector3();
+  return {
+    group,
+    burst() {
+      for (const cell of cells) cell.vel.addScaledVector(cell.pos.clone().normalize(), 10 + Math.random() * 8);
+    },
+    update(time, dt) {
+      let i = 0;
+      for (const cell of cells) {
+        goal.copy(cell.home).multiplyScalar(1 + Math.sin(time * 0.6 + cell.phase) * 0.06);
+        cell.vel.addScaledVector(goal.sub(cell.pos), 2.2 * dt);
+        cell.vel.multiplyScalar(Math.exp(-1.6 * dt));
+        cell.pos.addScaledVector(cell.vel, dt);
+        cell.rot.addScaledVector(cell.spin, dt * (1 + cell.vel.length() * 0.2));
+        quat.setFromEuler(euler.set(cell.rot.x, cell.rot.y, cell.rot.z));
+        m.compose(cell.pos, quat, scale.setScalar(cell.scale));
+        mesh.setMatrixAt(i++, m);
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+      group.rotation.y += dt * 0.05;
     },
   };
 }

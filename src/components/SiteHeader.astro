@@ -8,7 +8,6 @@ import { isCurrent, mainNav, navHref } from '~/config/navigation';
 import { site } from '~/config/site';
 import LanguageSwitcher from './LanguageSwitcher.astro';
 import Logo from './Logo.astro';
-import ThemeToggle from './ThemeToggle.astro';
 import MotionToggle from './MotionToggle.astro';
 
 interface Props {
@@ -70,7 +69,6 @@ const items = mainNav.map((item) => ({
               <a href={`mailto:${site.email}`} dir="ltr" class="ltr-inline font-semibold">{site.email}</a>
               <div class="flex items-center gap-2">
                 <MotionToggle locale={locale} />
-                <ThemeToggle locale={locale} />
               </div>
             </div>
           </nav>

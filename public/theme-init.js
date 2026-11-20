@@ -1,20 +1,12 @@
 // Runs before the page is painted (small, synchronous, same-origin: allowed by the strict CSP).
 // - marks that JavaScript is available (CSS only hides "reveal" elements when it is);
-// - applies the visitor's theme choice, or their system preference, without a light/dark flash;
+// - applies the dark theme before the first paint;
 // - applies the visitor's "pause animations" choice.
 (function () {
   var root = document.documentElement;
   root.classList.add('js');
-  var theme = null;
-  try {
-    theme = localStorage.getItem('theme');
-  } catch {
-    /* storage blocked: follow the system */
-  }
-  if (theme !== 'light' && theme !== 'dark') {
-    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  root.setAttribute('data-theme', theme);
+  // The site is designed as a dark, glowing world: one theme for everyone.
+  root.setAttribute('data-theme', 'dark');
   try {
     if (localStorage.getItem('motion') === 'paused') root.classList.add('motion-paused');
   } catch {
