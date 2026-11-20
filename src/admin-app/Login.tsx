@@ -27,6 +27,8 @@ export function errorText(t: T, error: unknown): { text: string; detail?: string
       return { text: t('errInvalid'), detail: error.info.details ?? [] };
     case 'network':
       return { text: t('errNetwork') };
+    case 'github':
+      return { text: error.info.githubStatus === 401 || error.info.githubStatus === 403 ? t('errGithubKey') : t('errGithub') };
     case 'not_configured':
       return { text: t('errNotConfigured', error.info.missing ?? '') };
     case 'signed_out':

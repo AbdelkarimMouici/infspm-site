@@ -35,7 +35,7 @@ export class ApiError extends Error {
   constructor(
     readonly status: number,
     readonly code: string,
-    readonly info: { detail?: string; details?: string[]; missing?: string } = {},
+    readonly info: { detail?: string; details?: string[]; missing?: string; githubStatus?: number } = {},
   ) {
     super(code);
   }
@@ -76,10 +76,11 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
   }
   const data = (await response.json().catch(() => ({}))) as Record<string, unknown>;
   if (!response.ok) {
-    const info: { detail?: string; details?: string[]; missing?: string } = {};
+    const info: { detail?: string; details?: string[]; missing?: string; githubStatus?: number } = {};
     if (typeof data['detail'] === 'string') info.detail = data['detail'];
     if (Array.isArray(data['details'])) info.details = data['details'] as string[];
     if (typeof data['missing'] === 'string') info.missing = data['missing'];
+    if (typeof data['status'] === 'number') info.githubStatus = data['status'];
     throw new ApiError(response.status, String(data['error'] ?? 'server'), info);
   }
   return data as T;
