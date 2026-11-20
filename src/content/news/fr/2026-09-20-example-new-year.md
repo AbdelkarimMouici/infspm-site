@@ -7,7 +7,7 @@ source: "manual"
 example: true
 needs-review: false
 images:
-  - src: ../../../assets/uploads/examples/dna.webp
+  - src: "../../../assets/uploads/examples/dna.webp"
     alt: "Illustration d'une double hélice d'ADN"
 ---
 
