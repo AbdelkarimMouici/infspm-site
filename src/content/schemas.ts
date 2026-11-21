@@ -17,6 +17,28 @@ type ImageSchema = z.ZodType;
 
 const status = z.enum(['draft', 'published']).default('draft');
 
+/**
+ * Colours and icons the administration can pick for programs and stories (admin panel selects).
+ * Colours are named, not free hex values: each one is checked for white-text contrast (WCAG AA) in the tests.
+ */
+export const BRAND_COLORS = {
+  navy: '#1b4a70',
+  sky: '#1a7db3',
+  rose: '#c23a60',
+  violet: '#6a4fc0',
+  teal: '#187f70',
+  amber: '#a65c09',
+} as const;
+export type BrandColor = keyof typeof BRAND_COLORS;
+export const brandColor = z.enum(Object.keys(BRAND_COLORS) as [BrandColor, ...BrandColor[]]);
+
+export const ICON_NAMES = [
+  'baby', 'stethoscope', 'syringe', 'xray', 'microscope', 'care', 'flask', 'heart',
+  'cross', 'news', 'calendar', 'megaphone', 'graduation', 'star',
+] as const;
+export type IconName = (typeof ICON_NAMES)[number];
+export const iconName = z.enum(ICON_NAMES);
+
 const altText = z.string().trim().min(1, 'Alt text is required for every image').max(250);
 
 export const imageWithAlt = <T extends ImageSchema>(image: T) =>
@@ -108,12 +130,50 @@ export const programSchema = <T extends ImageSchema>(image: T) =>
     ...base,
     /** Display order in the programs list (ascending). */
     order: z.number().int().min(0).default(100),
+    /** Short name for small places (story circles, buttons), e.g. "ممرض". Defaults to the title. */
+    shortTitle: z.string().trim().max(40).optional(),
+    /** Official abbreviation, e.g. "ISP" (same in every language). */
+    abbr: z.string().trim().regex(/^[A-Za-z0-9.-]{1,12}$/, 'Latin letters and digits only').optional(),
+    color: brandColor.default('navy'),
+    icon: iconName.default('graduation'),
     /** Facts below are optional: leave them empty until confirmed by the administration. */
     duration: z.string().trim().max(120).optional(),
     diploma: z.string().trim().max(200).optional(),
     admission: z.string().trim().max(600).optional(),
     image: imageWithAlt(image).optional(),
   }),
+  );
+
+/**
+ * Home-page stories (the circles at the top of the home page).
+ * - A story linked to a program (`program: <slug>`) adds its pictures and text after the program's own slide;
+ *   programs without a story still get an automatic one.
+ * - A story without a program is an extra circle (an event, an announcement).
+ * Each picture is one full-screen slide; the first picture also fills the circle.
+ */
+export const storySchema = <T extends ImageSchema>(image: T) =>
+  z.preprocess(
+    withoutUnpublishedImages,
+    z.object({
+      title: z.string().trim().min(1).max(60),
+      summary: z.string().trim().max(300).optional(),
+      status,
+      'needs-review': z.boolean().default(false),
+      example: z.boolean().default(false),
+      order: z.number().int().min(0).default(100),
+      program: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/).max(80).optional(),
+      color: brandColor.default('navy'),
+      icon: iconName.default('star'),
+      /** Optional button at the end of the story. Site-relative path (/ar/…) or an https link. */
+      link: z
+        .string()
+        .trim()
+        .regex(/^(\/(?!\/)[\w\-./#?=&%]*|https:\/\/[^\s]+)$/, 'Use a site path like /ar/news/ or an https link')
+        .max(300)
+        .optional(),
+      linkLabel: z.string().trim().max(40).optional(),
+      images: z.array(imageWithAlt(image)).max(10).default([]),
+    }),
   );
 
 /** Free-text institutional pages (About, Admissions, Privacy…). */
@@ -142,6 +202,8 @@ export const settingsSchema = z.object({
   logo: z.string().regex(/^\.\.\/\.\.\/assets\/brand\/[\w.-]+\.(png|jpe?g|webp|svg)$/i, 'The logo must be in src/assets/brand/'),
   /** Show demo entries (example: true) on preview links only; the live site never shows them. */
   showExamples: z.boolean().default(false),
+  /** Home page: a "New" story circle filled automatically with the latest news and activities. */
+  newsStory: z.boolean().default(true),
   email: z.email(),
   phone: z.string().trim().max(40).default(''),
   address: localizedLine,
