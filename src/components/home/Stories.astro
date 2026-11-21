@@ -1,0 +1,125 @@
+---
+// Home-page stories: a row of circles; each opens a full-screen story (src/scripts/stories.ts).
+// Every slide is rendered here as HTML inside an inert <template>, so the page has no inline script or data.
+import { Image } from 'astro:assets';
+import Icon from '~/components/Icon.astro';
+import type { Locale } from '~/i18n/config';
+import { getDir, t } from '~/i18n/utils';
+import type { Story } from '~/lib/stories';
+
+interface Props {
+  locale: Locale;
+  stories: Story[];
+}
+
+const { locale, stories } = Astro.props;
+const langAttrs = (lang?: Locale) => (lang ? { lang, dir: getDir(lang) } : {});
+---
+
+{
+  stories.length > 0 && (
+    <div class="stories-block">
+      <div class="stories" aria-label={t(locale, 'home.stories')}>
+        {stories.map((story, index) => (
+          <button
+            type="button"
+            class:list={['story', `c-${story.color}`, { 'is-new': story.isNew }]}
+            data-story={index}
+            data-key={story.key}
+            aria-label={`${t(locale, 'home.storyOpen')}: ${story.title}`}
+            aria-haspopup="dialog"
+          >
+            <span class="story-ring">
+              <span class="story-in">
+                {story.cover ? (
+                  <Image src={story.cover.image} alt="" width={132} height={132} class="story-cover" loading="eager" />
+                ) : (
+                  <Icon name={story.icon} size={30} />
+                )}
+              </span>
+            </span>
+            <span class="story-label" {...langAttrs(story.lang)}>{story.label}</span>
+          </button>
+        ))}
+      </div>
+      <p class="stories-hint">
+        <Icon name="tap" size={15} />
+        {t(locale, 'home.storiesHint')}
+      </p>
+
+      {stories.map((story, index) => (
+        <template data-story-slides={index} data-name={story.title} data-color={story.color} data-icon={story.icon}>
+          {story.slides.map((slide) => (
+            <div class:list={['slide', `slide-${slide.kind}`]} {...langAttrs(slide.lang)} data-href={slide.link?.href} data-label={slide.link?.label}>
+              {slide.kind === 'image' ? (
+                <>
+                  <Image src={slide.image} alt={slide.alt} width={900} class="slide-photo" loading="lazy" />
+                  <div class="slide-caption">
+                    {slide.kicker && <span class="v-kicker">{slide.kicker}</span>}
+                    <p class="v-title">{slide.title}</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <span class="v-icon">
+                    <Icon name={slide.icon} size={58} />
+                  </span>
+                  <span class="v-kicker">{slide.kicker}</span>
+                  <p class="v-title">{slide.title}</p>
+                  {slide.text && (
+                    <p class="v-sub" {...langAttrs(slide.subLang)}>
+                      {slide.text}
+                    </p>
+                  )}
+                  {slide.tag && (
+                    <span class="v-tag" dir="ltr">
+                      {slide.tag}
+                    </span>
+                  )}
+                </>
+              )}
+            </div>
+          ))}
+        </template>
+      ))}
+
+      <template data-story-icons>
+        {stories.map((story, index) => (
+          <span data-icon-for={index}>
+            <Icon name={story.icon} size={18} />
+          </span>
+        ))}
+      </template>
+
+      <div class="viewer" role="dialog" aria-modal="true" aria-labelledby="v-name" hidden data-viewer>
+        <div class="v-card c-navy" data-card>
+          <div class="v-bars" data-bars />
+          <div class="v-head">
+            <span class="v-av" data-av />
+            <span class="v-who">
+              <b id="v-name" data-name />
+              <small>{t(locale, 'site.shortName')}</small>
+            </span>
+            <button type="button" class="v-btn" data-pause aria-label={t(locale, 'home.storyPause')} data-label-pause={t(locale, 'home.storyPause')} data-label-play={t(locale, 'home.storyPlay')}>
+              <span class="when-playing"><Icon name="pause" size={20} /></span>
+              <span class="when-paused"><Icon name="play" size={20} /></span>
+            </button>
+            <button type="button" class="v-btn" data-close aria-label={t(locale, 'home.storyClose')}>
+              <Icon name="close" size={20} />
+            </button>
+          </div>
+          <button type="button" class="zone zone-prev" data-prev aria-label={t(locale, 'home.storyPrev')} />
+          <button type="button" class="zone zone-next" data-next aria-label={t(locale, 'home.storyNext')} />
+          <div class="v-body" data-body aria-live="polite" />
+          <div class="v-foot">
+            <a class="v-cta" href={`/${locale}/`} data-cta hidden>
+              <span data-cta-label />
+              <Icon name="arrow" size={18} class="v-arrow" />
+            </a>
+            <p class="v-help">{t(locale, 'home.storyHelp')}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

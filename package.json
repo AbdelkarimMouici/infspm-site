@@ -21,8 +21,7 @@
     "astro": "7.4.12",
     "preact": "10.29.8",
     "sharp": "0.35.5",
-    "tailwindcss": "4.3.5",
-    "three": "0.187.0"
+    "tailwindcss": "4.3.5"
   },
   "overrides": {
     "eslint-plugin-jsx-a11y-x": {
@@ -33,7 +32,6 @@
     "@astrojs/check": "0.9.12",
     "@eslint/js": "10.0.1",
     "@types/node": "24.19.2",
-    "@types/three": "0.187.0",
     "eslint": "10.15.0",
     "eslint-plugin-astro": "3.2.1",
     "eslint-plugin-jsx-a11y-x": "0.2.0",

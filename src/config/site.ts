@@ -18,6 +18,8 @@ export const site = {
   mapUrl: orNull(settings.mapUrl),
   /** Show the demo entries (`example: true`) on preview links; never on the live site (src/lib/content.ts). */
   showExamples: settings.showExamples,
+  /** Home page: automatic "New" story with the latest news and activities. */
+  newsStory: settings.newsStory,
   /** Logo path relative to src/content/settings/ (resolved in src/lib/logo.ts). */
   logo: settings.logo,
   address: (locale: Locale): string | null => orNull(settings.address[locale]),

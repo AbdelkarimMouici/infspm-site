@@ -2,7 +2,7 @@ import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 import { defaultLocale, locales, type Locale } from '~/i18n/config';
 import { showExamples, splitId } from './content';
 
-type Listable = 'news' | 'activities' | 'programs';
+type Listable = 'news' | 'activities' | 'programs' | 'stories';
 
 export interface LocalizedEntry<C extends Listable> {
   entry: CollectionEntry<C>;

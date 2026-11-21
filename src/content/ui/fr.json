@@ -46,7 +46,49 @@
     "allActivities": "Toutes les activités",
     "scroll": "Faites défiler",
     "eyebrow": "Formation supérieure paramédicale · Tébessa",
-    "discover": "Découvrir l'institut"
+    "discover": "Découvrir l'institut",
+    "place": "Tébessa · Algérie",
+    "lead": "Formation supérieure en sciences paramédicales. Découvrez les spécialités et les dernières actualités de l'institut.",
+    "discoverPrograms": "Découvrir les spécialités",
+    "stories": "Stories de l'institut",
+    "storiesHint": "Touchez un cercle pour voir la story",
+    "storyOpen": "Voir la story",
+    "storyNew": "Nouveau",
+    "storyNewTitle": "Dernières actualités",
+    "storyProgram": "Spécialité",
+    "storyDetails": "Détails de la spécialité",
+    "storyClose": "Fermer",
+    "storyPause": "Pause",
+    "storyPlay": "Reprendre",
+    "storyNext": "Suivant",
+    "storyPrev": "Précédent",
+    "storyHelp": "Touchez à droite pour la suite · à gauche pour revenir · glissez vers le bas pour fermer",
+    "kindNews": "Actualité",
+    "kindActivity": "Activité",
+    "quickPrograms": "Spécialités",
+    "quickProgramsText": "Les formations, leur durée et le diplôme.",
+    "quickNewsText": "Les annonces officielles de l'institut.",
+    "quickContactText": "Courriel, adresse et horaires.",
+    "aboutKicker": "L'institut",
+    "aboutTitle": "Un établissement public de formation paramédicale à Tébessa",
+    "aboutMore": "En savoir plus sur l'institut",
+    "pillarMission": "La mission",
+    "pillarMissionText": "Le mot du directeur et la mission de l'institut.",
+    "pillarHistory": "L'histoire",
+    "pillarHistoryText": "Les étapes du parcours de l'institut.",
+    "pillarOrganization": "L'organisation",
+    "pillarOrganizationText": "L'administration, les départements et les services.",
+    "newsKicker": "Actualités",
+    "newsTitle": "Dernières actualités et activités",
+    "newsEmpty": "Les actualités et les activités seront publiées ici.",
+    "programsKicker": "Formation",
+    "programsTitle": "Les spécialités",
+    "allPrograms": "Toutes les spécialités",
+    "contactTitle": "Nous sommes là pour répondre à vos questions",
+    "contactText": "Écrivez-nous ou suivez la page de l'institut pour les dernières annonces.",
+    "contactEmail": "Courriel",
+    "contactPage": "Adresse et horaires",
+    "contactPageLink": "Page contact"
   },
   "footer": {
     "email": "Courriel",
@@ -135,27 +177,5 @@
   },
   "motion": {
     "pause": "Mettre en pause les animations"
-  },
-  "journey": {
-    "start": "Commencer le voyage",
-    "chapters": "Étapes du voyage",
-    "intro": "Départ",
-    "vessel": {
-      "title": "Un voyage au cœur du corps humain",
-      "text": "Faites défiler pour traverser la circulation sanguine et découvrir l'institut en chemin. Cliquez n'importe où pour accélérer le flux."
-    },
-    "heart": {
-      "hint": "Cliquez sur le cœur pour accélérer ses battements."
-    },
-    "pump": "Accélérer le cœur",
-    "bpm": "battements par minute",
-    "lungs": {
-      "hint": "Maintenez le bouton pour remplir les poumons d'oxygène."
-    },
-    "breathe": "Maintenir pour inspirer",
-    "brain": {
-      "hint": "Cliquez dans le cerveau pour déclencher un signal nerveux."
-    },
-    "fire": "Déclencher un signal"
   }
 }

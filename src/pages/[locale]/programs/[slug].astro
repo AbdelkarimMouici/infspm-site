@@ -40,7 +40,7 @@ const facts = [
   title={data.title}
   description={isFallback
     ? `${data.title} (${t(locale, 'content.onlyInArabicShort')}) – ${t(locale, 'programs.description')}`
-    : (data.summary ?? t(locale, 'programs.description'))}
+    : (data.summary ?? `${data.title}${data.abbr ? ` (${data.abbr})` : ''} – ${t(locale, 'programs.description')}`)}
   alternates={alternates}
   switchTargets={switchTargets}
   noindex={isFallback}
