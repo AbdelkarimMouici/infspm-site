@@ -12,8 +12,10 @@ edit news, activities, programs and pages in Arabic, French and English with a l
 | Screen | Who | What |
 |---|---|---|
 | Dashboard | everyone | counters, quick actions, live site status, changes being published (approve/discard for administrators) |
-| News, Activities, Programs, Pages | everyone | card lists (search, filters, "being published" badges) and the editor (ar/fr/en tabs, images, live preview) |
-| Settings | administrators | logo (PNG/WebP/JPG, stored in `src/assets/brand/`), contact details, demo switch |
+| News, Activities, Programs, Stories, Pages | everyone | card lists (search, filters, "being published" badges) and the editor (ar/fr/en tabs, images, live preview) |
+| Programs (extra fields) | everyone | short name (story circle), abbreviation (e.g. ISP), colour and icon used on the home page |
+| Stories | everyone | home-page circles: title, text, pictures (one slide each, the first fills the circle), button link, colour, icon; link a story to a program to add its pictures to the program's story |
+| Settings | administrators | logo (PNG/WebP/JPG, stored in `src/assets/brand/`), contact details, "New" story switch, demo switch |
 | Site texts | administrators | every interface text in ar/fr/en; wording only, the list of texts cannot change |
 | Accounts | administrators | add editors or administrators, change roles, reset passwords, delete accounts |
 | My account | everyone | change password, turn 2-step verification on or off |

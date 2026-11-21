@@ -57,9 +57,10 @@ Admissions and registration, Activities, News (list + article pages), Gallery, C
 - `src/i18n/` – locales config, helpers (`t`, `getDir`, `localizedPath`); UI texts live in `src/content/ui/{ar,fr,en}.json` (CMS-editable, `ar.json` is the reference key set).
 - `src/content/settings/site.json` – logo, contact details, "show demo content" (CMS Settings).
 - `src/layouts/BaseLayout.astro` – `lang`/`dir`, title/description, canonical, hreflang, skip link, header/footer.
-- `src/styles/global.css` – Tailwind v4 `@theme` design tokens (placeholder colours until step 2).
+- `src/styles/` – `tokens.css` (light theme tokens, program colour classes `.c-*`), `global.css`, `home.css` (home page and stories).
+- Home page: `src/pages/[locale]/index.astro`, stories built in `src/lib/stories.ts`, viewer `src/scripts/stories.ts` (docs/DECISIONS.md D5).
 - `src/pages/[locale]/` – localized pages (home, about, programs, admissions, activities, news, gallery, contact, privacy); `src/pages/index.astro` – static meta-refresh to `/ar/`.
-- `src/content/` – collections (`news`, `activities`, `programs`, `pages`) in `{ar,fr,en}/` folders; schemas in `src/content/schemas.ts`.
+- `src/content/` – collections (`news`, `activities`, `programs`, `stories`, `pages`) in `{ar,fr,en}/` folders; schemas in `src/content/schemas.ts`.
 - `src/lib/` – the only place allowed to query content (`localized.ts`: Arabic fallback, drafts and examples filtered).
 - `/admin/` – the institute’s admin panel (`src/admin-app/`, API `src/server/admin/`, see docs/ADMIN.md); `functions/` – Cloudflare Pages Functions.
 - Dependencies are pinned exactly; prefer releases at least ~7 days old (Dependabot uses a 7-day cooldown).

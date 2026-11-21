@@ -47,6 +47,18 @@ Sample entries have `example: true`. They are visible in `npm run dev` and in bu
 `SHOW_EXAMPLE_CONTENT=true` (for a staging review), and excluded from normal production builds.
 This means placeholder text cannot reach the public site by mistake.
 
+## D5 – Light, phone-first redesign with home-page stories (2026-11-22)
+
+**Context.** The maintainer found the dark 3D "journey" (WebGL blood vessel, organs) messy, and most visitors use phones.
+Several home-page proposals were reviewed as a standalone file (`design/home-light.html`) before any site change.
+
+**Decision.** One light theme on every page; the WebGL scenes, their styles and the `three` packages are removed.
+The home page shows Instagram/Facebook-style stories (latest news, one per program, extra stories with pictures),
+then about, news and activities, programs and contact. Everything is editable in the admin panel.
+
+**Why.** Calmer and more official, familiar to the institute's Facebook audience, much lighter on phones (no WebGL,
+no 3D download), and no inline code (stories are server-rendered `<template>`s; colours are classes).
+
 ## D4 – Own admin panel replaces Decap CMS (2026-11-21)
 
 **Context.** The maintainer asked for a professional admin panel with a good user experience and a normal
