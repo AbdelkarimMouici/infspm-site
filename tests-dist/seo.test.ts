@@ -58,7 +58,8 @@ describe.skipIf(!built)('built pages: SEO and document basics', () => {
   it('indexable pages have unique titles and unique, reasonable descriptions', () => {
     const titles = new Map<string, string>();
     const descriptions = new Map<string, string>();
-    for (const page of indexable.filter((p) => p.path !== '/')) {
+    // Demo pages are skipped: they never reach the official domain (no-demo-content.test.ts) and are not crawled.
+    for (const page of indexable.filter((p) => p.path !== '/' && !p.path.includes('example'))) {
       expect(page.title, page.path).not.toBe('');
       expect(page.description.length, `${page.path} description length`).toBeGreaterThanOrEqual(30);
       expect(page.description.length, `${page.path} description length`).toBeLessThanOrEqual(200);

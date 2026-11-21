@@ -29,7 +29,7 @@
 - `src/content/ui/en.json`: the English name "National Institute of Higher Training in Paramedical Sciences, Tébessa" comes from the project brief, not from the administration. All English texts need review.
 - Logo: received from the maintainer (2026-11-19), stored in `src/assets/brand/logo.png`, replaceable in CMS Settings. Colours of the design come from it.
 - `src/content/settings/site.json` (CMS "Settings"): address, phone, hours, map link and the Facebook page URL are empty until confirmed; only the confirmed email is shown.
-- Demo content (`example: true`): 4 programs, 4 news items, 3 activities, unlabeled, shown only on preview links, never on the live site (docs/CMS.md). Not facts.
+- Demo content (`example: true`): 4 programs, 4 news items, 3 activities, unlabeled, shown on preview links and on the temporary `infspm-site.pages.dev` address (for the review with the administration, not crawled by search engines), never on the official domain: they disappear when `SITE_URL` is set to it. Not facts.
 - The visible "awaiting official review" notice was removed at the maintainer's request (2026-11-20); `needs-review` flags remain in the files.
 - Home page: a generic welcome text and quick links (no institutional facts).
 

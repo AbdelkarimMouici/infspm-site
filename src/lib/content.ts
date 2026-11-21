@@ -6,19 +6,31 @@ import type { Locale } from '~/i18n/config';
 type Collection = 'news' | 'activities' | 'programs' | 'pages';
 
 /**
- * Demo entries (`example: true`) contain illustrative, invented details, so they are NEVER part of the live
- * site (CLAUDE.md, content integrity). They are visible only:
- * - in development, and in builds with SHOW_EXAMPLE_CONTENT=true;
- * - on Cloudflare Pages preview builds (any branch other than the production branch `main`) while the
- *   administration leaves "Show demo content on preview links" on in the CMS settings.
+ * Demo entries (`example: true`) contain illustrative, invented details, so they are NEVER part of the site
+ * on its official domain (CLAUDE.md, content integrity). While the demo switch in the admin settings is on,
+ * they are visible:
+ * - on Cloudflare Pages preview builds (any branch other than the production branch `main`);
+ * - on the temporary `*.pages.dev` address, used for the review with the administration until the official
+ *   domain is connected. Changing SITE_URL to the official domain removes them automatically.
+ * Also always in development and in builds with SHOW_EXAMPLE_CONTENT=true.
+ * Whenever demo entries are shown, robots.txt keeps search engines out of the whole site.
  */
 const branch = import.meta.env['CF_PAGES_BRANCH'] as string | undefined;
 export const isPreviewBuild = Boolean(branch) && branch !== 'main';
 
+/** True while the site is served on its temporary Cloudflare address rather than the official domain. */
+export const isTemporaryAddress = (siteUrl: string | undefined): boolean => {
+  try {
+    return new URL(siteUrl ?? '').hostname.endsWith('.pages.dev');
+  } catch {
+    return false;
+  }
+};
+
 export const showExamples: boolean =
   import.meta.env.DEV ||
   import.meta.env['SHOW_EXAMPLE_CONTENT'] === 'true' ||
-  (isPreviewBuild && site.showExamples);
+  ((isPreviewBuild || isTemporaryAddress(import.meta.env.SITE)) && site.showExamples);
 
 /** Splits an entry id "fr/my-slug" into its locale and slug. */
 export function splitId(id: string): { locale: Locale; slug: string } {
