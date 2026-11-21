@@ -6,9 +6,10 @@ This page is the reference instead. **Never commit real values.** Secrets live o
 
 | Name | Where | Secret? | Used by | Notes |
 |---|---|---|---|---|
-| `GITHUB_OAUTH_CLIENT_ID` | Cloudflare Pages | no | `functions/api/decap/*` | GitHub OAuth app for Decap CMS sign-in |
-| `GITHUB_OAUTH_CLIENT_SECRET` | Cloudflare Pages | **yes** | `functions/api/decap/*` | Never logged or sent to the browser |
-| `GITHUB_OAUTH_SCOPE` | Cloudflare Pages | no | `functions/api/decap/*` | `public_repo` if the repository is public (narrower, recommended). `repo` (default) is needed for a private repository but grants access to all of the editor's private repos |
+| `ADMIN_KV` | Cloudflare Pages (binding, Production + Preview) | — | `src/server/admin/*` | KV namespace `infspm-admin`: admin accounts, sessions, login attempt counters |
+| `GITHUB_CMS_TOKEN` | Cloudflare Pages (Production + Preview) | **yes** | `src/server/admin/github.ts` | Fine-grained token, this repository only, Contents + Pull requests read/write. Never sent to the browser. Renewal: docs/ADMIN.md |
+| `ADMIN_SETUP_CODE` | Cloudflare Pages | **yes** | `src/server/admin/auth.ts` | Only needed to create the first administrator (12+ characters). Delete it afterwards |
+| `GITHUB_REPO` | Cloudflare Pages | no | `src/server/admin/router.ts` | Optional, default `AbdelkarimMouici/infspm-site` |
 | `SITE_URL` | build (Pages, per environment) | no | `astro.config.mjs` | Public origin, e.g. `https://example.dz` (no trailing slash). Used by canonical/hreflang, sitemap, robots.txt, JSON-LD. Default: `https://example.invalid` |
 | `SHOW_EXAMPLE_CONTENT` | build (staging only) | no | `src/lib/content.ts` | `true` shows `example: true` entries. Leave unset in production. Cloudflare preview builds (`CF_PAGES_BRANCH` ≠ `main`) also show them while the CMS setting is on |
 

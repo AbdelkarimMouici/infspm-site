@@ -11,7 +11,7 @@ describe('Pages Functions do no forbidden work at module load', () => {
     vi.resetModules();
   });
 
-  it.each(['../functions/api/contact.ts', '../functions/api/decap/auth.ts', '../functions/api/decap/callback.ts'])(
+  it.each(['../functions/api/contact.ts', '../functions/api/admin/[[path]].ts'])(
     '%s',
     async (path) => {
       vi.resetModules();
@@ -24,7 +24,7 @@ describe('Pages Functions do no forbidden work at module load', () => {
       vi.spyOn(globalThis, 'setTimeout').mockImplementation(forbidden('setTimeout') as unknown as typeof setTimeout);
       vi.spyOn(Math, 'random').mockImplementation(forbidden('Math.random'));
 
-      await expect(import(path)).resolves.toHaveProperty(path.includes('contact') ? 'onRequestPost' : 'onRequestGet');
+      await expect(import(path)).resolves.toHaveProperty(path.includes('contact') ? 'onRequestPost' : 'onRequest');
     },
   );
 });

@@ -6,42 +6,33 @@
 > 1. Merge the stacked PRs into `main` in order (#1 → #8).
 > 2. §1 GitHub protection.
 > 3. §4 Cloudflare Pages project and a first **staging** on `*.pages.dev` (public pages only).
-> 4. §7 Domain on Cloudflare. The CMS sign-in and the contact email both need the real domain, so do this before §2 and §5.
+> 4. §7 Domain on Cloudflare. The contact email needs the real domain, so do this before §5.
 >    Use a staging subdomain such as `staging.<domain>` (behind Cloudflare Access) to test them before production.
-> 5. §2 CMS OAuth (on `staging.<domain>`, then production).
+> 5. §2 Admin panel (`docs/ADMIN.md`).
 > 6. §5 Contact form.
 > 7. `docs/FACEBOOK-SYNC.md`.
 > 8. §6 Review with the administration.
 > 9. §8 Go-live checklist, then point the production custom domain to `main`.
 
-## 1. GitHub repository protection *(step 3, required)*
+## 1. GitHub repository protection *(required)*
 
-Decap's editorial workflow lets any editor press **Publish**, which merges the pull request through the GitHub API.
-Branch protection is what enforces a real review:
+The admin panel publishes through pull requests into `main` (docs/ADMIN.md). Branch protection makes sure nothing
+reaches the site without the CI checks:
 
-1. GitHub → repository → Settings → Branches → **Add rule** for `main`.
-2. Tick **Require a pull request before merging**, with **Require approvals: 1**.
+1. GitHub → repository → Settings → Branches → rule for `main`.
+2. Tick **Require a pull request before merging**. Keep **Require approvals: 0**: the panel opens its pull requests with
+   the site's own key, and GitHub does not let an account approve its own pull requests. Human review happens in the
+   panel instead (editors' changes to published content wait for an administrator).
 3. Tick **Require status checks to pass**, and select the `build` job of the CI workflow.
 4. Tick **Do not allow bypassing the above settings** (this applies to admins too).
-5. Require **2FA** for everyone with write access (Organization or account security settings).
+5. Settings → General → Pull Requests: tick **Allow auto-merge** and **Automatically delete head branches**.
+6. Require **2FA** on the GitHub account that owns the repository and the panel's key.
 
-Decap respects branch protection: Publish fails until the PR is approved and CI is green.
+## 2. Admin panel *(step 3)*
 
-## 2. GitHub OAuth app for the CMS *(step 3)*
-
-1. GitHub → Settings → Developer settings → **OAuth Apps → New OAuth App**.
-   - **Homepage URL:** `https://<production domain>`
-   - **Authorization callback URL:** `https://<production domain>/api/decap/callback`
-2. Copy the **Client ID**, then generate a **Client secret**.
-3. In Cloudflare Pages → project → Settings → Environment variables (**Production**), add:
-   - `GITHUB_OAUTH_CLIENT_ID`
-   - `GITHUB_OAUTH_CLIENT_SECRET` (type **Secret**)
-   - `GITHUB_OAUTH_SCOPE`: `public_repo` if the repository is public (narrower), otherwise `repo`
-4. Notes:
-   - The callback URL is built from the request host, so sign-in works only on the domain registered in the OAuth app.
-   - Preview `*.pages.dev` URLs cannot sign in. Use a separate OAuth app for staging if needed.
-   - Rotate the client secret if it is ever exposed: GitHub → OAuth app → **Generate a new client secret**.
-     Then update Cloudflare and delete the old secret.
+Follow `docs/ADMIN.md` → Setup: the KV namespace bound as `ADMIN_KV`, the secrets `GITHUB_CMS_TOKEN` (and
+`ADMIN_SETUP_CODE` once, to create the first administrator) for **Production** and **Preview**.
+The panel works on any host (preview links included): there is no sign-in callback URL to register.
 
 ## 3. Preview deployments *(step 3, required)*
 
@@ -69,7 +60,7 @@ least two administrators, so access does not depend on one person.
      - Required on Cloudflare: the build **fails** if it is missing (it would otherwise publish URLs for the placeholder `example.invalid`).
    - `PUBLIC_TURNSTILE_SITE_KEY` (§5). Leave it empty until the contact form is fully set up; the page then asks people to email.
    - **Staging only:** `SHOW_EXAMPLE_CONTENT=true` if you want to see the example entries. **Never in production.**
-   - **Secrets** (type *Secret*): `GITHUB_OAUTH_CLIENT_SECRET`, `TURNSTILE_SECRET_KEY`.
+   - **Secrets** (type *Secret*): `GITHUB_CMS_TOKEN`, `TURNSTILE_SECRET_KEY` (and `ADMIN_SETUP_CODE` until the first administrator exists).
 3. **Preview branches:** restrict them as in §3 (exclude `cms/*` and `facebook-sync/*`).
 4. **Staging.** Create a `staging` branch from `main`. Cloudflare publishes it at `staging.<project>.pages.dev`. Protect it with
    **Cloudflare Access** (Zero Trust → Access → Applications → Self-hosted, email one-time PIN for the review team).
@@ -143,7 +134,6 @@ write by email. **Not tested against a live account:** these steps need the inst
    - **Do not enable preload yet.**
 5. **Update the domain everywhere:**
    - `SITE_URL` (production);
-   - the GitHub OAuth app URLs (§2);
    - the Turnstile hostnames (§5);
    - `MAIL_FROM` (§5);
    - docs/CONTENT.md.

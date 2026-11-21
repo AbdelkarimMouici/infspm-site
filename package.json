@@ -19,9 +19,7 @@
     "@fontsource/ibm-plex-sans-arabic": "5.3.0",
     "@tailwindcss/vite": "4.3.5",
     "astro": "7.4.12",
-    "decap-cms-app": "3.18.0",
-    "react": "19.2.9",
-    "react-dom": "19.2.9",
+    "preact": "10.29.8",
     "sharp": "0.35.5",
     "tailwindcss": "4.3.5",
     "three": "0.187.0"
@@ -29,9 +27,6 @@
   "overrides": {
     "eslint-plugin-jsx-a11y-x": {
       "minimatch": "11.0.9"
-    },
-    "decap-cms-app": {
-      "trim": "1.0.1"
     }
   },
   "devDependencies": {
