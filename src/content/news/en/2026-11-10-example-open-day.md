@@ -7,7 +7,7 @@ source: "manual"
 example: true
 needs-review: false
 images:
-  - src: ../../../assets/uploads/examples/heart.webp
+  - src: "../../../assets/uploads/examples/heart.webp"
     alt: "Illustration of a heart with an ECG line"
 ---
 
