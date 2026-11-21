@@ -13,7 +13,7 @@ edit news, activities, programs and pages in Arabic, French and English with a l
 |---|---|---|
 | Dashboard | everyone | counters, quick actions, live site status, changes being published (approve/discard for administrators) |
 | News, Activities, Programs, Pages | everyone | card lists (search, filters, "being published" badges) and the editor (ar/fr/en tabs, images, live preview) |
-| Settings | administrators | logo (PNG/WebP/SVG, stored in `src/assets/brand/`), contact details, demo switch |
+| Settings | administrators | logo (PNG/WebP/JPG, stored in `src/assets/brand/`), contact details, demo switch |
 | Site texts | administrators | every interface text in ar/fr/en; wording only, the list of texts cannot change |
 | Accounts | administrators | add editors or administrators, change roles, reset passwords, delete accounts |
 | My account | everyone | change password, turn 2-step verification on or off |

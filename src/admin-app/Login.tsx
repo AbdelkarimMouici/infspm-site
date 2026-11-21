@@ -155,13 +155,14 @@ export function AuthScreen({
         {mode === 'setup' && (
           <label class="field">
             <span class="label">{t('setupCode')}</span>
-            <input class="input" value={setupCode} onInput={(e) => setSetupCode((e.target as HTMLInputElement).value)} required dir="ltr" autoComplete="off" />
+            <input class="input" aria-label={t('setupCode')} value={setupCode} onInput={(e) => setSetupCode((e.target as HTMLInputElement).value)} required dir="ltr" autoComplete="off" />
           </label>
         )}
         <label class="field">
           <span class="label">{t('username')}</span>
           <input
             class="input"
+            aria-label={t('username')}
             value={username}
             onInput={(e) => setUsername((e.target as HTMLInputElement).value)}
             autoComplete="username"
@@ -174,7 +175,7 @@ export function AuthScreen({
         {mode === 'setup' && (
           <label class="field">
             <span class="label">{t('displayName')}</span>
-            <input class="input" value={displayName} onInput={(e) => setDisplayName((e.target as HTMLInputElement).value)} autoComplete="name" />
+            <input class="input" aria-label={t('displayName')} value={displayName} onInput={(e) => setDisplayName((e.target as HTMLInputElement).value)} autoComplete="name" />
           </label>
         )}
         <div class="field">
@@ -189,6 +190,7 @@ export function AuthScreen({
             <span class="label">{t('code')}</span>
             <input
               class="input input-code"
+              aria-label={t('code')}
               value={code}
               onInput={(e) => setCode((e.target as HTMLInputElement).value.replace(/\D/g, '').slice(0, 6))}
               inputMode="numeric"

@@ -9,7 +9,7 @@ This is a REAL production site for a public institution, not a mockup. Security,
 ## Stack (decided)
 - Astro + TypeScript, static output (no server, no public database). Tailwind CSS.
 - Content in Markdown/MDX (content collections): news, activities, programs, pages.
-- Git-based CMS for staff to publish news (Decap CMS or Keystatic), behind authentication. Decide at step 3 of the plan.
+- Git-based content editing behind authentication: the institute's own admin panel at `/admin/` (replaced Decap CMS on 2026-11-21, docs/DECISIONS.md D4, docs/ADMIN.md).
 - One serverless function for the contact form only (Cloudflare Pages Functions or Netlify Functions).
 - Hosting: Cloudflare Pages (preferred) with Cloudflare in front. CI on GitHub Actions.
 

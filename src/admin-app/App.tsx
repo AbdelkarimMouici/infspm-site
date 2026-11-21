@@ -42,6 +42,14 @@ function Shell({ route, children }: { route: Route; children: preact.ComponentCh
   const ctx = useApp();
   const { t, user, signOut, lang, setLang } = ctx;
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
   const active = route.name === 'list' || route.name === 'edit' ? `c/${route.collection}` : route.name;
   const nav: { href: string; key: string; label: AdminKey; icon: IconName; soon?: boolean; admin?: boolean }[] = [
     { href: '#/', key: 'dashboard', label: 'navDashboard', icon: 'home' },

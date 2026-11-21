@@ -846,6 +846,19 @@ select.input {
     transform: none;
   }
 
+  /* Closed drawer: out of the keyboard order and hidden from screen readers. */
+  .sidebar {
+    visibility: hidden;
+    transition:
+      transform 0.35s var(--ease),
+      visibility 0s linear 0.35s;
+  }
+
+  .nav-open .sidebar {
+    visibility: visible;
+    transition: transform 0.35s var(--ease);
+  }
+
   .nav-open .scrim {
     position: fixed;
     inset: 0;
@@ -2011,4 +2024,24 @@ a.change-title:hover {
 
 .code-form .row {
   align-items: center;
+}
+
+/* Phones: icon-only side buttons in the editor bar, so the title keeps room. */
+@media (max-width: 40rem) {
+  .editor-bar .btn-ghost .btn-label {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .editor-bar .btn-ghost {
+    padding-inline: 0.7rem;
+  }
+
+  .editor-bar {
+    gap: 0.35rem;
+  }
 }

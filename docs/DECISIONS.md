@@ -2,7 +2,7 @@
 
 Short records of choices that are hard to reverse. Newest at the bottom.
 
-## D1 – Content editor: Decap CMS (2026-11-19, step 3)
+## D1 – Content editor: Decap CMS (2026-11-19, step 3) — replaced by D4
 
 **Context.** CLAUDE.md asks for a git-based CMS (Decap or Keystatic) behind authentication, a static site
 with no server or public database, strict security headers, and an approval step before anything is published
@@ -46,3 +46,20 @@ All English text is marked `needs-review` until the administration validates it.
 Sample entries have `example: true`. They are visible in `npm run dev` and in builds with
 `SHOW_EXAMPLE_CONTENT=true` (for a staging review), and excluded from normal production builds.
 This means placeholder text cannot reach the public site by mistake.
+
+## D4 – Own admin panel replaces Decap CMS (2026-11-21)
+
+**Context.** The maintainer asked for a professional admin panel with a good user experience and a normal
+username/password sign-in instead of GitHub accounts, "even if the technology changes".
+
+**Decision.** A small admin panel built for the institute: Preact (4 KB, the only new dependency) at `/admin/`, and a
+Cloudflare Pages Function `/api/admin/*` that holds the accounts (KV, PBKDF2 hashes, optional TOTP), the sessions and the
+GitHub key. Content stays in Git: every save is a pull request merged after the CI checks.
+
+**Why.** Arabic-first interface designed for the staff, live preview in the site's style, roles; stricter security
+than Decap (no `unsafe-eval`, no inline styles, the browser never sees a GitHub token); 95 KB instead of 6 MB.
+
+**Trade-offs.** The panel's code is ours to maintain (tests: `tests/admin.test.ts`). The GitHub key expires
+(at most one year) and must be renewed (docs/ADMIN.md). Pull-request approvals on `main` must stay at 0, so human
+review happens in the panel (roles) rather than on GitHub.
+

@@ -573,9 +573,15 @@ export function Editor({ collection, slug }: { collection: Collection; slug: str
           <span class="editor-title">{titleText}</span>
         </div>
         <span class={`dirty-dot ${dirty ? 'is-on' : ''}`} aria-hidden="true" />
-        <button type="button" class="btn btn-ghost hide-wide" onClick={() => setShowPreview(!showPreview)} aria-pressed={showPreview}>
+        <button
+          type="button"
+          class="btn btn-ghost hide-wide"
+          onClick={() => setShowPreview(!showPreview)}
+          aria-pressed={showPreview}
+          aria-label={showPreview ? t('edit') : t('preview')}
+        >
           <Icon name={showPreview ? 'text' : 'eye'} size={18} />
-          {showPreview ? t('edit') : t('preview')}
+          <span class="btn-label">{showPreview ? t('edit') : t('preview')}</span>
         </button>
         {slug && user.role === 'admin' && collection !== 'pages' && (
           <button type="button" class="icon-btn danger" onClick={remove} aria-label={t('delete')} title={t('delete')}>

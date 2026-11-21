@@ -6,7 +6,7 @@ How the rules in CLAUDE.md are enforced, and what is checked automatically.
 
 Cloudflare Pages applies `public/_headers` to static files. It does **not** apply it to Pages Functions, which set their own
 headers:
-- `/api/decap/*` sends a strict nonce-based CSP, `nosniff`, `no-store` and `no-referrer`.
+- `/api/admin/*` returns JSON with `no-store` and `nosniff`; image files add a `sandbox` CSP (an SVG can never run code).
 - `/api/contact` returns 303 redirects, or short plain-text 403/405 responses, with `nosniff` and `no-store`.
 
 To get HSTS on those responses too, turn on **HSTS at the edge** (Cloudflare → SSL/TLS → Edge Certificates → HSTS),
@@ -19,24 +19,17 @@ with the same values (docs/DEPLOYMENT.md §4).
 | `X-Content-Type-Options` | `nosniff` | No MIME sniffing |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` | Other sites see only our domain. **Must not be `no-referrer`**: the contact form's same-origin check needs the `Origin` header |
 | `Permissions-Policy` | camera, microphone, geolocation, payment, USB, sensors, `browsing-topics` all off | The site needs none of them |
-| `Cross-Origin-Opener-Policy` | `same-origin` (`same-origin-allow-popups` on `/admin/*`) | Isolation. The CMS sign-in uses a popup that must keep its opener |
+| `Cross-Origin-Opener-Policy` | `same-origin` | Isolation |
 | `Cross-Origin-Resource-Policy` | `same-origin` | Our files cannot be embedded by other sites |
 | `X-Frame-Options` | `DENY` | Same as `frame-ancestors 'none'`, for old browsers |
 
-### The two exceptions
+### Exceptions
 
 - **`/:locale/contact/`**: `script-src` and `frame-src` add `https://challenges.cloudflare.com` for **Cloudflare Turnstile**,
   the anti-bot check CLAUDE.md requires. It is the only third-party resource on the site, and the script appears only
   when the form is enabled.
-- **`/admin/*`** (Decap CMS, only for signed-in editors):
-  - `'unsafe-eval'` (configuration validation);
-  - inline styles (CSS-in-JS);
-  - `connect-src https://api.github.com`;
-  - images from `data:`, `blob:` (upload previews) and GitHub avatars;
-  - `data:` fonts;
-  - `frame-src 'self'` (editor preview);
-  - COOP `same-origin-allow-popups` (sign-in popup);
-  - plus `noindex` and `no-store`.
+- **`/admin/*`** (the admin panel): same-origin only and **no `unsafe-*`**; the only addition is `img-src blob:` for
+  image previews before upload, plus `noindex` and `no-store`. The browser talks only to `/api/admin/*`, never to GitHub.
 
 Each exception **replaces** the site policy with `! Content-Security-Policy`, rather than merging with it.
 
@@ -46,9 +39,10 @@ Each exception **replaces** the site policy with `! Content-Security-Policy`, ra
 - **Every built page:** no inline `<script>` (only JSON-LD data blocks), `<style>`, `style=` attributes, `on*=` handlers or `javascript:` URLs. Tags and attributes are read quoted or unquoted, in any case.
 - **Resources:** every script, stylesheet, image and `srcset`, media, frame, object, preload, icon or manifest link and form target must be allowed by **that page's** CSP, resolved like a browser (relative, `//host`, `data:`, `blob:`). Meta refresh may only stay on the site. CSS may not load anything remote,
   computed from `_headers` with Cloudflare's rule order and `!` detaches.
-- **Headers file:** the required headers exist, the default policy is strict, and only `/admin/*` uses `unsafe-*`.
+- **Headers file:** the required headers exist, the default policy is strict, and no rule uses `unsafe-*`.
 
-**Not verified yet:** the headers on a real Cloudflare deployment, and Decap CMS working under its CSP (`/admin/`).
+**Verified on the preview deployment (2026-11-21):** the `/admin/*` CSP is served and the panel works under it.
+**Not verified yet:** the full header set on the production domain.
 Check both on staging (docs/DEPLOYMENT.md): open the browser console on `/admin/` and on a contact page, and look for CSP errors.
 You can also run `https://observatory.mozilla.org` on the staging URL.
 
@@ -59,7 +53,7 @@ You can also run `https://observatory.mozilla.org` on the staging URL.
 | Markdown from editors and Facebook: raw HTML, unsafe links and body images removed | `src/lib/remark-safe-markdown.ts` |
 | Drafts and example content never published; content queries only through `src/lib/` (ESLint rule) | `src/lib/content.ts`, `eslint.config.js` |
 | Images: no EXIF/XMP in committed files; unpublished images never built | `tests/image-metadata.test.ts`, `src/content/schemas.ts` |
-| CMS sign-in: OAuth `state` cookie, origin-restricted `postMessage`, nonce CSP | `src/server/decap-oauth.ts` |
+| Admin panel: PBKDF2 passwords, `__Host-` HttpOnly SameSite=Strict sessions, lockout, per-IP limit, optional TOTP, Origin + header CSRF check, roles, server-side GitHub token | `src/server/admin/*`, `tests/admin.test.ts`, `docs/ADMIN.md` |
 | Facebook sync: token only in CI secrets, redacted errors, CDN allow-list, never overwrite | `src/server/facebook/*`, `docs/FACEBOOK-SYNC.md` |
 | Contact form: origin check, size limit, honeypot, Zod, Turnstile, rate limit, no storage | `src/server/contact.ts`, `docs/DEPLOYMENT.md` §5 |
 | Dependencies: exact versions, lockfile, `npm audit` in CI (moderate+), Dependabot with a 7-day cooldown | `package.json`, `.github/` |

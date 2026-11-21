@@ -1,31 +1,21 @@
-# Content editing guide (Decap CMS)
+# Content editing guide (admin panel)
 
-The content editor is at `https://<site>/admin/`. Sign in with your GitHub account.
-You need **write access to the repository** and **2FA enabled on GitHub**.
+The content editor is at `https://<site>/admin/`. Sign in with the **username and password** an administrator gave
+you (and your 2-step code if you turned it on in **My account**). Setup, security and roles: `docs/ADMIN.md`.
 
 ## How publishing works
 
-1. **New entry.** Pick a collection (News, Activities, Programs, Pages), write the Arabic version first,
-   then the French and English versions in the language tabs.
-2. **Save.** This creates a *Draft*, which is a pull request on GitHub. Nothing is public yet.
-3. **Set status.** `status: published` is required for the entry to appear on the site. `draft` entries never render.
-4. **Review.** Move the entry to *In review*. A maintainer checks the text, the photos (consent!) and the translations.
-5. **Publish.** When the maintainer merges the pull request, the site rebuilds automatically.
-   GitHub branch protection (required approval + CI) must be enabled, otherwise any editor could publish directly
-   (see docs/DEPLOYMENT.md §1).
-
-**File name.** Every new item needs a *File name* in Latin letters, digits and hyphens (for example `open-day-2026`).
-Arabic titles cannot be used for file names. It becomes part of the page address and cannot be changed later.
-
-**Images.** Upload photos with the image fields, never inside the text: images in the text are removed.
-Strip location (GPS) data before uploading. The test suite rejects images that still contain EXIF metadata.
-
-**Formatting.** Raw HTML, embedded frames and unsafe links are removed from the text automatically.
+1. **New entry.** Pick a section (News, Activities, Programs) and write the Arabic version first, then the French and
+   English versions in the language tabs. The preview beside the form shows the page as it will look on the site.
+2. **Status.** *Draft* entries never appear on the site; *Published* entries do.
+3. **Save / Publish.** Every save becomes a pull request on GitHub. The site build checks it, then it is merged
+   automatically and the site updates in about two minutes. The dashboard and the lists show "being published" meanwhile.
+4. **Editors.** Changes by an editor to published content wait on the dashboard until an administrator approves them.
 
 ## Rules (from CLAUDE.md)
 
 - **Facts.** Never invent facts: names, dates, numbers, programs. If something is unknown, leave the field empty.
-- **Translations.** A translation that has not been checked by the administration must keep **Translation needs review** ticked.
+- **Translations.** A French or English translation not yet checked by the administration must keep **Translation needs review** ticked.
   The flag is kept in the file for the editors' review list; the public site no longer shows a notice (maintainer's
   decision, 2026-11-20).
 - **Alternative text.** Every image needs alternative text that describes it, in each language.
@@ -73,4 +63,4 @@ files once the real entries are published.
 
 ## Setup (maintainer, once)
 
-The GitHub OAuth app and its secrets are **not created yet** (they need your account). See `docs/ENVIRONMENT.md` and `docs/DEPLOYMENT.md`.
+See `docs/ADMIN.md` (accounts store, GitHub key, first administrator).
