@@ -147,6 +147,12 @@ export function Dashboard() {
                   <span class="stat-value">{count?.total ?? 0}</span>
                   <span class="stat-meta">
                     {count?.published ?? 0} {t('published')} · {count?.drafts ?? 0} {t('draft')}
+                    {count && count.demo > 0 && (
+                      <>
+                        {' · '}
+                        {count.demo} {t('demoChip')}
+                      </>
+                    )}
                     {count && count.missingTranslations > 0 && (
                       <span class="stat-warn">
                         {' '}
@@ -211,7 +217,7 @@ export function Dashboard() {
                           </span>
                         </span>
                         <LangDots has={item.locales} />
-                        <StatusChip status={main?.status ?? 'draft'} />
+                        <StatusChip status={main?.status ?? 'draft'} example={main?.example} />
                       </a>
                     </li>
                   );

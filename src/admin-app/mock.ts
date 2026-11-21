@@ -176,7 +176,9 @@ export function mockApi(): AdminApi {
       const key = slug ?? `item-${Date.now().toString(36)}`;
       const entry = store[collection].get(key) ?? {};
       for (const [locale, doc] of Object.entries(payload.locales) as [Locale, NonNullable<(typeof payload.locales)[Locale]>][]) {
-        entry[locale] = { data: { ...(entry[locale]?.data ?? {}), ...doc.data }, body: doc.body, sha: `local-${Date.now()}` };
+        const data = { ...(entry[locale]?.data ?? {}), ...doc.data };
+        if (data['example'] !== true) delete data['example'];
+        entry[locale] = { data, body: doc.body, sha: `local-${Date.now()}` };
       }
       store[collection].set(key, entry);
       track(collection, key, str(entry.ar?.data['title']) ?? key);

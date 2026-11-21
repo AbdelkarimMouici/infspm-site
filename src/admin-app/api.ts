@@ -20,7 +20,7 @@ export interface SessionInfo {
 }
 
 export interface Dashboard {
-  counts: Record<Collection, { total: number; published: number; drafts: number; missingTranslations: number }>;
+  counts: Record<Collection, { total: number; published: number; drafts: number; demo: number; missingTranslations: number }>;
   changes: PullRequestInfo[];
   live: { sha: string; date: string; checks: 'pending' | 'success' | 'failure' } | null;
   recent: (EntrySummary & { collection: Collection })[];

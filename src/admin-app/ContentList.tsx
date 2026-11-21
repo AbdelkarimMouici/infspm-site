@@ -6,7 +6,7 @@ import { errorText } from './Login';
 import { changeTarget, changeTitle } from './pending';
 import { formatDate, Icon, LangDots, Spinner, StatusChip, useApp } from './ui';
 
-type Filter = 'all' | 'published' | 'draft' | 'missing';
+type Filter = 'all' | 'published' | 'draft' | 'demo' | 'missing';
 
 export function ContentList({ collection }: { collection: Collection }) {
   const { api, t, lang, navigate } = useApp();
@@ -48,8 +48,9 @@ export function ContentList({ collection }: { collection: Collection }) {
     const q = query.trim().toLowerCase();
     return (entries ?? []).filter((entry) => {
       const main = entry.locales.ar ?? entry.locales.fr ?? entry.locales.en;
-      if (filter === 'published' && main?.status !== 'published') return false;
-      if (filter === 'draft' && main?.status === 'published') return false;
+      if (filter === 'published' && (main?.status !== 'published' || main.example)) return false;
+      if (filter === 'draft' && (main?.status === 'published' || main?.example)) return false;
+      if (filter === 'demo' && !main?.example) return false;
       if (filter === 'missing' && entry.locales.ar && entry.locales.fr && entry.locales.en) return false;
       if (!q) return true;
       return Object.values(entry.locales).some((l) => `${l?.title ?? ''} ${l?.summary ?? ''}`.toLowerCase().includes(q)) || entry.slug.includes(q);
@@ -61,6 +62,8 @@ export function ContentList({ collection }: { collection: Collection }) {
     ['published', t('filterPublished')],
     ['draft', t('filterDraft')],
     ['missing', t('filterMissing')],
+    // Only offered while demo entries exist.
+    ...((entries ?? []).some((e) => e.locales.ar?.example) ? [['demo', t('filterDemo')] as [Filter, string]] : []),
   ];
 
   return (
@@ -166,7 +169,7 @@ export function ContentList({ collection }: { collection: Collection }) {
                       </span>
                     )}
                     <span class="card-status">
-                      <StatusChip status={main?.status ?? 'draft'} />
+                      <StatusChip status={main?.status ?? 'draft'} example={main?.example} />
                       {pendingSlugs.has(entry.slug) && (
                         <span class="chip chip-info">
                           <Icon name="clock" size={13} />

@@ -88,8 +88,15 @@ export function Spinner({ label }: { label?: string }) {
 }
 
 // ---------- Status chips and language dots ----------
-export function StatusChip({ status }: { status: string }) {
+export function StatusChip({ status, example = false }: { status: string; example?: boolean | undefined }) {
   const { t } = useApp();
+  if (example) {
+    return (
+      <span class="chip chip-warn" title={t('demoChipHint')}>
+        {t('demoChip')}
+      </span>
+    );
+  }
   return <span class={`chip ${status === 'published' ? 'chip-ok' : 'chip-muted'}`}>{status === 'published' ? t('published') : t('draft')}</span>;
 }
 

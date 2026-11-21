@@ -222,8 +222,9 @@ export async function handleAdmin(request: Request, env: AdminEnv, deps: AdminDe
           name,
           {
             total: entries.length,
-            published: entries.filter((e) => e.locales.ar?.status === 'published').length,
-            drafts: entries.filter((e) => e.locales.ar?.status !== 'published').length,
+            published: entries.filter((e) => e.locales.ar?.status === 'published' && !e.locales.ar.example).length,
+            drafts: entries.filter((e) => e.locales.ar?.status !== 'published' && !e.locales.ar?.example).length,
+            demo: entries.filter((e) => e.locales.ar?.example).length,
             missingTranslations: entries.filter((e) => LOCALES.some((l) => !e.locales[l])).length,
           },
         ]),
