@@ -11,7 +11,7 @@ This page is the reference instead. **Never commit real values.** Secrets live o
 | `ADMIN_SETUP_CODE` | Cloudflare Pages | **yes** | `src/server/admin/auth.ts` | Only needed to create the first administrator (12+ characters). Delete it afterwards |
 | `GITHUB_REPO` | Cloudflare Pages | no | `src/server/admin/router.ts` | Optional, default `AbdelkarimMouici/infspm-site` |
 | `SITE_URL` | build (Pages, per environment) | no | `astro.config.mjs` | Public origin, e.g. `https://example.dz` (no trailing slash). Used by canonical/hreflang, sitemap, robots.txt, JSON-LD. Default: `https://example.invalid` |
-| `SHOW_EXAMPLE_CONTENT` | build (staging only) | no | `src/lib/content.ts` | `true` shows `example: true` entries. Leave unset in production. Cloudflare preview builds (`CF_PAGES_BRANCH` ≠ `main`) also show them while the CMS setting is on |
+| `SHOW_EXAMPLE_CONTENT` | build (staging only) | no | `src/lib/content.ts` | `true` shows `example: true` entries. Leave unset in production. While the admin demo switch is on, they also show on Cloudflare preview builds (`CF_PAGES_BRANCH` ≠ `main`) and while `SITE_URL` is a temporary `*.pages.dev` address; robots.txt then blocks the whole site |
 
 ### Facebook sync (step 5) – GitHub Actions, see docs/FACEBOOK-SYNC.md
 

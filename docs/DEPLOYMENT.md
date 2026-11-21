@@ -144,7 +144,7 @@ write by email. **Not tested against a live account:** these steps need the inst
 
 - [ ] All PRs merged, CI green on `main`, `npm audit` clean.
 - [ ] Branch protection on `main` (§1); 2FA on GitHub, Cloudflare, registrar, institute email and Meta.
-- [ ] `SITE_URL` set to the production domain; `SHOW_EXAMPLE_CONTENT` **not** set; example entries deleted.
+- [ ] `SITE_URL` set to the production domain (this alone hides the demo entries); `SHOW_EXAMPLE_CONTENT` **not** set; example entries deleted or rewritten with real facts.
 - [ ] No `TODO(content)` left that is visible to visitors; translations validated.
 - [ ] Headers checked (Observatory). No CSP errors in the console. Lighthouse mobile ≥ 90 on staging.
 - [ ] CMS: an editor can sign in, create a draft, and see it as a pull request; publishing needs approval.
