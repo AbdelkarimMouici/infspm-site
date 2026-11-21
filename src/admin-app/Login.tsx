@@ -27,6 +27,19 @@ export function errorText(t: T, error: unknown): { text: string; detail?: string
       return { text: t('errInvalid'), detail: error.info.details ?? [] };
     case 'network':
       return { text: t('errNetwork') };
+    case 'bad_password':
+      return { text: t('errBadPassword') };
+    case 'last_admin':
+      return { text: t('errLastAdmin') };
+    case 'username_taken':
+      return { text: t('errTaken') };
+    case 'cannot_delete_self':
+    case 'cannot_demote_self':
+      return { text: t('errSelf') };
+    case 'nothing_to_save':
+      return { text: t('errNothing') };
+    case 'bad_image':
+      return { text: t('errImage') };
     case 'github':
       return { text: error.info.githubStatus === 401 || error.info.githubStatus === 403 ? t('errGithubKey') : t('errGithub') };
     case 'not_configured':

@@ -6,6 +6,11 @@
 import { parseMarkdown } from '../server/admin/frontmatter';
 import type { AdminApi, Collection, EntrySummary, Locale, LocaleDoc, PublicUser, PullRequestInfo } from './api';
 import { ApiError } from './api';
+import type { SettingsData, TextTree } from './api';
+import settingsFile from '../content/settings/site.json';
+import arTexts from '../content/ui/ar.json';
+import frTexts from '../content/ui/fr.json';
+import enTexts from '../content/ui/en.json';
 
 const raw = import.meta.glob<string>('/src/content/{news,activities,programs,pages}/{ar,fr,en}/*.md', {
   query: '?raw',
@@ -33,6 +38,12 @@ const wait = (ms = 250) => new Promise((resolve) => setTimeout(resolve, ms));
 export function mockApi(): AdminApi {
   const store = initialStore();
   let user: PublicUser | null = null;
+  let settings = structuredClone(settingsFile) as unknown as SettingsData;
+  const texts: Record<Locale, TextTree> = structuredClone({ ar: arTexts, fr: frTexts, en: enTexts }) as Record<Locale, TextTree>;
+  const accounts: PublicUser[] = [
+    { username: 'admin', displayName: 'مدير الموقع', role: 'admin', totpEnabled: false, createdAt: new Date().toISOString() },
+    { username: 'editor1', displayName: 'محرر الأخبار', role: 'editor', totpEnabled: true, createdAt: new Date().toISOString() },
+  ];
   let pr = 100;
   const str = (v: unknown) => (typeof v === 'string' ? v : v === undefined ? undefined : String(v));
 
@@ -182,6 +193,63 @@ export function mockApi(): AdminApi {
     async discard() {},
     imageUrl(src) {
       return src.startsWith('blob:') ? src : src.replace(/^(\.\.\/)+/, '/src/');
+    },
+    async settings() {
+      await wait();
+      return { settings: structuredClone(settings), sha: 'local-settings' };
+    },
+    async saveSettings(input) {
+      await wait(700);
+      settings = structuredClone(input.settings);
+      track('pages' as Collection, 'settings', 'إعدادات الموقع');
+      return { slug: 'settings', pr, url: '#', awaitingApproval: false, autoMerge: true };
+    },
+    async texts() {
+      await wait();
+      return { texts: structuredClone(texts), shas: { ar: 'a', fr: 'f', en: 'e' } };
+    },
+    async saveTexts(input) {
+      await wait(700);
+      for (const [locale, tree] of Object.entries(input.locales) as [Locale, TextTree][]) texts[locale] = structuredClone(tree);
+      return { slug: 'texts', pr: ++pr, url: '#', awaitingApproval: false, autoMerge: true };
+    },
+    async users() {
+      await wait();
+      return accounts.map((a) => ({ ...a }));
+    },
+    async createUser(input) {
+      await wait(400);
+      if (accounts.some((a) => a.username === input.username)) throw new ApiError(409, 'username_taken');
+      if (input.password.length < 10) throw new ApiError(400, 'weak_password');
+      const account: PublicUser = { username: input.username, displayName: input.displayName || input.username, role: input.role, totpEnabled: false, createdAt: new Date().toISOString() };
+      accounts.push(account);
+      return account;
+    },
+    async updateUser(username, changes) {
+      const account = accounts.find((a) => a.username === username);
+      if (!account) throw new ApiError(404, 'not_found');
+      Object.assign(account, changes);
+      return { ...account };
+    },
+    async resetPassword(_username, password) {
+      if (password.length < 10) throw new ApiError(400, 'weak_password');
+    },
+    async deleteUser(username) {
+      const index = accounts.findIndex((a) => a.username === username);
+      if (index >= 0) accounts.splice(index, 1);
+    },
+    async changePassword(current, next) {
+      if (current.length < 10) throw new ApiError(403, 'bad_password');
+      if (next.length < 10) throw new ApiError(400, 'weak_password');
+    },
+    async totpStart() {
+      return { secret: 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP', uri: 'otpauth://totp/INFSPM%20T%C3%A9bessa:admin?secret=JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP' };
+    },
+    async totpConfirm(code) {
+      if (code !== '123456') throw new ApiError(403, 'bad_code');
+    },
+    async totpDisable(password) {
+      if (password.length < 10) throw new ApiError(403, 'bad_password');
     },
   };
 }

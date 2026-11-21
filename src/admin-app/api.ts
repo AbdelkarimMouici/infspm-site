@@ -26,6 +26,19 @@ export interface Dashboard {
   recent: (EntrySummary & { collection: Collection })[];
 }
 
+export interface SettingsData {
+  showExamples: boolean;
+  logo: string;
+  email: string;
+  phone: string;
+  address: Record<Locale, string>;
+  hours: Record<Locale, string>;
+  facebookUrl: string;
+  mapUrl: string;
+}
+
+export type TextTree = { [key: string]: string | TextTree };
+
 export interface SavePayload {
   locales: Partial<Record<Locale, { data: Front; body: string; sha: string | null }>>;
   uploads: { id: string; data: string }[];
@@ -57,6 +70,21 @@ export interface AdminApi {
   discard(pr: number): Promise<void>;
   /** URL to display an image referenced in a content file. */
   imageUrl(src: string): string;
+  // Site settings and texts (administrators)
+  settings(): Promise<{ settings: SettingsData; sha: string }>;
+  saveSettings(input: { settings: SettingsData; sha: string; logo?: { data: string } | null }): Promise<SaveResult>;
+  texts(): Promise<{ texts: Record<Locale, TextTree>; shas: Record<Locale, string> }>;
+  saveTexts(input: { locales: Partial<Record<Locale, TextTree>>; shas: Partial<Record<Locale, string>> }): Promise<SaveResult>;
+  // Accounts (administrators) and own account
+  users(): Promise<PublicUser[]>;
+  createUser(input: { username: string; displayName: string; role: 'admin' | 'editor'; password: string }): Promise<PublicUser>;
+  updateUser(username: string, changes: { displayName?: string; role?: 'admin' | 'editor' }): Promise<PublicUser>;
+  resetPassword(username: string, password: string): Promise<void>;
+  deleteUser(username: string): Promise<void>;
+  changePassword(current: string, next: string): Promise<void>;
+  totpStart(): Promise<{ secret: string; uri: string }>;
+  totpConfirm(code: string): Promise<void>;
+  totpDisable(password: string): Promise<void>;
 }
 
 async function call<T>(method: string, path: string, body?: unknown): Promise<T> {
@@ -103,6 +131,19 @@ const http: AdminApi = {
   approve: async (pr) => void (await call('POST', `changes/${pr}/approve`, {})),
   discard: async (pr) => void (await call('POST', `changes/${pr}/discard`, {})),
   imageUrl: (src) => `/api/admin/file?src=${encodeURIComponent(src)}`,
+  settings: () => call('GET', 'settings'),
+  saveSettings: (input) => call('PUT', 'settings', input),
+  texts: () => call('GET', 'texts'),
+  saveTexts: (input) => call('PUT', 'texts', input),
+  users: async () => (await call<{ users: PublicUser[] }>('GET', 'users')).users,
+  createUser: async (input) => (await call<{ user: PublicUser }>('POST', 'users', input)).user,
+  updateUser: async (username, changes) => (await call<{ user: PublicUser }>('PATCH', `users/${username}`, changes)).user,
+  resetPassword: async (username, password) => void (await call('POST', `users/${username}/password`, { password })),
+  deleteUser: async (username) => void (await call('DELETE', `users/${username}`, {})),
+  changePassword: async (current, next) => void (await call('POST', 'me/password', { current, next })),
+  totpStart: () => call('POST', 'me/2fa/start', {}),
+  totpConfirm: async (code) => void (await call('POST', 'me/2fa/confirm', { code })),
+  totpDisable: async (password) => void (await call('POST', 'me/2fa/disable', { password })),
 };
 
 export async function createApi(): Promise<AdminApi> {

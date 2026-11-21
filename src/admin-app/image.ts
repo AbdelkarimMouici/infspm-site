@@ -30,6 +30,21 @@ function encode(canvas: HTMLCanvasElement, type: string, quality: number): Promi
   return new Promise((resolve) => canvas.toBlob(resolve, type, quality));
 }
 
+/** Logo: square-ish, at most 512 px, PNG (keeps transparency in every browser). */
+export async function prepareLogo(file: File): Promise<{ data: string; url: string }> {
+  if (!/^image\/(png|webp|jpeg|svg\+xml)$/i.test(file.type) || file.size > MAX_INPUT) throw new Error('unsupported');
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, 512 / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  canvas.getContext('2d')?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  const blob = await encode(canvas, 'image/png', 1);
+  if (!blob) throw new Error('encode failed');
+  return { data: await blobToBase64(blob), url: URL.createObjectURL(blob) };
+}
+
 export async function prepareImage(file: File): Promise<PreparedImage> {
   if (!/^image\/(jpeg|png|webp|heic|heif|gif|avif)$/i.test(file.type) || file.size > MAX_INPUT) throw new Error('unsupported');
   const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });

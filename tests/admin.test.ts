@@ -308,3 +308,67 @@ describe('admin pending changes', () => {
     expect(list[0]?.locales.ar).toMatchObject({ order: 10, duration: '3 سنوات' });
   });
 });
+
+describe('admin site settings and texts', () => {
+  function fakeSite(files: Record<string, string>) {
+    const commits: { path: string; content: string | null }[][] = [];
+    const github = {
+      async readText(path: string) {
+        return path in files ? { text: files[path] as string, sha: `sha-${path}` } : null;
+      },
+      async commitToNewBranch(_b: string, _m: string, changes: { path: string; content: string | null }[]) {
+        commits.push(changes);
+      },
+      async openPullRequest() {
+        return { number: 9, nodeId: 'PR_9', url: 'https://github.com/x/y/pull/9' };
+      },
+      async enableAutoMerge() {
+        return true;
+      },
+    } as unknown as GitHub;
+    return { github, commits };
+  }
+  const admin = { username: 'admin', displayName: 'A', role: 'admin' } as never;
+  const settingsText = readFileSync('src/content/settings/site.json', 'utf8');
+  const texts = {
+    'src/content/ui/ar.json': JSON.stringify({ nav: { home: 'الرئيسية', news: 'الأخبار' } }),
+    'src/content/ui/fr.json': JSON.stringify({ nav: { home: 'Accueil', news: 'Actualités' } }),
+    'src/content/ui/en.json': JSON.stringify({ nav: { home: 'Home', news: 'News' } }),
+  };
+
+  it('saves new wording but never a changed list of texts or an empty text', async () => {
+    const { saveTexts } = await import('~/server/admin/site');
+    const { github, commits } = fakeSite(texts);
+    const shas = { fr: 'sha-src/content/ui/fr.json' };
+    await saveTexts(github, admin, { locales: { fr: { nav: { home: 'Accueil du site', news: 'Actualités' } } }, shas }, () => 'abcd1234');
+    expect(commits[0]?.[0]?.path).toBe('src/content/ui/fr.json');
+    expect(commits[0]?.[0]?.content).toContain('Accueil du site');
+    await expect(saveTexts(github, admin, { locales: { fr: { nav: { home: 'A', news: 'B', extra: 'C' } } }, shas }, () => 'x')).rejects.toThrow('invalid');
+    await expect(saveTexts(github, admin, { locales: { fr: { nav: { home: ' ', news: 'B' } } }, shas }, () => 'x')).rejects.toThrow('invalid');
+    await expect(saveTexts(github, admin, { locales: { fr: { nav: { home: 'A', news: 'B' } } }, shas: { fr: 'old' } }, () => 'x')).rejects.toThrow('changed_meanwhile');
+  });
+
+  it('validates settings and stores a new logo only in the brand folder', async () => {
+    const { saveSettings } = await import('~/server/admin/site');
+    const { github, commits } = fakeSite({ 'src/content/settings/site.json': settingsText });
+    const sha = 'sha-src/content/settings/site.json';
+    const settings = JSON.parse(settingsText) as Record<string, unknown>;
+    await expect(saveSettings(github, admin, { settings: { ...settings, facebookUrl: 'https://evil.example/x' }, sha }, () => 'x')).rejects.toThrow('invalid');
+    await expect(saveSettings(github, admin, { settings, sha: 'old' }, () => 'x')).rejects.toThrow('changed_meanwhile');
+    const png = btoa(String.fromCharCode(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0));
+    await saveSettings(github, admin, { settings: { ...settings, phone: '037 00 00 00' }, sha, logo: { data: png } }, () => 'abcdef123456');
+    const paths = commits[0]?.map((c) => c.path) ?? [];
+    expect(paths).toEqual(['src/assets/brand/logo-abcdef12.png', 'src/content/settings/site.json']);
+    expect(commits[0]?.[1]?.content).toContain('"logo": "../../assets/brand/logo-abcdef12.png"');
+    await expect(saveSettings(github, admin, { settings, sha, logo: { data: btoa('<svg onload=alert(1)>') } }, () => 'x')).rejects.toThrow('bad_image');
+  });
+
+  it('serves images only from the uploads and brand folders', async () => {
+    const { imageRepoPath } = await import('~/server/admin/content');
+    expect(imageRepoPath('../../../assets/uploads/news/a.webp')).toBe('src/assets/uploads/news/a.webp');
+    expect(imageRepoPath('../../assets/brand/logo.png')).toBe('src/assets/brand/logo.png');
+    expect(imageRepoPath('../../../assets/uploads/../../.env')).toBeNull();
+    expect(imageRepoPath('../../../content/settings/site.json')).toBeNull();
+    expect(imageRepoPath('../../functions/x.ts')).toBeNull();
+  });
+});

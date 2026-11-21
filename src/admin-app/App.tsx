@@ -3,7 +3,11 @@ import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { AdminApi, Collection, PublicUser, SessionInfo } from './api';
 import { ContentList } from './ContentList';
 import { COLLECTION_META, Dashboard } from './Dashboard';
+import { AccountPage } from './Account';
 import { Editor, editorState } from './Editor';
+import { SettingsPage } from './Settings';
+import { TextsPage } from './Texts';
+import { UsersPage } from './Users';
 import { storedLang, storeLang, translator, type AdminLang, type AdminKey } from './i18n';
 import { AuthScreen, LangSwitch, logoUrl } from './Login';
 import { AppContext, Icon, Spinner, Toasts, useApp, type Ctx, type IconName, type Toast } from './ui';
@@ -12,7 +16,10 @@ type Route =
   | { name: 'dashboard' }
   | { name: 'list'; collection: Collection }
   | { name: 'edit'; collection: Collection; slug: string | null }
-  | { name: 'soon'; label: AdminKey };
+  | { name: 'settings' }
+  | { name: 'texts' }
+  | { name: 'users' }
+  | { name: 'account' };
 
 const COLLECTIONS: Collection[] = ['news', 'activities', 'programs', 'pages'];
 
@@ -24,10 +31,10 @@ function parseRoute(hash: string): Route {
     if (parts[2] && /^[a-z0-9-]+$/.test(parts[2])) return { name: 'edit', collection, slug: parts[2] };
     return { name: 'list', collection };
   }
-  if (parts[0] === 'settings') return { name: 'soon', label: 'navSettings' };
-  if (parts[0] === 'texts') return { name: 'soon', label: 'navTexts' };
-  if (parts[0] === 'users') return { name: 'soon', label: 'navUsers' };
-  if (parts[0] === 'account') return { name: 'soon', label: 'navAccount' };
+  if (parts[0] === 'settings') return { name: 'settings' };
+  if (parts[0] === 'texts') return { name: 'texts' };
+  if (parts[0] === 'users') return { name: 'users' };
+  if (parts[0] === 'account') return { name: 'account' };
   return { name: 'dashboard' };
 }
 
@@ -35,16 +42,16 @@ function Shell({ route, children }: { route: Route; children: preact.ComponentCh
   const ctx = useApp();
   const { t, user, signOut, lang, setLang } = ctx;
   const [open, setOpen] = useState(false);
-  const active = route.name === 'list' || route.name === 'edit' ? `c/${route.collection}` : route.name === 'soon' ? '' : 'dashboard';
+  const active = route.name === 'list' || route.name === 'edit' ? `c/${route.collection}` : route.name;
   const nav: { href: string; key: string; label: AdminKey; icon: IconName; soon?: boolean; admin?: boolean }[] = [
     { href: '#/', key: 'dashboard', label: 'navDashboard', icon: 'home' },
     ...COLLECTIONS.map((c) => ({ href: `#/c/${c}`, key: `c/${c}`, label: COLLECTION_META[c].label, icon: COLLECTION_META[c].icon })),
   ];
   const more: typeof nav = [
-    { href: '#/settings', key: 'settings', label: 'navSettings', icon: 'gear', soon: true, admin: true },
-    { href: '#/texts', key: 'texts', label: 'navTexts', icon: 'text', soon: true, admin: true },
-    { href: '#/users', key: 'users', label: 'navUsers', icon: 'users', soon: true, admin: true },
-    { href: '#/account', key: 'account', label: 'navAccount', icon: 'user', soon: true },
+    { href: '#/settings', key: 'settings', label: 'navSettings', icon: 'gear', admin: true },
+    { href: '#/texts', key: 'texts', label: 'navTexts', icon: 'text', admin: true },
+    { href: '#/users', key: 'users', label: 'navUsers', icon: 'users', admin: true },
+    { href: '#/account', key: 'account', label: 'navAccount', icon: 'user' },
   ];
   const link = (item: (typeof nav)[number]) =>
     item.admin && user.role !== 'admin' ? null : (
@@ -213,17 +220,10 @@ export function App({ api }: { api: AdminApi }) {
   let page: preact.JSX.Element;
   if (route.name === 'list') page = <ContentList collection={route.collection} key={route.collection} />;
   else if (route.name === 'edit') page = <Editor collection={route.collection} slug={route.slug} key={`${route.collection}/${route.slug ?? 'new'}`} />;
-  else if (route.name === 'soon')
-    page = (
-      <div class="page">
-        <div class="empty">
-          <Icon name="clock" size={40} />
-          <p>
-            {t(route.label)} · {t('soon')}
-          </p>
-        </div>
-      </div>
-    );
+  else if (route.name === 'settings' && user.role === 'admin') page = <SettingsPage />;
+  else if (route.name === 'texts' && user.role === 'admin') page = <TextsPage />;
+  else if (route.name === 'users' && user.role === 'admin') page = <UsersPage />;
+  else if (route.name === 'account') page = <AccountPage onUserChange={(totpEnabled) => setUser({ ...user, totpEnabled })} />;
   else page = <Dashboard />;
 
   return (

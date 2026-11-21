@@ -12,6 +12,7 @@ import { Auth, AuthError, publicUser, SESSION_COOKIE, SESSION_TTL, type KV, type
 import { ContentError, deleteEntry, imageRepoPath, listEntries, loadEntry, saveEntry, COLLECTIONS, LOCALES } from './content';
 import { randomToken } from './crypto';
 import { GitHub, GitHubError } from './github';
+import { readSettings, readTexts, saveSettings, saveTexts } from './site';
 
 export interface AdminEnv {
   ADMIN_KV?: KV;
@@ -262,10 +263,38 @@ export async function handleAdmin(request: Request, env: AdminEnv, deps: AdminDe
       const repoPath = imageRepoPath(url.searchParams.get('src') ?? '');
       if (!repoPath) return json(400, { error: 'bad_path' });
       const { bytes } = await github.readBytes(repoPath);
-      const type = repoPath.endsWith('.webp') ? 'image/webp' : repoPath.endsWith('.png') ? 'image/png' : 'image/jpeg';
+      const type = repoPath.endsWith('.webp')
+        ? 'image/webp'
+        : repoPath.endsWith('.png')
+          ? 'image/png'
+          : repoPath.endsWith('.svg')
+            ? 'image/svg+xml'
+            : 'image/jpeg';
       return new Response(bytes, {
-        headers: { 'Content-Type': type, 'Cache-Control': 'private, max-age=600', 'X-Content-Type-Options': 'nosniff' },
+        headers: {
+          'Content-Type': type,
+          'Cache-Control': 'private, max-age=600',
+          'X-Content-Type-Options': 'nosniff',
+          // Even an SVG opened directly can never run scripts or load anything.
+          'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; sandbox",
+        },
       });
+    }
+
+    // Site settings and texts (administrators only).
+    if (path === 'settings' || path === 'texts') {
+      requireRole(user, 'admin');
+      if (path === 'settings' && method === 'GET') return json(200, await readSettings(github));
+      if (path === 'texts' && method === 'GET') return json(200, await readTexts(github));
+      if (method === 'PUT') {
+        const body = await readJson(request);
+        return json(
+          200,
+          path === 'settings'
+            ? await saveSettings(github, user, body as never, () => randomToken(8))
+            : await saveTexts(github, user, body as never, () => randomToken(8)),
+        );
+      }
     }
 
     const contentMatch = /^content\/([a-z]+)(?:\/([a-z0-9-]+))?$/.exec(path);

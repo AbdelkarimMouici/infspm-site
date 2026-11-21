@@ -7,6 +7,17 @@ edit news, activities, programs and pages in Arabic, French and English with a l
 - Server API: `functions/api/admin/[[path]].ts` → `src/server/admin/` (accounts, sessions, GitHub).
 - Tests: `tests/admin.test.ts`.
 
+## Screens
+
+| Screen | Who | What |
+|---|---|---|
+| Dashboard | everyone | counters, quick actions, live site status, changes being published (approve/discard for administrators) |
+| News, Activities, Programs, Pages | everyone | card lists (search, filters, "being published" badges) and the editor (ar/fr/en tabs, images, live preview) |
+| Settings | administrators | logo (PNG/WebP/SVG, stored in `src/assets/brand/`), contact details, demo switch |
+| Site texts | administrators | every interface text in ar/fr/en; wording only, the list of texts cannot change |
+| Accounts | administrators | add editors or administrators, change roles, reset passwords, delete accounts |
+| My account | everyone | change password, turn 2-step verification on or off |
+
 ## How publishing works
 
 Every save is a commit on its own branch (`cms/…`) and a pull request into `main`. The CI checks run, then the

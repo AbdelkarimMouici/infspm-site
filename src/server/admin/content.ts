@@ -111,7 +111,8 @@ export function checkSlug(slug: string): string {
 
 /** Path of an image as written in a content file → repository path (src/assets/…). */
 export function imageRepoPath(src: string): string | null {
-  const match = /^\.\.\/\.\.\/\.\.\/(assets\/uploads\/[\w./-]+)$/.exec(src);
+  // Content files (three levels up) reference uploads; the settings file (two levels up) references the logo.
+  const match = /^(?:\.\.\/){2,3}(assets\/(?:uploads|brand)\/[\w./-]+\.(?:webp|png|jpe?g|svg))$/i.exec(src);
   return match?.[1] && !match[1].includes('..') ? `src/${match[1]}` : null;
 }
 
@@ -192,15 +193,16 @@ export async function loadEntry(github: GitHub, name: string, slug: string): Pro
 
 // ---------- Saving ----------
 /** Accepted upload formats (already re-encoded in the browser, which drops all metadata). */
-function imageKind(bytes: Uint8Array): 'webp' | 'jpg' | null {
+export function imageKind(bytes: Uint8Array): 'webp' | 'jpg' | 'png' | null {
   if (bytes.length > 12 && String.fromCharCode(...bytes.subarray(0, 4)) === 'RIFF' && String.fromCharCode(...bytes.subarray(8, 12)) === 'WEBP') {
     return 'webp';
   }
   if (bytes.length > 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return 'jpg';
+  if (bytes.length > 8 && bytes[0] === 0x89 && String.fromCharCode(...bytes.subarray(1, 4)) === 'PNG') return 'png';
   return null;
 }
 
-function decodeBase64(data: string): Uint8Array {
+export function decodeBase64(data: string): Uint8Array {
   const binary = atob(data);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
@@ -276,7 +278,7 @@ export async function saveEntry(
     if (!/^[a-z0-9]{6,32}$/.test(upload.id)) throw new ContentError(400, 'bad_upload');
     const bytes = decodeBase64(upload.data);
     const kind = imageKind(bytes);
-    if (!kind || bytes.length > MAX_IMAGE_BYTES) throw new ContentError(400, 'bad_image');
+    if (!kind || kind === 'png' || bytes.length > MAX_IMAGE_BYTES) throw new ContentError(400, 'bad_image');
     const file = `${slug}-${random().slice(0, 8)}.${kind}`;
     changes.push({ path: `src/assets/uploads/${def.name}/${file}`, content: upload.data, encoding: 'base64' });
     uploadPaths.set(upload.id, `../../../assets/uploads/${def.name}/${file}`);
