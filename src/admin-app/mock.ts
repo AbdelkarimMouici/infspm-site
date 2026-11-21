@@ -12,7 +12,7 @@ import arTexts from '../content/ui/ar.json';
 import frTexts from '../content/ui/fr.json';
 import enTexts from '../content/ui/en.json';
 
-const raw = import.meta.glob<string>('/src/content/{news,activities,programs,pages}/{ar,fr,en}/*.md', {
+const raw = import.meta.glob<string>('/src/content/{news,activities,programs,stories,pages}/{ar,fr,en}/*.md', {
   query: '?raw',
   import: 'default',
   eager: true,
@@ -21,7 +21,7 @@ const raw = import.meta.glob<string>('/src/content/{news,activities,programs,pag
 type Store = Record<Collection, Map<string, Partial<Record<Locale, LocaleDoc>>>>;
 
 function initialStore(): Store {
-  const store: Store = { news: new Map(), activities: new Map(), programs: new Map(), pages: new Map() };
+  const store: Store = { news: new Map(), activities: new Map(), programs: new Map(), stories: new Map(), pages: new Map() };
   for (const [path, text] of Object.entries(raw)) {
     const match = /\/src\/content\/(\w+)\/(ar|fr|en)\/([^/]+)\.md$/.exec(path);
     if (!match) continue;
@@ -76,7 +76,7 @@ export function mockApi(): AdminApi {
     [...store[collection]]
       .map(([slug, docs]) => summarize(slug, docs))
       .sort((a, b) =>
-        collection === 'programs'
+        collection === 'programs' || collection === 'stories'
           ? (a.locales.ar?.order ?? 100) - (b.locales.ar?.order ?? 100)
           : (b.locales.ar?.date ?? '').localeCompare(a.locales.ar?.date ?? ''),
       );
@@ -122,7 +122,7 @@ export function mockApi(): AdminApi {
     },
     async dashboard() {
       await wait();
-      const collections: Collection[] = ['news', 'activities', 'programs', 'pages'];
+      const collections: Collection[] = ['news', 'activities', 'programs', 'stories', 'pages'];
       const counts = Object.fromEntries(
         collections.map((c) => {
           const items = list(c);

@@ -21,7 +21,7 @@ type Route =
   | { name: 'users' }
   | { name: 'account' };
 
-const COLLECTIONS: Collection[] = ['news', 'activities', 'programs', 'pages'];
+const COLLECTIONS: Collection[] = ['news', 'activities', 'programs', 'stories', 'pages'];
 
 function parseRoute(hash: string): Route {
   const parts = hash.replace(/^#\/?/, '').split('/').filter(Boolean);

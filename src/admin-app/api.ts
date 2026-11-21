@@ -8,7 +8,7 @@ import type { EntrySummary, LocaleDoc, SaveResult } from '../server/admin/conten
 import type { Front } from '../server/admin/frontmatter';
 import type { PullRequestInfo } from '../server/admin/github';
 
-export type Collection = 'news' | 'activities' | 'programs' | 'pages';
+export type Collection = 'news' | 'activities' | 'programs' | 'stories' | 'pages';
 export type Locale = 'ar' | 'fr' | 'en';
 export type { EntrySummary, Front, LocaleDoc, PublicUser, PullRequestInfo, SaveResult };
 
@@ -28,6 +28,7 @@ export interface Dashboard {
 
 export interface SettingsData {
   showExamples: boolean;
+  newsStory: boolean;
   logo: string;
   email: string;
   phone: string;

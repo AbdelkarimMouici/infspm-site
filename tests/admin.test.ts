@@ -274,6 +274,52 @@ B
     ).rejects.toThrow('changed_meanwhile');
   });
 
+  it('saves a story with pictures, linked to a program', async () => {
+    const { github, commits } = fakeGitHub({});
+    const webp = btoa('RIFF\x00\x00\x00\x00WEBPVP8 xxxx');
+    const result = await saveEntry(github, admin, 'stories', null, {
+      locales: {
+        ar: {
+          data: { title: 'يوم مفتوح', summary: 'صور اليوم المفتوح', status: 'published', order: 5, program: 'isp', color: 'rose', icon: 'star', link: '/ar/news/', linkLabel: 'الأخبار', images: [{ src: 'upload:abc123', alt: 'قاعة المحاكاة' }] },
+          body: '',
+          sha: null,
+        },
+      },
+      uploads: [{ id: 'abc123', data: webp }],
+    }, () => 'abcdef123456');
+    expect(result.slug).toMatch(/^[a-z0-9-]+$/);
+    const story = commits[0]?.changes.find((c) => c.path.startsWith('src/content/stories/ar/'))?.content ?? '';
+    expect(story).toContain('program: "isp"');
+    expect(story).toContain('color: "rose"');
+    expect(story).toContain('../../../assets/uploads/stories/');
+    expect(commits[0]?.changes.some((c) => c.path.startsWith('src/assets/uploads/stories/') && c.path.endsWith('.webp'))).toBe(true);
+  });
+
+  it('refuses unsafe story links and unknown colours', async () => {
+    const { github } = fakeGitHub({});
+    const story = (data: Record<string, unknown>) =>
+      saveEntry(github, admin, 'stories', null, { locales: { ar: { data: { title: 'قصة', status: 'draft', ...data } as never, body: '', sha: null } } }, () => 'abcdef123456');
+    for (const link of ['//evil.example', 'javascript:alert(1)', 'http://insecure.example', 'data:text/html,x']) {
+      await expect(story({ link })).rejects.toThrow('invalid');
+    }
+    await expect(story({ color: '#ff0000' })).rejects.toThrow('invalid');
+    await expect(story({ icon: 'skull' })).rejects.toThrow('invalid');
+    await expect(story({ link: 'https://www.facebook.com/x', color: 'teal' })).resolves.toBeTruthy();
+  });
+
+  it('saves the new program fields (short name, abbreviation, colour, icon)', async () => {
+    const existing = '---\ntitle: "ممرض للصحة العمومية"\norder: 30\nstatus: "published"\n---\n';
+    const { github, commits } = fakeGitHub({ 'src/content/programs/ar/isp.md': existing });
+    await saveEntry(github, admin, 'programs', 'isp', {
+      locales: { ar: { data: { title: 'ممرض للصحة العمومية', shortTitle: 'ممرض', abbr: 'ISP', color: 'sky', icon: 'syringe', duration: '3 سنوات', status: 'published' }, body: '', sha: 'sha-src/content/programs/ar/isp.md' } },
+    }, () => 'x');
+    const written = commits[0]?.changes[0]?.content ?? '';
+    for (const line of ['shortTitle: "ممرض"', 'abbr: "ISP"', 'color: "sky"', 'icon: "syringe"', 'duration: "3 سنوات"']) expect(written).toContain(line);
+    await expect(
+      saveEntry(github, admin, 'programs', 'isp', { locales: { ar: { data: { title: 'T', abbr: 'إ س ب', status: 'draft' }, body: '', sha: 'sha-src/content/programs/ar/isp.md' } } }, () => 'x'),
+    ).rejects.toThrow('invalid');
+  });
+
   it('accepts only WebP or JPEG uploads', async () => {
     const { github } = fakeGitHub({});
     const png = btoa('\x89PNG\r\n\x1a\nxxxxxxxx');

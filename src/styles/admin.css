@@ -1671,6 +1671,125 @@ select.input {
   font-size: 0.78rem;
 }
 
+/* Program and story colours (same palette as the site, src/styles/tokens.css). */
+.c-navy { --c: #1b4a70; }
+.c-sky { --c: #1a7db3; }
+.c-rose { --c: #c23a60; }
+.c-violet { --c: #6a4fc0; }
+.c-teal { --c: #187f70; }
+.c-amber { --c: #a65c09; }
+
+select.swatch {
+  border-inline-start: 6px solid var(--c);
+}
+
+/* Story preview: a phone-shaped card like on the home page. */
+.story-preview {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.story-phone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  inline-size: min(280px, 100%);
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border-radius: 22px;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--c) 78%, white), var(--c) 45%, color-mix(in srgb, var(--c) 70%, black));
+  color: #fff;
+  box-shadow: 0 20px 40px -20px rgb(0 0 0 / 0.6);
+}
+
+.story-phone-bars {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 3px;
+  padding: 0.6rem 0.7rem;
+}
+
+.story-phone-bars span {
+  flex: 1;
+  block-size: 3px;
+  border-radius: 3px;
+  background: rgb(255 255 255 / 0.35);
+}
+
+.story-phone-bars span.on {
+  background: #fff;
+}
+
+.story-phone-text {
+  display: grid;
+  flex: 1;
+  align-content: center;
+  gap: 0.6rem;
+  padding: 1.2rem;
+  text-align: center;
+}
+
+.story-phone-text p {
+  margin: 0;
+}
+
+.story-phone-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.story-phone-photo {
+  position: absolute;
+  inset: 0;
+}
+
+.story-phone-photo img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+.story-phone-photo p {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 3.5rem;
+  margin: 0;
+  padding: 0 1rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-align: center;
+  text-shadow: 0 2px 8px rgb(0 0 0 / 0.6);
+}
+
+.story-phone-cta {
+  position: relative;
+  z-index: 1;
+  margin: auto 1rem 1rem;
+  padding: 0.6rem;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--c);
+  font-weight: 700;
+  text-align: center;
+}
+
+.story-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.story-strip img {
+  inline-size: 64px;
+  block-size: 96px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
 .preview {
   max-block-size: calc(100dvh - 10rem);
   padding: 1.75rem 1.5rem 2rem;

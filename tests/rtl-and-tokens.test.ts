@@ -58,6 +58,19 @@ function contrast(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
+describe('program and story colours', () => {
+  it('keep white text readable (>= 4.5:1) and match the CSS classes', async () => {
+    const { BRAND_COLORS } = await import('~/content/schemas');
+    const tokensCss = readFileSync('src/styles/tokens.css', 'utf8');
+    const adminCss = readFileSync('src/styles/admin.css', 'utf8');
+    for (const [name, hex] of Object.entries(BRAND_COLORS)) {
+      expect(contrast('#ffffff', hex), name).toBeGreaterThanOrEqual(4.5);
+      expect(tokensCss, `tokens.css .c-${name}`).toContain(`.c-${name} { --c: ${hex}; }`);
+      expect(adminCss, `admin.css .c-${name}`).toContain(`.c-${name} { --c: ${hex}; }`);
+    }
+  });
+});
+
 describe('design tokens contrast (WCAG 2.2 AA)', () => {
   const css = readFileSync('src/styles/tokens.css', 'utf8');
   // Light theme = the @theme block; dark theme = the [data-theme='dark'] block (same token names).

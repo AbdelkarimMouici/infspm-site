@@ -182,6 +182,11 @@ export function SettingsPage() {
 
       <section class="panel">
         <label class="check">
+          <input type="checkbox" checked={form.newsStory} onChange={(e) => update({ newsStory: (e.target as HTMLInputElement).checked })} />
+          {t('newsStory')}
+        </label>
+        <p class="hint">{t('newsStoryHint')}</p>
+        <label class="check">
           <input type="checkbox" checked={form.showExamples} onChange={(e) => update({ showExamples: (e.target as HTMLInputElement).checked })} />
           {t('demo')}
         </label>

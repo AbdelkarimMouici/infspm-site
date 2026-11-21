@@ -5,7 +5,7 @@
  */
 import type { Collection, PullRequestInfo } from './api';
 
-const COLLECTIONS: Collection[] = ['news', 'activities', 'programs', 'pages'];
+const COLLECTIONS: Collection[] = ['news', 'activities', 'programs', 'stories', 'pages'];
 
 export interface PendingTarget {
   collection: Collection;
