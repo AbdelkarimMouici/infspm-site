@@ -299,13 +299,18 @@ export async function saveEntry(
     const data: Front = Object.fromEntries(
       Object.entries({ ...(before?.data ?? {}), ...editable }).filter(([, value]) => value !== '' && value !== null),
     );
+    // Demo entries (`example: true`) only show on preview links. The panel can turn one into a real entry
+    // (`example: false` removes the flag); it can never mark content as demo.
+    if (submitted.data['example'] === false) delete data['example'];
+    else if (before?.data['example'] !== true) delete data['example'];
     if (creating && def.name === 'programs' && data['fileSlug'] === undefined) data['fileSlug'] = slug;
     const result = def.schema.safeParse(data);
     if (!result.success) {
       errors.push(...result.error.issues.map((issue) => `${locale}.${issue.path.join('.') || 'entry'}: ${issue.message}`));
       continue;
     }
-    if (data['status'] === 'published' || before?.data['status'] === 'published') touchesPublished = true;
+    const live = (d: Front | undefined) => d?.['status'] === 'published' && d['example'] !== true;
+    if (live(data) || live(before?.data)) touchesPublished = true;
     const body = String(submitted.body ?? '').slice(0, 100_000);
     changes.push({ path: `${def.folder}/${locale}/${slug}.md`, content: serializeMarkdown(data, body) });
   }

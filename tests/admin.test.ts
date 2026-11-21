@@ -235,6 +235,35 @@ describe('admin saving', () => {
     expect(written).toContain('fbPostId: "1_2"');
   });
 
+  it('turns a demo entry into a real one on request, and never marks content as demo', async () => {
+    const demo = `---
+title: "T"
+date: 2026-01-01
+status: "published"
+example: true
+---
+
+B
+`;
+    const sha = 'sha-src/content/news/ar/item.md';
+    const keep = fakeGitHub({ 'src/content/news/ar/item.md': demo });
+    // An editor's change to a demo entry is not a change to the live site.
+    const kept = await saveEntry(keep.github, editor, 'news', 'item', { locales: { ar: { data: { title: 'T2' }, body: 'B', sha } } }, () => 'x');
+    expect(kept.awaitingApproval).toBe(false);
+    expect(keep.commits[0]?.changes[0]?.content).toContain('example: true');
+
+    const real = fakeGitHub({ 'src/content/news/ar/item.md': demo });
+    const made = await saveEntry(real.github, editor, 'news', 'item', { locales: { ar: { data: { title: 'T2', example: false }, body: 'B', sha } } }, () => 'x');
+    expect(made.awaitingApproval).toBe(true);
+    expect(real.commits[0]?.changes[0]?.content).not.toContain('example');
+
+    const created = fakeGitHub({});
+    await saveEntry(created.github, admin, 'news', null, {
+      locales: { ar: { data: { title: 'خبر', date: '2026-12-01', status: 'published', example: true }, body: '', sha: null } },
+    }, () => 'abcdef123456');
+    expect(created.commits[0]?.changes[0]?.content).not.toContain('example');
+  });
+
   it('refuses invalid content and stale edits', async () => {
     const { github } = fakeGitHub({ 'src/content/news/ar/item.md': '---\ntitle: "T"\ndate: 2026-01-01\nstatus: "draft"\n---\n' });
     await expect(

@@ -392,6 +392,7 @@ export function Editor({ collection, slug }: { collection: Collection; slug: str
   const [dirty, setDirtyState] = useState(false);
   const [published, setPublished] = useState<string | null>(null);
   const [pendingElsewhere, setPendingElsewhere] = useState(false);
+  const [makeReal, setMakeReal] = useState(false);
   const [confirm, confirmElement] = useConfirm();
 
   const setDirty = (value: boolean) => {
@@ -481,6 +482,7 @@ export function Editor({ collection, slug }: { collection: Collection; slug: str
     return problems;
   };
 
+  const isDemo = LOCALES.some((l) => original?.[l]?.data['example'] === true);
   const save = async () => {
     const problems = validate();
     if (problems.length > 0) {
@@ -499,6 +501,7 @@ export function Editor({ collection, slug }: { collection: Collection; slug: str
       }
       for (const field of config.local) data[field.name] = (state.fields[field.name] ?? '').trim();
       data['needs-review'] = l === 'ar' ? (original?.ar?.data['needs-review'] === true) : state.needsReview;
+      if (isDemo && makeReal) data['example'] = false;
       if (config.images === 'list') {
         data['images'] = images.map((i) => ({ src: i.src, alt: (i.alts[l] || i.alts.ar || '').trim() }));
       } else if (config.images === 'single') {
@@ -594,6 +597,19 @@ export function Editor({ collection, slug }: { collection: Collection; slug: str
         </button>
       </header>
 
+      {isDemo && !published && (
+        <div class="notice notice-warn editor-notice demo-notice">
+          <Icon name="alert" size={18} />
+          <div>
+            <p>{t('demoEditor')}</p>
+            <label class="check">
+              <input type="checkbox" checked={makeReal} onChange={(e) => { setMakeReal((e.target as HTMLInputElement).checked); setDirty(true); }} />
+              {t('demoMakeReal')}
+            </label>
+            <p class="hint">{t('demoMakeRealHint')}</p>
+          </div>
+        </div>
+      )}
       {pendingElsewhere && !published && (
         <p class="notice notice-warn editor-notice">
           <Icon name="clock" size={18} />
