@@ -10,6 +10,7 @@ export const COLLECTION_META: Record<Collection, { label: AdminKey; icon: IconNa
   news: { label: 'navNews', icon: 'news', newLabel: 'newNews' },
   activities: { label: 'navActivities', icon: 'spark', newLabel: 'newActivity' },
   programs: { label: 'navPrograms', icon: 'book', newLabel: 'newProgram' },
+  stories: { label: 'navStories', icon: 'story', newLabel: 'newStory' },
   pages: { label: 'navPages', icon: 'page' },
 };
 
@@ -117,7 +118,7 @@ export function Dashboard() {
           <p class="muted">{t('dashLead')}</p>
         </div>
         <div class="quick">
-          {(['news', 'activities', 'programs'] as const).map((c) => (
+          {(['news', 'activities', 'stories'] as const).map((c) => (
             <button type="button" class="btn btn-primary" key={c} onClick={() => navigate(`#/c/${c}/new`)}>
               <Icon name="plus" size={18} />
               {t(COLLECTION_META[c].newLabel ?? 'add')}
@@ -136,7 +137,7 @@ export function Dashboard() {
       {data && (
         <>
           <section class="stats" aria-label={t('total')}>
-            {(['news', 'activities', 'programs', 'pages'] as const).map((c, i) => {
+            {(['news', 'activities', 'programs', 'stories'] as const).map((c, i) => {
               const count = data.counts[c];
               return (
                 <button type="button" class={`stat stat-${i}`} key={c} onClick={() => navigate(`#/c/${c}`)}>

@@ -54,6 +54,17 @@
   --container-page: 76rem;
 }
 
+/*
+ * Program and story colours (named palette chosen in the admin panel, src/content/schemas.ts BRAND_COLORS).
+ * Used through var(--c); white text on each is >= 4.5:1 (tests/rtl-and-tokens.test.ts).
+ */
+.c-navy { --c: #1b4a70; }
+.c-sky { --c: #1a7db3; }
+.c-rose { --c: #c23a60; }
+.c-violet { --c: #6a4fc0; }
+.c-teal { --c: #187f70; }
+.c-amber { --c: #a65c09; }
+
 /* Brand gradients and motion (not colours used for text). */
 :root {
   --grad-brand: linear-gradient(135deg, #0b2238 0%, #1b4a70 50%, #17669a 100%); /* white text >= 6:1 everywhere */

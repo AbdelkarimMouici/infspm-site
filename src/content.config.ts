@@ -1,6 +1,6 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
-import { activitySchema, newsSchema, pageSchema, programSchema } from './content/schemas';
+import { activitySchema, newsSchema, pageSchema, programSchema, storySchema } from './content/schemas';
 
 // One folder per language: src/content/<collection>/<locale>/<slug>.md
 // Entry ids are "<locale>/<slug>"; the same slug in each folder is the same item in another language.
@@ -18,6 +18,10 @@ export const collections = {
   programs: defineCollection({
     loader: glob({ pattern, base: './src/content/programs' }),
     schema: ({ image }) => programSchema(image()),
+  }),
+  stories: defineCollection({
+    loader: glob({ pattern, base: './src/content/stories' }),
+    schema: ({ image }) => storySchema(image()),
   }),
   pages: defineCollection({
     loader: glob({ pattern, base: './src/content/pages' }),

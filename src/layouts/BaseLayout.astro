@@ -26,8 +26,8 @@ interface Props {
   switchTargets?: Partial<Record<Locale, string>> | undefined;
   /** Exclude from search engines (404, utility pages). Also drops canonical and hreflang. */
   noindex?: boolean;
-  /** "journey": the home page (scroll-driven journey through the body instead of a section backdrop). */
-  variant?: 'journey';
+  /** "home": the home page (its own hero and stories). */
+  variant?: 'home';
 }
 
 const {
@@ -39,9 +39,6 @@ const {
   noindex = false,
   variant,
 } = Astro.props;
-// Living 3D backdrop of inner pages = first path segment after the language (/ar/programs/… → programs).
-// The home page has its own journey instead.
-const backdrop = variant === 'journey' ? undefined : (Astro.url.pathname.split('/').filter(Boolean)[1] ?? 'default');
 const dir = getDir(locale);
 const siteName = t(locale, 'site.name');
 const fullTitle = `${title} | ${siteName}`;
@@ -67,7 +64,7 @@ const xDefault = xDefaultPath ? new URL(xDefaultPath, site).href : undefined;
 ---
 
 <!doctype html>
-<html lang={locale} dir={dir} class="journey-page" data-backdrop={backdrop}>
+<html lang={locale} dir={dir} data-page={variant}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -123,7 +120,6 @@ const xDefault = xDefaultPath ? new URL(xDefaultPath, site).href : undefined;
     </a>
     <script>
       import '~/scripts/interactions';
-      import '~/scripts/journey/loader';
     </script>
   </body>
 </html>

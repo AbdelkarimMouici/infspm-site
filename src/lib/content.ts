@@ -3,7 +3,7 @@ import { isLocale } from '~/i18n/utils';
 import { site } from '~/config/site';
 import type { Locale } from '~/i18n/config';
 
-type Collection = 'news' | 'activities' | 'programs' | 'pages';
+type Collection = 'news' | 'activities' | 'programs' | 'stories' | 'pages';
 
 /**
  * Demo entries (`example: true`) contain illustrative, invented details, so they are NEVER part of the site

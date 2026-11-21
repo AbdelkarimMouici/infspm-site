@@ -16,12 +16,44 @@ const DIR: Record<Locale, 'rtl' | 'ltr'> = { ar: 'rtl', fr: 'ltr', en: 'ltr' };
 interface Field {
   name: string;
   label: AdminKey;
-  kind: 'text' | 'textarea' | 'date' | 'number';
+  kind: 'text' | 'textarea' | 'date' | 'number' | 'select';
   required?: boolean;
   max?: number;
+  /** Select fields: fixed choices, or the list of programs (loaded from the server). */
+  options?: 'programs' | readonly { value: string; label: AdminKey }[];
+  /** Left-to-right value (links, abbreviations). */
+  ltr?: boolean;
+  hint?: AdminKey;
 }
 
-const CONFIG: Record<Collection, { shared: Field[]; local: Field[]; images: 'list' | 'single' | 'none' }> = {
+// Named colours and icons (same lists as src/content/schemas.ts; the server validates them).
+export const COLOR_OPTIONS = [
+  { value: 'navy', label: 'colorNavy' },
+  { value: 'sky', label: 'colorSky' },
+  { value: 'rose', label: 'colorRose' },
+  { value: 'violet', label: 'colorViolet' },
+  { value: 'teal', label: 'colorTeal' },
+  { value: 'amber', label: 'colorAmber' },
+] as const satisfies readonly { value: string; label: AdminKey }[];
+
+const ICON_OPTIONS = [
+  { value: 'graduation', label: 'iconGraduation' },
+  { value: 'baby', label: 'iconBaby' },
+  { value: 'stethoscope', label: 'iconStethoscope' },
+  { value: 'syringe', label: 'iconSyringe' },
+  { value: 'xray', label: 'iconXray' },
+  { value: 'microscope', label: 'iconMicroscope' },
+  { value: 'care', label: 'iconCare' },
+  { value: 'flask', label: 'iconFlask' },
+  { value: 'heart', label: 'iconHeart' },
+  { value: 'cross', label: 'iconCross' },
+  { value: 'news', label: 'iconNews' },
+  { value: 'calendar', label: 'iconCalendar' },
+  { value: 'megaphone', label: 'iconMegaphone' },
+  { value: 'star', label: 'iconStar' },
+] as const satisfies readonly { value: string; label: AdminKey }[];
+
+const CONFIG: Record<Collection, { shared: Field[]; local: Field[]; images: 'list' | 'single' | 'none'; body?: false }> = {
   news: {
     shared: [{ name: 'date', label: 'fDate', kind: 'date', required: true }],
     local: [
@@ -43,15 +75,37 @@ const CONFIG: Record<Collection, { shared: Field[]; local: Field[]; images: 'lis
     images: 'list',
   },
   programs: {
-    shared: [{ name: 'order', label: 'fOrder', kind: 'number' }],
+    shared: [
+      { name: 'order', label: 'fOrder', kind: 'number' },
+      { name: 'abbr', label: 'fAbbr', kind: 'text', max: 12, ltr: true },
+      { name: 'color', label: 'fColor', kind: 'select', options: COLOR_OPTIONS, required: true },
+      { name: 'icon', label: 'fIcon', kind: 'select', options: ICON_OPTIONS, required: true },
+    ],
     local: [
       { name: 'title', label: 'fTitle', kind: 'text', required: true, max: 200 },
+      { name: 'shortTitle', label: 'fShortTitle', kind: 'text', max: 40, hint: 'hShortTitle' },
       { name: 'summary', label: 'fSummary', kind: 'textarea', max: 400 },
       { name: 'duration', label: 'fDuration', kind: 'text', max: 120 },
       { name: 'diploma', label: 'fDiploma', kind: 'text', max: 200 },
       { name: 'admission', label: 'fAdmission', kind: 'textarea', max: 600 },
     ],
     images: 'single',
+  },
+  stories: {
+    shared: [
+      { name: 'order', label: 'fOrder', kind: 'number' },
+      { name: 'program', label: 'fProgram', kind: 'select', options: 'programs', hint: 'hProgram' },
+      { name: 'color', label: 'fColor', kind: 'select', options: COLOR_OPTIONS, required: true },
+      { name: 'icon', label: 'fIcon', kind: 'select', options: ICON_OPTIONS, required: true },
+      { name: 'link', label: 'fLink', kind: 'text', max: 300, ltr: true, hint: 'hLink' },
+    ],
+    local: [
+      { name: 'title', label: 'fStoryTitle', kind: 'text', required: true, max: 60 },
+      { name: 'summary', label: 'fStoryText', kind: 'textarea', max: 300 },
+      { name: 'linkLabel', label: 'fLinkLabel', kind: 'text', max: 40 },
+    ],
+    images: 'list',
+    body: false,
   },
   pages: {
     shared: [],
@@ -325,6 +379,38 @@ function Preview({ collection, locale, state, shared, images }: { collection: Co
   const lead = state.fields['summary'] || state.fields['description'] || '';
   const meta = [shared['date'] ? formatDate(shared['date'], locale === 'ar' ? 'ar' : 'fr') : '', state.fields['location'] ?? ''].filter(Boolean).join(' · ');
   if (!state.present) return <div class="preview-empty">{t('previewEmpty')}</div>;
+  if (collection === 'stories') {
+    return (
+      <div class="story-preview" lang={locale} dir={DIR[locale]}>
+        <div class={`story-phone c-${shared['color'] || 'navy'}`}>
+          <div class="story-phone-bars" aria-hidden="true">
+            {Array.from({ length: Math.max(1, (lead ? 1 : 0) + images.length) }, (_, i) => (
+              <span key={i} class={i === 0 ? 'on' : ''} />
+            ))}
+          </div>
+          {images[0] && !lead ? (
+            <div class="story-phone-photo">
+              <img src={images[0].preview} alt={images[0].alts[locale] ?? ''} />
+              <p>{title || '…'}</p>
+            </div>
+          ) : (
+            <div class="story-phone-text">
+              <p class="story-phone-title">{title || '…'}</p>
+              {lead && <p>{lead}</p>}
+            </div>
+          )}
+          {shared['link'] && <span class="story-phone-cta">{state.fields['linkLabel'] || shared['link']}</span>}
+        </div>
+        {images.length > 0 && (
+          <div class="story-strip">
+            {images.map((image) => (
+              <img key={image.key} src={image.preview} alt={image.alts[locale] ?? ''} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
   return (
     <article class="preview" lang={locale} dir={DIR[locale]}>
       <div class="preview-hero">
@@ -382,8 +468,18 @@ export function Editor({ collection, slug }: { collection: Collection; slug: str
   const [shared, setShared] = useState<Record<string, string>>(() => ({
     status: 'draft',
     ...(collection === 'news' || collection === 'activities' ? { date: new Date().toISOString().slice(0, 10) } : {}),
-    ...(collection === 'programs' ? { order: '100' } : {}),
+    ...(collection === 'programs' ? { order: '100', color: 'navy', icon: 'graduation' } : {}),
+    ...(collection === 'stories' ? { order: '100', color: 'navy', icon: 'star' } : {}),
   }));
+  // Choices for "linked program" (stories): loaded once from the programs list.
+  const [programOptions, setProgramOptions] = useState<{ value: string; label: string }[]>([]);
+  useEffect(() => {
+    if (!config.shared.some((f) => f.options === 'programs')) return;
+    api
+      .list('programs')
+      .then((list) => setProgramOptions(list.map((p) => ({ value: p.slug, label: p.locales.ar?.title ?? p.locales.fr?.title ?? p.slug }))))
+      .catch(() => undefined);
+  }, [collection]);
   const [images, setImages] = useState<ImageItem[]>([]);
   const uploads = useRef(new Map<string, PreparedImage>());
   const [active, setActive] = useState<Locale>(lang === 'fr' ? 'fr' : 'ar');
@@ -642,15 +738,49 @@ export function Editor({ collection, slug }: { collection: Collection; slug: str
                     {t(field.label)}
                     {field.required && <span class="req" aria-hidden="true"> *</span>}
                   </label>
-                  <input
-                    id={`shared-${field.name}`}
-                    class="input"
-                    type={field.kind === 'date' ? 'date' : field.kind === 'number' ? 'number' : 'text'}
-                    value={shared[field.name] ?? ''}
-                    onInput={(e) => updateShared(field.name, (e.target as HTMLInputElement).value)}
-                    required={field.required}
-                    dir="ltr"
-                  />
+                  {field.kind === 'select' ? (
+                    <select
+                      id={`shared-${field.name}`}
+                      class={`input ${field.name === 'color' ? `swatch c-${shared[field.name] ?? 'navy'}` : ''}`}
+                      value={shared[field.name] ?? ''}
+                      onChange={(e) => updateShared(field.name, (e.target as HTMLSelectElement).value)}
+                      required={field.required}
+                    >
+                      {field.options === 'programs' ? (
+                        <>
+                          <option value="">{t('noProgram')}</option>
+                          {programOptions.map((o) => (
+                            <option key={o.value} value={o.value}>
+                              {o.label}
+                            </option>
+                          ))}
+                        </>
+                      ) : (
+                        (field.options ?? []).map((o) => (
+                          <option key={o.value} value={o.value}>
+                            {t(o.label)}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  ) : (
+                    <input
+                      id={`shared-${field.name}`}
+                      class="input"
+                      type={field.kind === 'date' ? 'date' : field.kind === 'number' ? 'number' : 'text'}
+                      value={shared[field.name] ?? ''}
+                      onInput={(e) => updateShared(field.name, (e.target as HTMLInputElement).value)}
+                      required={field.required}
+                      maxLength={field.max}
+                      aria-describedby={field.hint ? `hint-${field.name}` : undefined}
+                      dir="ltr"
+                    />
+                  )}
+                  {field.hint && (
+                    <p class="hint" id={`hint-${field.name}`}>
+                      {t(field.hint)}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
@@ -717,19 +847,28 @@ export function Editor({ collection, slug }: { collection: Collection; slug: str
                         id={`f-${active}-${field.name}`}
                         required={field.required}
                         class={`input ${field.name === 'title' ? 'input-lg' : ''}`}
+                        dir={field.ltr ? 'ltr' : undefined}
+                        aria-describedby={field.hint ? `hint-${active}-${field.name}` : undefined}
                         maxLength={field.max}
                         value={current.fields[field.name] ?? ''}
                         onInput={(e) => updateField(field.name, (e.target as HTMLInputElement).value)}
                       />
                     )}
+                    {field.hint && (
+                      <p class="hint" id={`hint-${active}-${field.name}`}>
+                        {t(field.hint)}
+                      </p>
+                    )}
                   </div>
                 ))}
-                <div class="field">
-                  <label class="label" for={`body-${active}`}>
-                    {t('fBody')}
-                  </label>
-                  <MarkdownField id={`body-${active}`} value={current.body} onChange={(body) => updateLocal({ body })} dir={DIR[active]} />
-                </div>
+                {config.body !== false && (
+                  <div class="field">
+                    <label class="label" for={`body-${active}`}>
+                      {t('fBody')}
+                    </label>
+                    <MarkdownField id={`body-${active}`} value={current.body} onChange={(body) => updateLocal({ body })} dir={DIR[active]} />
+                  </div>
+                )}
                 {active !== 'ar' && (
                   <label class="check">
                     <input type="checkbox" checked={current.needsReview} onChange={(e) => updateLocal({ needsReview: (e.target as HTMLInputElement).checked })} />
@@ -742,7 +881,8 @@ export function Editor({ collection, slug }: { collection: Collection; slug: str
 
           {config.images !== 'none' && (
             <div class="panel">
-              <h2 class="panel-title">{config.images === 'list' ? t('images') : t('image')}</h2>
+              <h2 class="panel-title">{collection === 'stories' ? t('storyPictures') : config.images === 'list' ? t('images') : t('image')}</h2>
+              {collection === 'stories' && <p class="hint">{t('storyPicturesHint')}</p>}
               <ImagesField
                 mode={config.images}
                 items={images}

@@ -183,7 +183,7 @@ export function ContentList({ collection }: { collection: Collection }) {
                     {main?.summary && <span class="card-summary">{main.summary}</span>}
                     <span class="card-foot">
                       <span class="muted small">
-                        {collection === 'programs'
+                        {collection === 'programs' || collection === 'stories'
                           ? [main?.duration, main?.order !== undefined ? `${t('orderLabel')} ${main.order}` : ''].filter(Boolean).join(' · ') || ' '
                           : formatDate(main?.date, lang) || ' '}
                       </span>

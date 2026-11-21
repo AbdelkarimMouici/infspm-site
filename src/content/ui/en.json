@@ -46,7 +46,49 @@
     "allActivities": "All activities",
     "scroll": "Scroll down",
     "eyebrow": "Higher paramedical training · Tébessa",
-    "discover": "Discover the institute"
+    "discover": "Discover the institute",
+    "place": "Tébessa · Algeria",
+    "lead": "Higher training in paramedical sciences. Discover the programs and the institute's latest news.",
+    "discoverPrograms": "Discover the programs",
+    "stories": "Institute stories",
+    "storiesHint": "Tap a circle to watch the story",
+    "storyOpen": "Watch the story",
+    "storyNew": "New",
+    "storyNewTitle": "Latest news",
+    "storyProgram": "Program",
+    "storyDetails": "Program details",
+    "storyClose": "Close",
+    "storyPause": "Pause",
+    "storyPlay": "Resume",
+    "storyNext": "Next",
+    "storyPrev": "Previous",
+    "storyHelp": "Tap right for next · left to go back · swipe down to close",
+    "kindNews": "News",
+    "kindActivity": "Activity",
+    "quickPrograms": "Programs",
+    "quickProgramsText": "The programs, their length and the diploma.",
+    "quickNewsText": "The institute's official announcements.",
+    "quickContactText": "Email, address and opening hours.",
+    "aboutKicker": "About",
+    "aboutTitle": "A public paramedical training institution in Tébessa",
+    "aboutMore": "More about the institute",
+    "pillarMission": "Mission",
+    "pillarMissionText": "The director's word and the institute's mission.",
+    "pillarHistory": "History",
+    "pillarHistoryText": "Milestones of the institute's history.",
+    "pillarOrganization": "Organization",
+    "pillarOrganizationText": "Administration, departments and services.",
+    "newsKicker": "Updates",
+    "newsTitle": "Latest news and activities",
+    "newsEmpty": "News and activities will be published here.",
+    "programsKicker": "Training",
+    "programsTitle": "Programs",
+    "allPrograms": "All programs",
+    "contactTitle": "We are here to answer your questions",
+    "contactText": "Write to us or follow the institute's page for the latest announcements.",
+    "contactEmail": "Email",
+    "contactPage": "Address and hours",
+    "contactPageLink": "Contact page"
   },
   "footer": {
     "email": "Email",
@@ -135,27 +177,5 @@
   },
   "motion": {
     "pause": "Pause animations"
-  },
-  "journey": {
-    "start": "Start the journey",
-    "chapters": "Journey stages",
-    "intro": "Start",
-    "vessel": {
-      "title": "A journey inside the human body",
-      "text": "Scroll to travel through the bloodstream and discover the institute along the way. Click anywhere to speed up the flow."
-    },
-    "heart": {
-      "hint": "Click the heart to speed up its beat."
-    },
-    "pump": "Speed up the heart",
-    "bpm": "beats per minute",
-    "lungs": {
-      "hint": "Press and hold to fill the lungs with oxygen."
-    },
-    "breathe": "Hold to breathe in",
-    "brain": {
-      "hint": "Click inside the brain to fire a nerve signal."
-    },
-    "fire": "Fire a signal"
   }
 }

@@ -41,7 +41,11 @@
   TODO(content): sections on data subject rights and the applicable Algerian law need the administration (and ideally a legal check).
   Hosting and the contact form are added when they exist (steps 6 and 9).
 - Contact page: address, phone, opening hours and map link show "to be confirmed" until set in `src/config/site.ts`.
-- Programs: no real programs yet (only an example entry hidden from production builds).
+- Programs: the six programs and their Arabic and French names are confirmed by the maintainer (2026-11-21):
+  قابلة / Sage-femme, مساعد طبي للصحة العمومية / AMSP, ممرض للصحة العمومية / ISP, مشغّل التصوير الطبي للصحة العمومية / MIMSP,
+  مخبري للصحة العمومية / LSP, مساعد تمريض / Aide-soignant. The English names are a translation (`needs-review: true`).
+  TODO(content): duration, diploma, admission conditions and a description for each program (the site shows
+  "to be confirmed" until they are entered in the admin panel).
 - Every page in all three languages is marked `needs-review: true`, including the Arabic drafts, which were not written by the administration.
 
 ## TODO(content) placeholders (step 8 – SEO)

@@ -3,14 +3,14 @@
  * (src/content/<collection>/<locale>/<slug>.md), validated with the same Zod schemas as the site build.
  */
 import { z } from 'astro/zod';
-import { activitySchema, newsSchema, pageSchema, programSchema } from '../../content/schemas';
+import { activitySchema, newsSchema, pageSchema, programSchema, storySchema } from '../../content/schemas';
 import type { User } from './auth';
 import { parseMarkdown, serializeMarkdown, type Front } from './frontmatter';
 import type { FileChange, GitHub } from './github';
 
 export const LOCALES = ['ar', 'fr', 'en'] as const;
 export type Locale = (typeof LOCALES)[number];
-export type CollectionName = 'news' | 'activities' | 'programs' | 'pages';
+export type CollectionName = 'news' | 'activities' | 'programs' | 'stories' | 'pages';
 
 interface CollectionDef {
   folder: string;
@@ -43,11 +43,19 @@ export const COLLECTIONS: Record<CollectionName, CollectionDef> = {
   },
   programs: {
     folder: 'src/content/programs',
-    editable: ['title', 'summary', 'order', 'duration', 'diploma', 'admission', 'status', 'needs-review', 'image'],
+    editable: ['title', 'shortTitle', 'summary', 'order', 'abbr', 'color', 'icon', 'duration', 'diploma', 'admission', 'status', 'needs-review', 'image'],
     dated: false,
     images: 'single',
     create: true,
     schema: programSchema(imageSrc),
+  },
+  stories: {
+    folder: 'src/content/stories',
+    editable: ['title', 'summary', 'order', 'program', 'color', 'icon', 'link', 'linkLabel', 'status', 'needs-review', 'images'],
+    dated: false,
+    images: 'list',
+    create: true,
+    schema: storySchema(imageSrc),
   },
   pages: {
     folder: 'src/content/pages',
@@ -174,7 +182,7 @@ export async function listEntries(github: GitHub, name: string): Promise<EntrySu
     }
     list.push({ slug, locales });
   }
-  if (def.name === 'programs') {
+  if (def.name === 'programs' || def.name === 'stories') {
     return list.sort((a, b) => (a.locales.ar?.order ?? 100) - (b.locales.ar?.order ?? 100) || a.slug.localeCompare(b.slug));
   }
   return list.sort((a, b) => {

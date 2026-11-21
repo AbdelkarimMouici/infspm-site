@@ -12,6 +12,19 @@ you (and your 2-step code if you turned it on in **My account**). Setup, securit
    automatically and the site updates in about two minutes. The dashboard and the lists show "being published" meanwhile.
 4. **Editors.** Changes by an editor to published content wait on the dashboard until an administrator approves them.
 
+## Home-page stories
+
+The circles at the top of the home page open full-screen "stories", like on Facebook or Instagram.
+
+- **New**: filled automatically with the three latest news items and activities (with their first photo).
+  Switch it off in **Settings**.
+- **One per program**: automatic, from the program's name, abbreviation and duration. Edit those in **Programs**
+  (short name, abbreviation, colour and icon are there too).
+- **Pictures for a program**: create a story in **Stories** and choose the program under *Linked program*. Its text
+  and pictures are added after the program's own slide, and the first picture fills the circle.
+- **Extra stories** (an event, an announcement): create a story without a linked program. Order, colour and icon
+  decide where and how the circle appears. A button link is optional: a site path (`/ar/news/`) or an `https://` link.
+
 ## Rules (from CLAUDE.md)
 
 - **Facts.** Never invent facts: names, dates, numbers, programs. If something is unknown, leave the field empty.
@@ -43,7 +56,7 @@ Validation rules are in `src/content/schemas.ts`. An invalid entry fails the bui
   (in each language), Facebook page link, map link, and **Show demo content**. Leave a value empty until it is
   officially confirmed: the site then shows "to be confirmed". A new logo is uploaded to `src/assets/brand/`
   (square PNG or SVG, transparent background). Invalid values (wrong link, logo elsewhere) fail the build.
-- **Site texts** (`src/content/ui/{ar,fr,en}.json`): every interface text (menus, buttons, home-page journey,
+- **Site texts** (`src/content/ui/{ar,fr,en}.json`): every interface text (menus, buttons, home page,
   page titles and descriptions), grouped by section, with the Arabic text shown as a hint when editing French
   or English. The editor is generated from the Arabic file (`src/admin/collections.ts`): editors change the
   wording; developers add or remove texts in the JSON files (the tests check all three languages match).

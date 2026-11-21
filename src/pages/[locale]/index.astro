@@ -1,184 +1,228 @@
 ---
-// Home page: a scroll-driven journey through the human body (src/scripts/journey/).
-// Each chapter is a real, readable section with links; the 3D world behind it is decoration and play.
+// Home page ("النبض"): light, calm and phone first. Stories of the programs and the latest news at the top,
+// then about, news and activities, programs and contact. Design approved by the maintainer (2026-11-21).
+import { Image } from 'astro:assets';
 import BaseLayout from '~/layouts/BaseLayout.astro';
+import Icon from '~/components/Icon.astro';
+import Stories from '~/components/home/Stories.astro';
 import { locales, type Locale } from '~/i18n/config';
 import { getDir, t } from '~/i18n/utils';
-import type { UIKey } from '~/i18n/ui';
-import { formatDate } from '~/lib/format';
-import { getLocalizedEntries } from '~/lib/localized';
+import { formatDate, isoDate } from '~/lib/format';
+import { getLocalizedEntries, getPublishedPage } from '~/lib/localized';
+import { getStories, otherProgramNames } from '~/lib/stories';
 import { site } from '~/config/site';
+import '~/styles/home.css';
 
 export function getStaticPaths() {
   return locales.map((locale) => ({ params: { locale } }));
 }
 
 const locale = Astro.params.locale as Locale;
-const news = (await getLocalizedEntries('news', locale))
-  .sort((a, b) => b.entry.data.date.getTime() - a.entry.data.date.getTime())
-  .slice(0, 3);
+const langAttrs = (lang?: Locale) => (lang ? { lang, dir: getDir(lang) } : {});
 
-const stages: { id: string; label: UIKey }[] = [
-  { id: 'ch-start', label: 'journey.intro' },
-  { id: 'ch-about', label: 'nav.about' },
-  { id: 'ch-programs', label: 'nav.programs' },
-  { id: 'ch-admissions', label: 'nav.admissions' },
-  { id: 'ch-news', label: 'nav.news' },
-  { id: 'ch-contact', label: 'nav.contact' },
-];
+const stories = await getStories(locale);
+const about = await getPublishedPage('about', locale);
+
+const [news, activities] = await Promise.all([getLocalizedEntries('news', locale), getLocalizedEntries('activities', locale)]);
+const latest = [
+  ...news.map((item) => ({ item, kind: 'news' as const })),
+  ...activities.map((item) => ({ item, kind: 'activities' as const })),
+]
+  .sort((a, b) => b.item.entry.data.date.getTime() - a.item.entry.data.date.getTime())
+  .slice(0, 5);
+const [featured, ...others] = latest;
+
+const programs = (await getLocalizedEntries('programs', locale)).sort((a, b) => a.entry.data.order - b.entry.data.order);
+const { otherLocale, names: otherNames } = await otherProgramNames(locale);
+
+const kindLabel = (kind: 'news' | 'activities') => t(locale, kind === 'news' ? 'home.kindNews' : 'home.kindActivity');
+const dayMonth = (date: Date) => {
+  const parts = new Intl.DateTimeFormat(locale === 'ar' ? 'ar-DZ-u-nu-latn' : locale === 'fr' ? 'fr-DZ' : 'en-GB', {
+    day: '2-digit',
+    month: 'long',
+    timeZone: 'UTC',
+  }).formatToParts(date);
+  return { day: parts.find((p) => p.type === 'day')?.value ?? '', month: parts.find((p) => p.type === 'month')?.value ?? '' };
+};
 ---
 
-<BaseLayout locale={locale} title={t(locale, 'home.title')} description={t(locale, 'home.description')} variant="journey">
-  <div class="journey" data-journey>
-    <nav class="journey-hud" data-hud aria-label={t(locale, 'journey.chapters')}>
-      <ol role="list">
+<BaseLayout locale={locale} title={t(locale, 'home.title')} description={t(locale, 'home.description')} variant="home">
+  <!-- Hero: stories first (most visitors are on phones) -->
+  <section class="home-hero" aria-labelledby="home-title">
+    <div class="container-page">
+      <Stories locale={locale} stories={stories} />
+      <p class="home-eyebrow"><i aria-hidden="true"></i>{t(locale, 'home.place')}</p>
+      <h1 id="home-title" class="home-title">{t(locale, 'site.name')}</h1>
+      <p class="home-lead">{t(locale, 'home.lead')}</p>
+      <p class="home-cta">
+        <a class="btn-main" href={`/${locale}/programs/`}>
+          {t(locale, 'home.discoverPrograms')}
+          <Icon name="arrow" size={18} class="flip-ltr" />
+        </a>
+      </p>
+    </div>
+    <svg class="pulse" viewBox="0 0 1200 90" preserveAspectRatio="none" aria-hidden="true">
+      <path pathLength="1" d="M0 55 H470 l18 0 l10 -14 l10 14 l14 0 l10 30 l16 -78 l16 66 l12 -18 l12 0 l14 -10 l14 10 H1200"></path>
+      <circle class="blip" cx="550" cy="7" r="5"></circle>
+    </svg>
+    <div class="container-page">
+      <nav class="quick" aria-label={t(locale, 'home.quickLinks')}>
+        <a class="quick-card reveal" href={`/${locale}/programs/`}>
+          <span class="quick-icon"><Icon name="graduation" size={22} /></span>
+          <b>{t(locale, 'home.quickPrograms')}</b>
+          <span>{t(locale, 'home.quickProgramsText')}</span>
+        </a>
+        <a class="quick-card reveal" href={`/${locale}/news/`}>
+          <span class="quick-icon"><Icon name="news" size={22} /></span>
+          <b>{t(locale, 'nav.news')}</b>
+          <span>{t(locale, 'home.quickNewsText')}</span>
+        </a>
+        <a class="quick-card reveal" href={`/${locale}/contact/`}>
+          <span class="quick-icon"><Icon name="mail" size={22} /></span>
+          <b>{t(locale, 'nav.contact')}</b>
+          <span>{t(locale, 'home.quickContactText')}</span>
+        </a>
+      </nav>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="home-block" aria-labelledby="about-title">
+    <div class="container-page home-about">
+      <div class="reveal">
+        <p class="kicker"><svg viewBox="0 0 42 16" aria-hidden="true"><path d="M0 9h14l3-6 4 12 3-9 2 3h16"></path></svg>{t(locale, 'home.aboutKicker')}</p>
+        <h2 id="about-title" class="home-h2">{t(locale, 'home.aboutTitle')}</h2>
+        <p class="home-text">{about?.data.description ?? t(locale, 'home.intro')}</p>
+        <a class="more" href={`/${locale}/about/`}>{t(locale, 'home.aboutMore')}<Icon name="arrow" size={18} class="flip-ltr" /></a>
+      </div>
+      <div class="pillars">
         {
-          stages.map((stage, index) => (
-            <li>
-              <a href={`#${stage.id}`} aria-current={index === 0 ? 'step' : undefined}>
-                <span class="hud-dot" aria-hidden="true" />
-                <span class="hud-label">{t(locale, stage.label)}</span>
-              </a>
-            </li>
+          (
+            [
+              ['mission', 'home.pillarMission', 'home.pillarMissionText'],
+              ['history', 'home.pillarHistory', 'home.pillarHistoryText'],
+              ['organization', 'home.pillarOrganization', 'home.pillarOrganizationText'],
+            ] as const
+          ).map(([icon, title, text]) => (
+            <a class="pillar reveal" href={`/${locale}/about/`}>
+              <span class="pillar-icon"><Icon name={icon} size={20} /></span>
+              <span><b>{t(locale, title)}</b><span>{t(locale, text)}</span></span>
+            </a>
           ))
         }
-      </ol>
-    </nav>
+      </div>
+    </div>
+  </section>
 
-    <!-- 0 · Intro: DNA and a field of cells -->
-    <section id="ch-start" class="chapter chapter-intro" data-chapter="0" aria-labelledby="home-title">
-      <div class="chapter-stick container-page">
-        <p class="journey-pill rise">{t(locale, 'home.eyebrow')}</p>
-        <h1 id="home-title" class="journey-title rise rise-d1">{t(locale, 'site.name')}</h1>
-        <p class="journey-lead rise rise-d2">{t(locale, 'home.intro')}</p>
-        <div class="rise rise-d2 mt-8 flex flex-col gap-3 sm:flex-row">
-          <a href="#ch-about" class="j-btn j-btn-solid">
-            {t(locale, 'journey.start')}
-            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
-              ></path>
-            </svg>
-          </a>
-          <a href={`/${locale}/programs/`} class="j-btn j-btn-ghost">{t(locale, 'nav.programs')}</a>
+  <!-- News and activities -->
+  <section class="home-block" aria-labelledby="news-title">
+    <div class="container-page">
+      <div class="home-head reveal">
+        <div>
+          <p class="kicker"><svg viewBox="0 0 42 16" aria-hidden="true"><path d="M0 9h14l3-6 4 12 3-9 2 3h16"></path></svg>{t(locale, 'home.newsKicker')}</p>
+          <h2 id="news-title" class="home-h2">{t(locale, 'home.newsTitle')}</h2>
         </div>
-        <p class="scroll-cue journey-cue" aria-hidden="true">{t(locale, 'home.scroll')}</p>
+        <a class="more" href={`/${locale}/news/`}>{t(locale, 'home.allNews')}<Icon name="arrow" size={18} class="flip-ltr" /></a>
       </div>
-    </section>
-
-    <!-- 1 · Blood vessel: about -->
-    <section id="ch-about" class="chapter chapter-vessel" data-chapter="1" aria-labelledby="ch-about-title">
-      <div class="chapter-stick container-page">
-        <article class="chapter-card">
-          <p class="chapter-num" aria-hidden="true">01</p>
-          <h2 id="ch-about-title" class="chapter-title">{t(locale, 'journey.vessel.title')}</h2>
-          <p class="chapter-text">{t(locale, 'journey.vessel.text')}</p>
-          <a class="chapter-link" href={`/${locale}/about/`}>
-            {t(locale, 'nav.about')}<span class="arrow" aria-hidden="true">→</span>
-          </a>
-        </article>
-      </div>
-    </section>
-
-    <!-- 2 · Heart: programs -->
-    <section id="ch-programs" class="chapter chapter-heart" data-chapter="2" aria-labelledby="ch-programs-title">
-      <div class="chapter-stick container-page">
-        <article class="chapter-card">
-          <p class="chapter-num" aria-hidden="true">02</p>
-          <h2 id="ch-programs-title" class="chapter-title">{t(locale, 'nav.programs')}</h2>
-          <p class="chapter-text">{t(locale, 'home.quick.programs')}</p>
-          <div class="bpm needs-journey" aria-hidden="true">
-            <svg class="bpm-heart" viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M12 20.5s-7.6-4.6-9.5-9.3C1 7.7 3.2 4 6.9 4c2.1 0 3.6 1.2 5.1 3 1.5-1.8 3-3 5.1-3 3.7 0 5.9 3.7 4.4 7.2-1.9 4.7-9.5 9.3-9.5 9.3Z"
-              ></path>
-            </svg>
-            <span class="bpm-value" data-bpm>70</span>
-            <span class="bpm-unit">{t(locale, 'journey.bpm')}</span>
-          </div>
-          <p class="chapter-hint needs-journey">{t(locale, 'journey.heart.hint')}</p>
-          <button type="button" class="j-chip needs-journey" data-pump>{t(locale, 'journey.pump')}</button>
-          <a class="chapter-link" href={`/${locale}/programs/`}>
-            {t(locale, 'nav.programs')}<span class="arrow" aria-hidden="true">→</span>
-          </a>
-        </article>
-      </div>
-    </section>
-
-    <!-- 3 · Lungs: admissions -->
-    <section id="ch-admissions" class="chapter chapter-lungs" data-chapter="3" aria-labelledby="ch-admissions-title">
-      <div class="chapter-stick container-page">
-        <article class="chapter-card">
-          <p class="chapter-num" aria-hidden="true">03</p>
-          <h2 id="ch-admissions-title" class="chapter-title">{t(locale, 'nav.admissions')}</h2>
-          <p class="chapter-text">{t(locale, 'home.quick.admissions')}</p>
-          <p class="chapter-hint needs-journey">{t(locale, 'journey.lungs.hint')}</p>
-          <button type="button" class="breathe-btn needs-journey" data-breathe data-o2 aria-pressed="false">
-            <span class="breathe-label">{t(locale, 'journey.breathe')}</span>
-            <span class="breathe-o2" aria-hidden="true">O₂</span>
-          </button>
-          <a class="chapter-link" href={`/${locale}/admissions/`}>
-            {t(locale, 'nav.admissions')}<span class="arrow" aria-hidden="true">→</span>
-          </a>
-        </article>
-      </div>
-    </section>
-
-    <!-- 4 · Brain: news -->
-    <section id="ch-news" class="chapter chapter-brain" data-chapter="4" aria-labelledby="ch-news-title">
-      <div class="chapter-stick container-page">
-        <article class="chapter-card">
-          <p class="chapter-num" aria-hidden="true">04</p>
-          <h2 id="ch-news-title" class="chapter-title">{t(locale, 'home.latestNews')}</h2>
-          {
-            news.length > 0 ? (
-              <ul class="chapter-news" role="list">
-                {news.map((item) => (
-                  <li>
-                    <a
-                      href={`/${locale}/news/${item.slug}/`}
-                      {...(item.isFallback ? { lang: item.contentLocale, dir: getDir(item.contentLocale) } : {})}
-                    >
-                      <span class="news-meta" lang={locale} dir={getDir(locale)}>
-                        {formatDate(item.entry.data.date, locale)}
-                      </span>
-                      {item.entry.data.title}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p class="chapter-text">{t(locale, 'news.empty')}</p>
-            )
-          }
-          <p class="chapter-hint needs-journey">{t(locale, 'journey.brain.hint')}</p>
-          <button type="button" class="j-chip needs-journey" data-fire>{t(locale, 'journey.fire')}</button>
-          <div class="flex flex-wrap gap-x-6">
-            <a class="chapter-link" href={`/${locale}/news/`}>
-              {t(locale, 'home.allNews')}<span class="arrow" aria-hidden="true">→</span>
+      {
+        featured ? (
+          <div class="home-news">
+            <a class="feature reveal" href={`/${locale}/${featured.kind}/${featured.item.slug}/`} {...langAttrs(featured.item.isFallback ? featured.item.contentLocale : undefined)}>
+              <span class="feature-art">
+                {featured.item.entry.data.images[0] ? (
+                  <Image src={featured.item.entry.data.images[0].src} alt={featured.item.entry.data.images[0].alt} width={800} class="feature-photo" />
+                ) : (
+                  <svg viewBox="0 0 600 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40H240l10-12 8 12h10l8 18 12-56 12 46 8-8h272"></path></svg>
+                )}
+              </span>
+              <span class="feature-body">
+                <span class="date">
+                  <time datetime={isoDate(featured.item.entry.data.date)}>{formatDate(featured.item.entry.data.date, locale)}</time> · {kindLabel(featured.kind)}
+                </span>
+                <h3>{featured.item.entry.data.title}</h3>
+                {featured.item.entry.data.summary && <p>{featured.item.entry.data.summary}</p>}
+              </span>
             </a>
-            <a class="chapter-link" href={`/${locale}/activities/`}>
-              {t(locale, 'home.allActivities')}<span class="arrow" aria-hidden="true">→</span>
-            </a>
+            <div class="news-list">
+              {others.map(({ item, kind }) => {
+                const { day, month } = dayMonth(item.entry.data.date);
+                return (
+                  <a class="news-item reveal" href={`/${locale}/${kind}/${item.slug}/`} {...langAttrs(item.isFallback ? item.contentLocale : undefined)}>
+                    <time class="day" datetime={isoDate(item.entry.data.date)}><b>{day}</b><small>{month}</small></time>
+                    <span>
+                      <span class="kind">{kindLabel(kind)}</span>
+                      <h3>{item.entry.data.title}</h3>
+                      {item.entry.data.summary && <p>{item.entry.data.summary}</p>}
+                    </span>
+                  </a>
+                );
+              })}
+            </div>
           </div>
-        </article>
-      </div>
-    </section>
+        ) : (
+          <p class="home-empty">{t(locale, 'home.newsEmpty')}</p>
+        )
+      }
+    </div>
+  </section>
 
-    <!-- 5 · Pull back: contact -->
-    <section id="ch-contact" class="chapter chapter-contact" data-chapter="5" aria-labelledby="ch-contact-title">
-      <div class="chapter-stick container-page">
-        <article class="chapter-card">
-          <p class="chapter-num" aria-hidden="true">05</p>
-          <h2 id="ch-contact-title" class="chapter-title">{t(locale, 'nav.contact')}</h2>
-          <p class="chapter-text">{t(locale, 'contact.lead')}</p>
-          <p class="mt-4">
-            <a href={`mailto:${site.email}`} dir="ltr" class="ltr-inline chapter-email">{site.email}</a>
-          </p>
-          <a class="chapter-link" href={`/${locale}/contact/`}>
-            {t(locale, 'nav.contact')}<span class="arrow" aria-hidden="true">→</span>
-          </a>
-        </article>
+  <!-- Programs -->
+  <section class="home-block home-programs" aria-labelledby="programs-title">
+    <div class="container-page">
+      <div class="home-head reveal">
+        <div>
+          <p class="kicker"><svg viewBox="0 0 42 16" aria-hidden="true"><path d="M0 9h14l3-6 4 12 3-9 2 3h16"></path></svg>{t(locale, 'home.programsKicker')}</p>
+          <h2 id="programs-title" class="home-h2">{t(locale, 'home.programsTitle')}</h2>
+        </div>
+        <a class="more" href={`/${locale}/programs/`}>{t(locale, 'home.allPrograms')}<Icon name="arrow" size={18} class="flip-ltr" /></a>
       </div>
-    </section>
-  </div>
+      {
+        programs.length > 0 ? (
+          <div class="program-grid">
+            {programs.map((item) => {
+              const data = item.entry.data;
+              const other = otherNames.get(item.slug);
+              const tag = [data.abbr, data.duration].filter(Boolean).join(' · ');
+              return (
+                <a class:list={['program-card', 'reveal', `c-${data.color}`]} href={`/${locale}/programs/${item.slug}/`} {...langAttrs(item.isFallback ? item.contentLocale : undefined)}>
+                  <span class="program-icon"><Icon name={data.icon} size={26} /></span>
+                  <h3>{data.title}</h3>
+                  {other && other !== data.title && <p {...langAttrs(otherLocale)}>{other}</p>}
+                  {tag && <span class="tag" dir="ltr">{tag}</span>}
+                </a>
+              );
+            })}
+          </div>
+        ) : (
+          <p class="home-empty">{t(locale, 'programs.empty')}</p>
+        )
+      }
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section class="home-block home-contact-wrap" aria-labelledby="contact-title">
+    <div class="container-page">
+      <div class="home-contact reveal">
+        <svg class="bg-pulse" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0 80H520l14-16 12 16h14l12 30 18-96 18 80 12-14h570"></path></svg>
+        <div>
+          <h2 id="contact-title" class="home-h2">{t(locale, 'home.contactTitle')}</h2>
+          <p>{t(locale, 'home.contactText')}</p>
+        </div>
+        <div class="contact-lines">
+          <a class="contact-line" href={`mailto:${site.email}`}>
+            <Icon name="mail" size={22} />
+            <span><span>{t(locale, 'home.contactEmail')}</span><b dir="ltr">{site.email}</b></span>
+          </a>
+          <a class="contact-line" href={`/${locale}/contact/`}>
+            <Icon name="pin" size={22} />
+            <span><span>{t(locale, 'home.contactPage')}</span><b>{t(locale, 'home.contactPageLink')}</b></span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+  <script>
+    import '~/scripts/stories';
+  </script>
 </BaseLayout>
